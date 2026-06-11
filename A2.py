@@ -1,2335 +1,1170 @@
-# ============================================================
-#   PES University · UE20CS901 — Python for Data Science
-#   ESA Complete Solved Question Bank
-#   9 papers · 8 sets · 201 questions solved
-#   Sections A (Theory) + B (Programming) + C (Data Analysis)
-#   Format: Question → Note (idea/why) → Working Code
-# ============================================================
-#
-# How to use:
-#   Each item shows the question, a one-line note, and code.
-#   Section C code assumes:
-#     import pandas as pd, numpy as np
-#     import matplotlib.pyplot as plt, seaborn as sns
-#   and a loaded df. Column names follow each paper's data
-#   dictionary — verify exact spelling with df.columns.
-# ============================================================
+'''
+State the difference between a Primary key and a Candidate key.
 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import random
-from functools import reduce
-import re
+A Candidate Key is any column or combination of columns that can uniquely identify each record within the table. A table can have multiple candidate keys. Each candidate key qualifies to become the primary key.
 
+A Primary Key is the one candidate key that the designer selects as the official row identifier. A table can have only one primary key. The primary key column prohibits null entries and does not allow duplicate values.
 
-# ╔══════════════════════════════════════════════════════════╗
-# ║  May 2025  ·  100 marks · dataset: car_info.csv          ║
-# ╚══════════════════════════════════════════════════════════╝
+A table can have only one primary key but multiple candidate keys. The primary key may not contain null entries, whereas a candidate key that is not chosen as the primary key may allow NULLs depending on the design. All primary keys are candidate keys, but not all candidate keys are primary keys. The primary key is automatically enforced by the RDBMS through a unique index, and it is commonly used as the target of foreign key references from other tables.
 
 
-# ══  Section A — Theory  ══
+Explain any two string functions with an example.
 
+String functions perform operations on character data and return either a string or a numeric result.
 
-# ──────────────────────────────────────────
-# A1 How are dictionaries different from lists in Python?
-# ──────────────────────────────────────────
+CONCAT() joins two or more strings into one. Syntax: CONCAT(string1, string2, ...) Example: SELECT CONCAT('Hello', ' ', 'World'); returns Hello World. In practice: SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employees; builds a full name from two columns.
 
-# List = ordered, accessed by integer index, allows duplicates. Dict =
-# key→value pairs, accessed by key, keys unique. Dict key lookup is
-# O(1); list search is O(n).
+SUBSTRING() extracts a part of a string from a given starting position for a given number of characters. Syntax: SUBSTRING(string, start, length). Positions begin at 1. Example: SELECT SUBSTRING('Database', 1, 4); returns Data.
 
+LENGTH() returns the number of characters in a string. Example: SELECT LENGTH('Hello'); returns 5.
 
-# ──────────────────────────────────────────
-# A2 What is a lambda function? How is it different from a regular function?
-# ──────────────────────────────────────────
+UPPER() and LOWER() convert a string to all uppercase or all lowercase. Example: SELECT UPPER('hello'); returns HELLO. SELECT LOWER('WORLD'); returns world.
 
-# A small anonymous one-line function with no name. Single expression,
-# no statements, implicit return. A def function has a name, can hold
-# many statements, and is reusable.
+TRIM() removes leading and trailing whitespace. Example: SELECT TRIM('  hello  '); returns hello.
 
-double = lambda x: x*2
-print(double(5))   # 10
+REPLACE() substitutes every occurrence of a substring with another string. Example: SELECT REPLACE('Hello World', 'World', 'SQL'); returns Hello SQL.
 
 
-# ──────────────────────────────────────────
-# A3 What is string immutability in Python?
-# ──────────────────────────────────────────
+Can we use aggregate functions in where clause? Justify your answer.
 
-# Once created, a string cannot be changed in place. Any 'edit' returns
-# a NEW string; the original is untouched.
+No. Aggregate functions such as COUNT(), SUM(), AVG(), MIN(), and MAX() may not be used directly inside the WHERE clause.
 
-s='hi'
-# s[0]='H'  -> ERROR
-s = 'H' + s[1:]   # new string
+The reason is the order of SQL clause evaluation. The WHERE clause runs before GROUP BY and before any aggregation takes place. Aggregate functions compute their results across groups of rows, so their values simply do not exist yet when WHERE is being evaluated.
 
+The following query is invalid: SELECT department_id, COUNT(*) FROM employees WHERE COUNT(*) > 5 GROUP BY department_id; MySQL returns an error because COUNT(*) cannot appear in the WHERE clause.
 
-# ──────────────────────────────────────────
-# A4 Slice 'PythonProgramming' to get 'thonPro'.
-# ──────────────────────────────────────────
+The correct approach is to use the HAVING clause, which filters groups after GROUP BY and aggregation have been applied: SELECT department_id, COUNT(*) FROM employees GROUP BY department_id HAVING COUNT(*) > 5;
 
-# Use s[start:stop]. Index 2 is 't', stop at 9 (exclusive) gives
-# 'thonPro'.
+HAVING is specifically designed to filter on aggregate results, while WHERE filters individual rows before any grouping.
 
-s='PythonProgramming'
-print(s[2:9])   # thonPro
 
+What is Cross-Join?
 
-# ──────────────────────────────────────────
-# A5 What does *args do in a function? Provide an example.
-# ──────────────────────────────────────────
+A CROSS JOIN (also called a Cartesian join) combines each individual row from the first table with every row from the second table. If the first table has M rows and the second has N rows, the result has M × N rows. There is no ON condition — every possible pair is produced.
 
-# *args collects any number of extra positional arguments into a tuple.
+Syntax: SELECT * FROM table1 CROSS JOIN table2;
 
-def total(*args):
-    return sum(args)
-print(total(1,2,3))  # 6
+Example: If an employees table has 10 rows and a departments table has 5 rows, the CROSS JOIN produces 50 rows.
 
+CROSS JOIN is different from other joins because it requires no any matching condition. It is rarely used in production because it can produce enormous result sets. Legitimate uses include generating all combinations of two sets (such as all size-colour combinations for a product catalogue), creating test data, or building a calendar grid.
 
-# ──────────────────────────────────────────
-# A6 How can sorted() and sort() be used with a list? Example.
-# ──────────────────────────────────────────
 
-# list.sort() sorts in place and returns None. sorted(iterable) returns
-# a NEW sorted list and works on anything iterable.
+Aryan, a database administrator, has grouped records of a table with the help of group by clause. He needs to further filter groups of records generated through group by clause. Suggest suitable clause for it and properly explain its usage with the help of an example.
 
-a=[3,1,2]
-a.sort()            # a is now [1,2,3]
-b=sorted([3,1,2])   # b=[1,2,3], original kept
+The suitable clause is HAVING.
 
+The HAVING clause filters groups of rows after the GROUP BY clause has created them. It plays the same role for grouped results that WHERE plays for individual rows. WHERE may not be used here because aggregate functions are evaluated after grouping, and HAVING is evaluated after GROUP BY.
 
-# ──────────────────────────────────────────
-# A7 How can you get a random number in Python?
-# ──────────────────────────────────────────
+Syntax: SELECT column, aggregate_function(column) FROM table GROUP BY column HAVING condition;
 
-# Use the random module: random() for float 0–1, randint(a,b) for an
-# integer in [a,b].
+Example: Find all departments where the total salary bill exceeds 50000. SELECT department_id, SUM(salary) AS total_salary FROM employees GROUP BY department_id HAVING SUM(salary) > 50000;
 
-import random
-random.random()       # float 0..1
-random.randint(1,6)   # int 1..6
+In this example, GROUP BY groups rows by department, SUM calculates the total salary per department, and HAVING retains only those departments where the total exceeds 50000. Without HAVING, you would get every department. HAVING lets you filter on the aggregated result.
 
+The mandatory order of clauses is: WHERE filters rows first, then GROUP BY creates groups, then HAVING filters groups, then ORDER BY sorts the final output.
 
-# ──────────────────────────────────────────
-# A8 What are map and reduce functions in Python?
-# ──────────────────────────────────────────
 
-# map(fn, seq) applies fn to every element and returns a map object.
-# reduce(fn, seq) (from functools) folds the sequence into a single
-# value.
+What are the uses of Window Function?
 
-from functools import reduce
-list(map(lambda x:x*x,[1,2,3]))    # [1,4,9]
-reduce(lambda a,b:a+b,[1,2,3])     # 6
+Window functions (also called analytical functions) carry out computations across a set of related rows — the window — while keeping each record individually visible in the output. Unlike GROUP BY, they do not collapse rows into one summary row.
 
+Ranking rows within groups: RANK(), DENSE_RANK(), and ROW_NUMBER() assign a rank to each record within a partition. As an illustration, ranking employees by salary within each department without collapsing the rows.
 
-# ──────────────────────────────────────────
-# A9 Difference between reshape() and resize().
-# ──────────────────────────────────────────
+Running totals and cumulative aggregates: SUM() OVER or COUNT() OVER with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW computes a cumulative running total as rows are added.
 
-# reshape returns a new array of a compatible shape (total size must
-# match) and does not modify the original. resize changes the array in
-# place and may change total size (pads with repeats/zeros).
+Accessing previous or next rows: LAG() retrieves the value from a prior row and LEAD() retrieves the value from a following row. This serves to compare this month's sales to last month without a self-join.
 
-import numpy as np
-a=np.arange(6)
-a.reshape(2,3)   # new view, a unchanged
-a.resize(3,3)    # a modified in place
+Moving averages and rolling calculations: AVG() OVER with a frame clause such as ROWS BETWEEN 2 PRECEDING AND CURRENT ROW produces a sliding window average over a configurable number of rows.
 
+Distribution analysis: PERCENT_RANK() and CUME_DIST() calculate what percentile a row falls in. NTILE() divides the result set into equal-sized buckets.
 
-# ──────────────────────────────────────────
-# A10 Difference between pivot table and cross table.
-# ──────────────────────────────────────────
+Finding boundary values within a group: FIRST_VALUE() and LAST_VALUE() return the first or last value within the ordered window partition.
 
-# pivot_table aggregates a value column over row/column categories using
-# any aggfunc (mean, sum...). crosstab is a special case that counts
-# frequency of combinations of two categoricals.
+The primary advantage is that all of these calculations return a result for each individual row alongside the original row data, something that GROUP BY aggregation cannot do.
 
-pd.crosstab(df.A, df.B)
-pd.pivot_table(df, index='A', columns='B', values='V', aggfunc='mean')
 
+Explain about EXISTS operator.
 
-# ══  Section B — Programming  ══
+The EXISTS operator tests whether a subquery returns at least one row. It evaluates to TRUE if the inner query produces one or more rows and FALSE if it produces no rows. EXISTS does not return the actual column values from the subquery — it is purely a membership check.
 
+Syntax: SELECT columns FROM table WHERE EXISTS (subquery);
 
-# ──────────────────────────────────────────
-# B1 Return a new list of numbers that are BOTH prime AND palindrome (e.g. 131,7,11); empty list if none.
-# ──────────────────────────────────────────
+Example: Find all customers who have placed at least one order. SELECT customer_id, customer_name FROM customers WHERE EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id);
 
-# Two tiny helpers: prime test (check divisors up to sqrt), palindrome
-# test (string equals its reverse). Filter with a comprehension.
+The inner query SELECT 1 is a convention — EXISTS only cares whether any row is returned, not what the value is. You can write SELECT *, SELECT column_name, or SELECT 1; the result is the same.
 
-def is_prime(n):
-    if n < 2: return False
-    for i in range(2, int(n**0.5)+1):
-        if n % i == 0: return False
-    return True
+NOT EXISTS is the negation. It evaluates to TRUE when the inner query gives back no rows, allowing you to find records that have no match in another table. Example: Find customers who have never placed an order. SELECT customer_id FROM customers WHERE NOT EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id);
 
-def is_pal(n):
-    return str(n) == str(n)[::-1]
+EXISTS is often faster than IN for large datasets because it stops searching as soon as the first matching row is found (short-circuit evaluation), whereas IN must evaluate the entire subquery result.
 
-def prime_palindromes(nums):
-    return [x for x in nums if is_prime(x) and is_pal(x)]
 
-print(prime_palindromes([7,11,12,131,23,101]))  # [7,11,131,101]
+What is percent rank? Explain with an example.
 
+PERCENT_RANK() is a window function that calculates the relative rank of a row as a value between 0.0 and 1.0, where 0 represents the lowest rank and 1 represents the highest.
 
-# ──────────────────────────────────────────
-# B2 Student marks system: add student, update marks, average of all, display all.
-# ──────────────────────────────────────────
+Formula: PERCENT_RANK = (rank of the row minus 1) divided by (total number of rows in the partition minus 1).
 
-# A dict name→marks plus four small functions. Same CRUD skeleton reused
-# across many papers.
+The first row in any ordering always receives a PERCENT_RANK of 0. The last row always receives 1.0.
 
-students = {}
-def add_student(name, marks):  students[name] = marks
-def update_marks(name, marks):
-    if name in students: students[name] = marks
-def average_marks():
-    return sum(students.values())/len(students) if students else 0
-def display():
-    for n, m in students.items(): print(n, '->', m)
+Syntax: SELECT column, PERCENT_RANK() OVER (PARTITION BY group_col ORDER BY value_col) AS pct_rank FROM table;
 
-add_student('Asha', 88); add_student('Ravi', 72)
-update_marks('Ravi', 80); print(average_marks()); display()
+Example: Rank each employee's salary within their department. SELECT employee_id, department_id, salary, PERCENT_RANK() OVER (PARTITION BY department_id ORDER BY salary) AS pct_rank FROM employees;
 
+If a department has five employees with salaries 20000, 30000, 40000, 50000, 60000, their PERCENT_RANK values are 0.0, 0.25, 0.5, 0.75, and 1.0 respectively.
 
-# ──────────────────────────────────────────
-# B3 Adjust employee bonuses by experience tier (>10y: +20%+3%*base*rating; 5–10y: +15%+2%*...; <5y: +10%+1%*...). Return new dict.
-# ──────────────────────────────────────────
+A PERCENT_RANK of 0.75 means that employee's salary is higher than 75 percent of employees in that department.
 
-# Loop the dict, branch on years, build a NEW dict so the original is
-# preserved. Only the percentages change between papers.
+Common use: filtering the top 10 percent of earners by adding WHERE pct_rank >= 0.9, or identifying which percentile a given value falls in for reporting and analysis.
 
-def adjust_bonus(emps):   # emps: name -> (years, base_bonus, rating)
-    out = {}
-    for name, (yrs, base, rating) in emps.items():
-        if yrs > 10:   out[name] = base*1.20 + 0.03*base*rating
-        elif yrs >= 5: out[name] = base*1.15 + 0.02*base*rating
-        else:          out[name] = base*1.10 + 0.01*base*rating
-    return out
 
-emps = {'A':(12,1000,5), 'B':(7,1000,3), 'C':(2,1000,4)}
-print(adjust_bonus(emps))
+State and explain in brief types of Locks in database.
 
+Locks are database mechanisms that control concurrent access to data. When multiple transactions attempt to read or modify the same data at the same time, locks prevent conflicts and maintain data consistency.
 
-# ──────────────────────────────────────────
-# B4 From a list of sentences, dict of unique words (case-insensitive, length>=4) -> counts. Ignore punctuation.
-# ──────────────────────────────────────────
+Locking levels: Row-level lock locks one row, allowing other transactions to access all other rows in the same table at the same time. This is the most granular lock and causes the least contention. Page-level lock locks a block of rows stored together on a data page. Table-level lock locks the entire table, blocking other transactions from accessing any row in it. Simple to manage but significantly reduces concurrency.
 
-# Lowercase, pull alphabetic words with regex, keep length>=4, count
-# with the .get(k,0)+1 idiom.
+Types of locks:
 
-import re
-def word_counts(sentences):
-    counts = {}
-    for s in sentences:
-        for w in re.findall(r'[a-zA-Z]+', s.lower()):
-            if len(w) >= 4:
-                counts[w] = counts.get(w, 0) + 1
-    return counts
+Shared Lock (S Lock, also called Read Lock): A shared lock is acquired when a transaction wants to read data. Multiple transactions can hold shared locks on the same data at the same time because reading alone does not change the data. A shared lock prevents other transactions from acquiring an exclusive (write) lock while reading is in progress.
 
-print(word_counts(['The quick brown Fox', 'the lazy dog runs']))
+Exclusive Lock (X Lock, also called Write Lock): An exclusive lock is acquired when a transaction wants to modify data through INSERT, UPDATE, or DELETE. Only one transaction at a time can hold an exclusive lock on a piece of data. No other transaction can read or write the data while an exclusive lock is held, ensuring that only one transaction makes changes at any moment.
 
+Together, shared and exclusive locks implement a concurrency protocol: readers can co-exist (shared locks are compatible), but a writer gets sole access (exclusive locks are not compatible with any other lock).
 
-# ──────────────────────────────────────────
-# B5 Given names + DOBs ('YYYY-MM-DD'): (i) youngest student; (ii) students born in December.
-# ──────────────────────────────────────────
 
-# Parse dates with datetime. Youngest = max date. December = month ==
-# 12.
+Explain the different ways you can restrict the data in a column. Demonstrate with Examples.
 
-from datetime import datetime
-names = ['Asha','Ravi','Meena']
-dobs  = ['2001-12-05','1999-06-20','2003-03-11']
-pairs = [(n, datetime.strptime(d, '%Y-%m-%d')) for n, d in zip(names, dobs)]
-youngest = max(pairs, key=lambda p: p[1])[0]
-print('Youngest:', youngest)
-print('Born in Dec:', [n for n, d in pairs if d.month == 12])
+You restrict data in a column by defining SQL constraints. Constraints are rules enforced at the database level that ensure only valid data is accepted.
 
+NOT NULL prevents a column from holding an empty (NULL) value. Every row must supply a value for the column. Example: CREATE TABLE employees (id INT NOT NULL, name VARCHAR(50) NOT NULL);
 
-# ══  Section C — Data Analysis (EDA)  ══
+UNIQUE ensures every value in the column is distinct across all rows. No two rows can share an the same value. A UNIQUE column can still hold null entries. Example: CREATE TABLE users (email VARCHAR(100) UNIQUE);
 
+PRIMARY KEY combines NOT NULL and UNIQUE. It is the main row identifier. A table may have only one primary key. Example: CREATE TABLE students (student_id INT PRIMARY KEY, name VARCHAR(50));
 
-# ──────────────────────────────────────────
-# C1 (i) Load car_info; count cars priced > $25,000; average mileage of those. Inference.
-# ──────────────────────────────────────────
+FOREIGN KEY links a column to the primary key of another table, enforcing referential integrity. Values in the foreign key column must exist in the parent table or be NULL. Example: CREATE TABLE orders ( order_id INT PRIMARY KEY, customer_id INT, FOREIGN KEY (customer_id) REFERENCES customers(customer_id) );
 
-# Filter then aggregate. Always finish with a one-line inference
-# (separately marked).
+CHECK validates column values against a Boolean condition. Any INSERT or UPDATE violating the condition is rejected. Example: CREATE TABLE products ( price DECIMAL CHECK (price > 0), quantity INT CHECK (quantity >= 0) );
 
-import pandas as pd, numpy as np, matplotlib.pyplot as plt, seaborn as sns
-df = pd.read_csv('car_info.csv')      # INSERT PATH
-exp = df[df['Price'] > 25000]
-print('Count:', len(exp))
-print('Avg mileage:', exp['Mileage'].mean())
-# Inference: pricier cars usually show lower mileage.
+DEFAULT sets an automatic value when no value is explicitly provided during INSERT. Example: CREATE TABLE employees (status VARCHAR(10) DEFAULT 'Active');
 
 
-# ──────────────────────────────────────────
-# C2 (ii) Separate Petrol vs Diesel; average price of each group.
-# ──────────────────────────────────────────
+What is the difference between primary key and unique key?
 
-# Boolean-mask into two sub-DataFrames, then .mean() on each.
+A PRIMARY KEY uniquely identifies each individual row within the table. It automatically enforces both the NOT NULL and UNIQUE constraints. A table can have exactly one primary key. The primary key is the main reference point for foreign keys in other tables. The column designated as the primary key may not contain a missing entry under any circumstances.
 
-petrol = df[df['Fuel_Type'] == 'Petrol']
-diesel = df[df['Fuel_Type'] == 'Diesel']
-print('Petrol avg price:', petrol['Price'].mean())
-print('Diesel avg price:', diesel['Price'].mean())
+A UNIQUE KEY (or UNIQUE constraint) also guarantees that no two rows have an the same value in the constrained column or combination of columns. However, a UNIQUE key column can contain null entries — typically one NULL is permitted because NULL is not considered equal to another NULL by the UNIQUE constraint. A table can have multiple UNIQUE keys.
 
+In summary: a primary key is a unique key that additionally prohibits NULLs and is limited to one per table, while a unique key permits one NULL and a table can define many unique keys. Both create an underlying index that enforces uniqueness and speeds up lookups.
 
-# ──────────────────────────────────────────
-# C3 (iii) Average price and maximum mileage for each make.
-# ──────────────────────────────────────────
 
-# Single groupby with a named aggregation.
+What is the difference between the DELETE TABLE and TRUNCATE TABLE commands in MySQL?
 
-summary = df.groupby('Make').agg(avg_price=('Price','mean'),
-                                 max_mileage=('Mileage','max'))
-print(summary)
+DELETE is a DML (Data Manipulation Language) command. It removes rows from a table based on an optional WHERE condition. With a WHERE clause it removes specific rows; without a WHERE clause it removes all rows. DELETE is transactional — it can be rolled back within an active transaction. DELETE fires any triggers defined on the table. It logs each deleted row individually, making it slower on large tables.
 
+TRUNCATE is a DDL (Data Definition Language) command. It removes all rows from a table by deallocating the data pages in one operation. TRUNCATE cannot include a WHERE clause — it always removes each individual row. TRUNCATE is auto-committed and generally may not be rolled back. It skips row-level triggers. TRUNCATE is significantly faster than DELETE for large tables because it does not produce individual row-deletion log entries. TRUNCATE also resets the AUTO_INCREMENT counter to its initial value.
 
-# ──────────────────────────────────────────
-# C4 (iv) Add Mileage_Category: <30000 Low, 30000–100000 Moderate, >100000 High.
-# ──────────────────────────────────────────
+Main differences: DELETE can target specific rows with WHERE; TRUNCATE always removes all rows. DELETE can be rolled back; TRUNCATE is permanent. DELETE is slower on large tables; TRUNCATE is much faster. DELETE fires triggers; TRUNCATE does not.
 
-# Write a function for one value, then .apply over the column.
 
-def cat(m):
-    if m < 30000: return 'Low'
-    elif m < 100000: return 'Moderate'
-    return 'High'
-df['Mileage_Category'] = df['Mileage'].apply(cat)
-print(df[['Mileage','Mileage_Category']].head())
+What is meant by transaction? What are ACID properties?
 
+A transaction is one logical unit of work that groups at least one SQL operation so that they all succeed or all fail together. A transaction is treated as indivisible — if any operation in it fails, the entire transaction is rolled back to the state before it began.
 
-# ──────────────────────────────────────────
-# C5 (v) Highest-priced car for every make.
-# ──────────────────────────────────────────
+A classic example is a bank transfer: debiting one account and crediting another must both succeed. If the credit fails after the debit, the database would be in an incorrect state. A transaction prevents this by ensuring both operations happen together or neither does.
 
-# Sort then drop_duplicates on Make, or use idxmax per group.
+ACID properties are the four guarantees that every transaction must provide:
 
-idx = df.groupby('Make')['Price'].idxmax()
-print(df.loc[idx, ['Make','Price']])
+Atomicity means the transaction is treated as one unit. Either all statements in the transaction execute and are committed, or none of them take effect. Partial completion is not allowed.
 
+Consistency means a transaction moves the database from one valid state to another valid state. All integrity constraints, rules, and cascades must be satisfied after the transaction. The database is never left in a logically inconsistent state.
 
-# ──────────────────────────────────────────
-# C6 (b-i) Boxplot of price per Make grouped by Fuel_Type, with title.
-# ──────────────────────────────────────────
+Isolation means concurrent transactions do not interfere with each other. The intermediate state of one transaction is invisible to other transactions. Each transaction behaves as if it runs in isolation, even when hundreds of transactions execute at the same time.
 
-# seaborn boxplot with hue. Remember the title and rotate x labels.
+Durability means that the same time a transaction is committed, its changes are permanent. The committed data is written to persistent storage and will survive system failures such as crashes, power cuts, or server restarts.
 
-sns.boxplot(data=df, x='Make', y='Price', hue='Fuel_Type')
-plt.title('Price Distribution by Make and Fuel Type')
-plt.xticks(rotation=45); plt.tight_layout(); plt.show()
 
+Which MySQL function is used to concatenate string?
 
-# ──────────────────────────────────────────
-# C7 (b-ii) Average price per make, filtering out missing Price or Mileage.
-# ──────────────────────────────────────────
+The CONCAT() function serves to join two or more strings together into one string in MySQL.
 
-# dropna on the two columns first, then groupby.
+Syntax: CONCAT(string1, string2, string3, ...)
 
-clean = df.dropna(subset=['Price','Mileage'])
-print(clean.groupby('Make')['Price'].mean())
+Example: SELECT CONCAT('Hello', ' ', 'World'); returns Hello World. SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employees; joins the first and last name columns with a space between them.
 
+If any argument passed to CONCAT() is NULL, the function returns NULL for the entire result. To handle NULLs gracefully, CONCAT_WS() (Concatenate With Separator) is used instead. It takes a separator as the first argument and ignores null entries among the remaining arguments.
 
-# ──────────────────────────────────────────
-# C8 (b-iii) Distribution of Fuel_Type across Make; most common fuel per brand.
-# ──────────────────────────────────────────
+Example with CONCAT_WS: SELECT CONCAT_WS(' ', first_name, last_name) AS full_name FROM employees; — even if one name part is NULL, the other part is still returned without the separator appearing next to nothing.
 
-# crosstab Make×Fuel gives counts; idxmax(axis=1) gives the top fuel per
-# make.
 
-ct = pd.crosstab(df['Make'], df['Fuel_Type'])
-print(ct)
-print('Most common fuel per make:'); print(ct.idxmax(axis=1))
-ct.plot(kind='bar', stacked=True); plt.title('Fuel Type by Make'); plt.show()
+How can you change the name of any existing table by using the SQL statement?
 
+To rename an existing table in MySQL, use the RENAME TABLE statement.
 
-# ──────────────────────────────────────────
-# C9 (b-iv) Do prices vary with age? Differences between manual and automatic? Plots + comment.
-# ──────────────────────────────────────────
+Syntax: RENAME TABLE old_table_name TO new_table_name;
 
-# Scatter price vs age, colored by transmission. Comment on both trends.
+Example: RENAME TABLE employees TO staff; This renames the employees table to staff. All data, indexes, constraints, and foreign key references are preserved under the new name.
 
-sns.scatterplot(data=df, x='Age', y='Price', hue='Transmission')
-plt.title('Price vs Age by Transmission'); plt.show()
-# Comment: price falls as age rises; automatics often hold price better.
+You can rename multiple tables in one atomic statement: RENAME TABLE employees TO staff, departments TO divisions;
 
+An alternative is the ALTER TABLE statement with RENAME TO: ALTER TABLE employees RENAME TO staff;
 
-# ──────────────────────────────────────────
-# C10 (b-v) Which make is most listed? Support with a plot.
-# ──────────────────────────────────────────
+Both approaches produce the same result. RENAME TABLE is preferred when renaming multiple tables at the same time because the entire operation is atomic — either all tables are renamed successfully or none are renamed at all, preventing situations where only some renames complete.
 
-# value_counts then a bar/countplot.
 
-print(df['Make'].value_counts().head(1))
-sns.countplot(data=df, y='Make', order=df['Make'].value_counts().index)
-plt.title('Listings per Make'); plt.show()
+What is the view? How can you create and drop view in MySQL?
 
+A view is a virtual table in MySQL. It holds no actual data. Instead, it stores a SQL SELECT query. When you query a view, MySQL executes the underlying SELECT statement and presents the results as if they were coming from a real table. A view behaves like a table for all read operations.
 
-# ╔══════════════════════════════════════════════════════════╗
-# ║  October 2024  ·  100 marks · dataset: car_info.csv      ║
-# ╚══════════════════════════════════════════════════════════╝
+Views are used to simplify complex queries by hiding joins and conditions behind a simple name, to restrict access to sensitive columns by exposing only certain columns through the view, and to reuse frequently needed query logic across multiple queries.
 
+Creating a view: Syntax: CREATE VIEW view_name AS SELECT columns FROM table WHERE condition;
 
-# ══  Section A — Theory  ══
+Example: CREATE VIEW high_salary_employees AS SELECT employee_id, first_name, salary FROM employees WHERE salary > 50000;
 
+You then query it like a table: SELECT * FROM high_salary_employees;
 
-# ──────────────────────────────────────────
-# A1 How to generate a random float between 0 and 1?
-# ──────────────────────────────────────────
+To update or replace an existing view: CREATE OR REPLACE VIEW high_salary_employees AS SELECT ...;
 
-# random.random() returns a float in [0.0, 1.0). numpy:
-# np.random.rand().
+Dropping a view: Syntax: DROP VIEW view_name; Example: DROP VIEW high_salary_employees;
 
-import random; print(random.random())
+Dropping a view removes only the view definition from the database. The underlying source tables and their data are not affected in any way.
 
 
-# ──────────────────────────────────────────
-# A2 Difference between pop() and remove() in a list.
-# ──────────────────────────────────────────
+What are the functions of commit and rollback statements?
 
-# pop(index) removes by position and RETURNS the item (default last).
-# remove(value) deletes the first matching value and returns nothing.
+COMMIT ends the current transaction and permanently saves all the changes made during that transaction to the database. Once a transaction is committed, the changes are written to disk and become visible to other transactions. A committed transaction may not be undone using ROLLBACK.
 
-a=[10,20,30]; a.pop(1)   # returns 20
-b=[10,20,30]; b.remove(20)
+Example: START TRANSACTION; UPDATE accounts SET balance = balance - 1000 WHERE account_id = 1; UPDATE accounts SET balance = balance + 1000 WHERE account_id = 2; COMMIT; After COMMIT, both account updates are permanently saved.
 
+ROLLBACK cancels all the changes made in the current transaction and restores the database to the state it was in before the transaction began. ROLLBACK is executed when an error occurs or when the business logic determines that the changes should not be saved.
 
-# ──────────────────────────────────────────
-# A3 Purpose of filter(); filter even numbers from a list.
-# ──────────────────────────────────────────
+Example: START TRANSACTION; UPDATE accounts SET balance = balance - 1000 WHERE account_id = 1; -- Error: account 2 does not exist ROLLBACK; After ROLLBACK, the debit to account 1 is reversed. The database is back to its state before the transaction.
 
-# filter(fn, seq) keeps only elements where fn returns True.
+Together, COMMIT and ROLLBACK are the core of transaction management and support the Atomicity principle of ACID: a transaction is either fully committed or fully rolled back — there is no partial state.
 
-evens = list(filter(lambda x: x%2==0, [1,2,3,4,5,6]))  # [2,4,6]
 
+What's wrong with this query? SELECT department_id, count(*) FROM department WHERE count(*) > 5 GROUP BY department_id;
 
-# ──────────────────────────────────────────
-# A4 Purpose of enumerate(); example in a loop.
-# ──────────────────────────────────────────
+The query is incorrect because COUNT(*), an aggregate function, is used inside the WHERE clause. SQL prohibits aggregate functions in the WHERE clause.
 
-# enumerate gives (index, value) pairs so you get the position while
-# looping.
+The reason is the order of clause evaluation. WHERE is executed before GROUP BY. At the time WHERE runs, rows have not yet been grouped and aggregate functions have not yet been computed. The value of COUNT(*) is therefore unknown when WHERE is evaluated, which causes a syntax error.
 
-for i, v in enumerate(['a','b','c']):
-    print(i, v)
+The corrected query replaces WHERE with HAVING, which is evaluated after GROUP BY and after aggregation:
 
+SELECT department_id, COUNT(*) FROM department GROUP BY department_id HAVING COUNT(*) > 5;
 
-# ──────────────────────────────────────────
-# A5 Difference between arange() and linspace() in NumPy.
-# ──────────────────────────────────────────
+HAVING is the correct clause for filtering on aggregate results. This corrected query first groups all rows by department_id, counts the rows in each group, and then HAVING filters out any group with five or fewer rows.
 
-# arange(start,stop,step) is defined by step size (stop exclusive).
-# linspace(start,stop,n) gives n evenly spaced points including the
-# endpoint.
 
-np.arange(0,1,0.25)     # [0,0.25,0.5,0.75]
-np.linspace(0,1,5)      # [0,0.25,0.5,0.75,1]
+Explain different types of Normalization.
 
+Normalization is the process of organizing a database schema to eliminate data redundancy and ensure data integrity. It involves decomposing tables based on dependency rules.
 
-# ──────────────────────────────────────────
-# A6 Select a subset of rows by condition in a DataFrame. Example.
-# ──────────────────────────────────────────
+Functional Dependency is the foundation of normalization. A column B is functionally dependent on column A if knowing A determines the value of B. As an illustration, knowing an employee_id determines the employee_name.
 
-# Use a boolean mask inside df[...].
+First Normal Form (1NF) requires that every column holds atomic (single, indivisible) values — no lists or sets in a cell. Each row must be unique. Each column must contain only one type of data. A table that stores multiple phone numbers in one cell like 9876543210, 9123456789 violates 1NF.
 
-df[df['Age'] > 30]
+Second Normal Form (2NF) requires the table to already satisfy 1NF and additionally every non-key column must depend on the complete primary key, not just part of it. Partial dependencies must be removed. This is relevant only when the primary key is composite (made up of several column).
 
+Third Normal Form (3NF) requires the table to satisfy 2NF and additionally there must be no transitive dependencies. A transitive dependency is when a non-key column depends on another non-key column instead of directly on the primary key. As an illustration, if a table has employee_id, department_id, and department_name, and department_name depends on department_id rather than on employee_id, that is transitive and should be moved to a separate departments table.
 
-# ──────────────────────────────────────────
-# A7 Explain groupby in pandas with syntax + an aggregate example.
-# ──────────────────────────────────────────
+Boyce-Codd Normal Form (BCNF) is a stricter extension of 3NF. It requires that for every functional dependency X determines Y, X must be a superkey of the table. BCNF resolves certain anomalies involving overlapping candidate keys that 3NF leaves unresolved.
 
-# Split rows by a category, apply an aggregate, combine results.
 
-df.groupby('Dept')['Salary'].mean()
+Mention the differences between UNION and UNION ALL.
 
+UNION merges the outputs of two or more SELECT statements into one result set and automatically removes any duplicate rows. The output contains only unique rows.
 
-# ──────────────────────────────────────────
-# A8 How to remove missing data from a DataFrame?
-# ──────────────────────────────────────────
+UNION ALL merges the outputs of two or more SELECT statements and keeps each individual row including duplicates. No deduplication step is performed.
 
-# dropna() removes rows/columns with NaN; pass subset to target columns;
-# axis=1 for columns.
+Both require the same number of columns in each SELECT and matching data types for corresponding columns.
 
-df.dropna()                 # drop any row with NaN
-df.dropna(subset=['Price'])
+UNION is slower than UNION ALL because it must sort and deduplicate the combined result set. UNION ALL is faster because it simply concatenates the results without any extra processing.
 
+Example: SELECT city FROM customers UNION SELECT city FROM suppliers; Returns a list of all unique cities mentioned in either table.
 
-# ──────────────────────────────────────────
-# A9 Difference between apply() and map() in pandas.
-# ──────────────────────────────────────────
+SELECT city FROM customers UNION ALL SELECT city FROM suppliers; Returns every city from both tables including duplicates.
 
-# map works element-wise on a Series only. apply works on a Series or
-# across DataFrame rows/columns and is more flexible.
+When to use which: use UNION when the two result sets may overlap and you want unique results. Use UNION ALL when you know there are no duplicates, or when you intentionally want all rows including duplicates, or when query performance is a priority.
 
-df['c'].map(str.upper)
-df.apply(lambda row: row['a']+row['b'], axis=1)
 
+Mention the difference between TRUNCATE and ROUND functions.
 
-# ──────────────────────────────────────────
-# A10 How to reset the index of a DataFrame? Example.
-# ──────────────────────────────────────────
+TRUNCATE(number, decimal_places) removes decimal digits beyond the specified position without any rounding. It always cuts toward zero regardless of the following digits. Example: TRUNCATE(3.7896, 2) returns 3.78 — the third and fourth decimals are simply dropped. Example: TRUNCATE(3.999, 0) returns 3, not 4 — no rounding occurs.
 
-# reset_index(drop=True) renumbers rows 0..n and discards the old index.
+ROUND(number, decimal_places) rounds the number to the specified number of decimal places using standard mathematical rounding. If the digit immediately after the cutoff position is 5 or greater, the last kept digit is rounded up; if it is less than 5, the value is rounded down. Example: ROUND(3.7896, 2) returns 3.79 — the third decimal 9 rounds the second decimal up. Example: ROUND(3.999, 0) returns 4 — the first decimal 9 causes rounding up to 4.
 
-df = df.reset_index(drop=True)
+The key distinction is that TRUNCATE always discards digits and never increases the value, while ROUND applies rounding rules and may increase the value. TRUNCATE(3.999, 0) gives 3 whereas ROUND(3.999, 0) gives 4.
 
 
-# ══  Section B — Programming  ══
+Mention the difference between ISNULL() and IFNULL().
 
+ISNULL(expression) checks whether the given expression is NULL. It accepts exactly one argument and gives 1 (true) if the expression is NULL, or 0 (false) if it is not NULL. ISNULL is a test — it tells you whether something is NULL but does not replace or change the value. Example: SELECT ISNULL(NULL); returns 1. Example: SELECT ISNULL(5); gives 0.
 
-# ──────────────────────────────────────────
-# B1 Return a new list of only the prime numbers from a list; empty if none.
-# ──────────────────────────────────────────
+IFNULL(expression, replacement) is a substitution function that accepts two arguments. If the first argument is not NULL, it returns the first argument unchanged. If the first argument is NULL, it returns the second argument as a fallback value. Example: SELECT IFNULL(NULL, 'Not Available'); returns Not Available. Example: SELECT IFNULL(salary, 0) FROM employees; replaces any NULL salary with 0.
 
-# Same prime test as elsewhere, filtered by comprehension.
+The primary difference is in purpose and number of arguments. ISNULL takes one argument and answers the question is this NULL with a 0 or 1. IFNULL takes two arguments and answers what value should be shown when this is NULL by substituting a meaningful default. ISNULL is used for checking; IFNULL is used for handling null entries in output.
 
-def is_prime(n):
-    if n < 2: return False
-    for i in range(2, int(n**0.5)+1):
-        if n % i == 0: return False
-    return True
-print([x for x in [2,4,7,9,11,15] if is_prime(x)])  # [2,7,11]
 
+What is referential integrity?
 
-# ──────────────────────────────────────────
-# B2 Inventory system: add item (name,qty,price); update qty; total value (sum qty*price); display all.
-# ──────────────────────────────────────────
+Referential integrity is a database property that ensures the relationships between tables remain valid and consistent at all times. It guarantees that a foreign key value in a dependent table always corresponds to an existing primary key value in the parent table, or is NULL.
 
-# Dict name→(qty, price). Same CRUD skeleton; total value multiplies and
-# sums.
+Referential integrity prevents two categories of problems:
 
-inv = {}
-def add_item(name, qty, price): inv[name] = (qty, price)
-def update_qty(name, qty):
-    if name in inv: inv[name] = (qty, inv[name][1])
-def total_value():
-    return sum(q*p for q, p in inv.values())
-def display():
-    for n,(q,p) in inv.items(): print(n, q, p)
+Orphan records occur when a row in the dependent table references a primary key value that no longer exists in the parent table. As an illustration, an order record containing a customer_id that was deleted from the customers table would be an orphan.
 
-add_item('Pen',10,5); add_item('Book',3,50)
-print(total_value()); display()
+Dangling references occur when you try to delete or update a primary key in the parent table that child rows still reference.
 
+In MySQL, referential integrity is enforced by defining FOREIGN KEY constraints. When a foreign key is declared, the database automatically validates every INSERT and UPDATE to the dependent table to confirm that the referenced value exists in the parent.
 
-# ──────────────────────────────────────────
-# B3 Adjust salaries by experience+salary thresholds (tiered % rules); others unchanged. Return new dict.
-# ──────────────────────────────────────────
+The ON DELETE and ON UPDATE options control what happens to child records when the parent changes: CASCADE automatically propagates the change — deleting a parent deletes all related child rows, updating a parent key updates all matching child foreign key values. SET NULL sets the foreign key column in the child to NULL when the parent row is deleted. RESTRICT prevents the parent from being deleted or updated if child rows still reference it. NO ACTION behaves like RESTRICT with deferred checking.
 
-# Same tiered pattern as the bonus question, with an extra salary-
-# ceiling condition per tier.
 
-def adjust(emps):   # name -> (years, salary, rating)
-    out = {}
-    for n,(y,s,r) in emps.items():
-        if y>10 and s<70000:   out[n]=s*1.15 + 0.02*s*r
-        elif 5<=y<=10 and s<50000: out[n]=s*1.10 + 0.015*s*r
-        elif y<5 and s<40000:  out[n]=s*1.05 + 0.01*s*r
-        else: out[n]=s          # no change
-    return out
+Mention the difference between WHERE and HAVING.
 
+WHERE filters individual rows before any grouping takes place. It is evaluated early in the query pipeline, before GROUP BY. WHERE works on the raw, ungrouped rows of the table. You cannot use aggregate functions (COUNT, SUM, AVG, MIN, MAX) inside a WHERE clause because those values have not yet been calculated.
 
-# ──────────────────────────────────────────
-# B4 Word counts (len>=4, case-insensitive) AND a histogram of word lengths.
-# ──────────────────────────────────────────
+Example: SELECT * FROM employees WHERE salary > 50000; filters out individual employee rows where the salary is 50000 or below before any grouping.
 
-# Same counting idiom, then plot the lengths of the unique words.
+HAVING filters groups of rows after GROUP BY has been applied and after aggregate functions have computed their results. HAVING is evaluated after aggregation. You can and should use aggregate functions inside HAVING.
 
-import re, matplotlib.pyplot as plt
-def analyze(sentences):
-    counts = {}
-    for s in sentences:
-        for w in re.findall(r'[a-zA-Z]+', s.lower()):
-            if len(w)>=4: counts[w]=counts.get(w,0)+1
-    lengths=[len(w) for w in counts]
-    plt.hist(lengths, bins=range(4, max(lengths)+2)); plt.title('Word lengths'); plt.show()
-    return counts
+Example: SELECT department_id, AVG(salary) AS avg_salary FROM employees WHERE salary > 20000 GROUP BY department_id HAVING AVG(salary) > 50000;
 
+In this query, WHERE first removes employees earning 20000 or less from the individual rows. GROUP BY then groups the remaining employees by department. HAVING then removes any department where the average salary of the remaining employees is 50000 or below.
 
-# ──────────────────────────────────────────
-# B5 longest_consecutive_sequence(nums): length of longest run of consecutive integers.
-# ──────────────────────────────────────────
+In summary: WHERE operates on rows before grouping; HAVING operates on groups after aggregation. WHERE comes before GROUP BY in the execution order; HAVING comes after.
 
-# Put numbers in a set; for each number with no predecessor, count
-# upward. O(n).
 
-def longest_consecutive_sequence(nums):
-    s=set(nums); best=0
-    for x in s:
-        if x-1 not in s:           # start of a run
-            y=x
-            while y+1 in s: y+=1
-            best=max(best, y-x+1)
-    return best
-print(longest_consecutive_sequence([100,4,200,1,3,2]))  # 4
+Count total number of 'a' appearing in the mentioned phrase 'Great Learning'.
 
+To count the total occurrences of the letter a in the phrase Great Learning in MySQL, the standard approach uses LENGTH and REPLACE together. The logic is: measure the original length of the string, remove all occurrences of the letter a from the string, measure the new length, and subtract the new length from the original. The difference is the number of times a appeared.
 
-# ══  Section C — Data Analysis (EDA)  ══
+Query: SELECT LENGTH('Great Learning') - LENGTH(REPLACE(LOWER('Great Learning'), 'a', '')) AS count_of_a;
 
+Step by step: LOWER('Great Learning') converts the string to great learning so the search is case-insensitive. REPLACE('great learning', 'a', '') removes every a, producing gret lerning. LENGTH('great learning') is 14 characters. LENGTH('gret lerning') is 12 characters. 14 minus 12 equals 2.
 
-# ──────────────────────────────────────────
-# C1 (i) Count cars priced > $25,000; average mileage; inference.
-# ──────────────────────────────────────────
+The letter a appears 2 times in Great Learning — once in Great and once in Learning.
 
-# Identical to May'25 — filter then aggregate.
 
-df = pd.read_csv('car_info.csv')
-exp = df[df['Price']>25000]
-print(len(exp), exp['Mileage'].mean())
+After creating a table, how a unique constraint can be added to a column and how will you delete the same?
 
+To add a UNIQUE constraint to an existing column after the table has already been created, use the ALTER TABLE statement with ADD CONSTRAINT.
 
-# ──────────────────────────────────────────
-# C2 (ii) Two DataFrames for Petrol and Diesel; show average price each.
-# ──────────────────────────────────────────
+Syntax to add: ALTER TABLE table_name ADD CONSTRAINT constraint_name UNIQUE (column_name);
 
-# Mask into two frames; mean each.
+Example: ALTER TABLE employees ADD CONSTRAINT uq_email UNIQUE (email); This adds a unique constraint named uq_email on the email column. From this point no two rows can share the same email value.
 
-petrol=df[df['Fuel_Type']=='Petrol']; diesel=df[df['Fuel_Type']=='Diesel']
-print(petrol['Price'].mean(), diesel['Price'].mean())
+You can also add without specifying a name and let MySQL generate one: ALTER TABLE employees ADD UNIQUE (email);
 
+To drop (remove) a UNIQUE constraint, use ALTER TABLE with DROP INDEX. In MySQL, unique constraints are implemented as unique indexes, so they are dropped using the index name.
 
-# ──────────────────────────────────────────
-# C3 (iii) Average price and maximum mileage per make.
-# ──────────────────────────────────────────
+Syntax to drop: ALTER TABLE table_name DROP INDEX constraint_name;
 
-# groupby + agg.
+Example: ALTER TABLE employees DROP INDEX uq_email;
 
-print(df.groupby('Make').agg(avg=('Price','mean'), mx=('Mileage','max')))
+If no constraint name was specified when adding the unique key, MySQL typically uses the column name as the default index name: ALTER TABLE employees DROP INDEX email;
 
+To see all indexes and constraint names on a table: SHOW INDEX FROM employees;
 
-# ──────────────────────────────────────────
-# C4 (iv) Mileage category Low/Moderate/High.
-# ──────────────────────────────────────────
 
-# apply a banding function.
+How correlated sub-query can be applied in Having clause? Explain with an example.
 
-def cat(m): return 'Low' if m<30000 else 'Moderate' if m<100000 else 'High'
-df['Cat']=df['Mileage'].apply(cat)
+A correlated subquery in the HAVING clause is one where the inner query references a value from the parent query's current group. HAVING evaluates the subquery after GROUP BY has created the groups, so the correlated reference is to aggregate or group-level values.
 
+Example: Find all departments where the average salary of employees in that department is higher than the overall company average salary.
 
-# ──────────────────────────────────────────
-# C5 (v) Most expensive car for each make.
-# ──────────────────────────────────────────
+SELECT department_id, AVG(salary) AS avg_dept_salary FROM employees GROUP BY department_id HAVING AVG(salary) > (SELECT AVG(salary) FROM employees);
 
-# idxmax per group.
+Here the inner subquery SELECT AVG(salary) FROM employees is not correlated to the outer group (it returns the global average), but it sits inside HAVING filtering groups.
 
-print(df.loc[df.groupby('Make')['Price'].idxmax(), ['Make','Price']])
+A fully correlated example: Find departments where the count of employees exceeds the average count per department.
 
+SELECT department_id, COUNT(*) AS emp_count FROM employees GROUP BY department_id HAVING COUNT(*) > ( SELECT AVG(dept_count) FROM (SELECT COUNT(*) AS dept_count FROM employees GROUP BY department_id) AS dept_sizes );
 
-# ──────────────────────────────────────────
-# C6 (b-i) Relationship between Price and Age across fuel types; comment on pricing across mileage ranges.
-# ──────────────────────────────────────────
+For each group (department), HAVING evaluates the inner query using that group's aggregated context, keeping only departments whose employee count exceeds the average count across all departments. The subquery is re-evaluated for each group, which is the defining characteristic of a correlated usage.
 
-# Scatter / lineplot price vs age with fuel hue.
 
-sns.scatterplot(data=df,x='Age',y='Price',hue='Fuel_Type'); plt.show()
+Explain Unique Key with example and describe when to declare an attribute as UNIQUE key instead of PRIMARY KEY.
 
+A UNIQUE key is a constraint that ensures every value in the constrained column is distinct — no two rows can have an the same value. A column with a UNIQUE constraint can still hold null entries (typically one NULL is allowed per unique column).
 
-# ──────────────────────────────────────────
-# C7 (b-ii) Average price per make filtering out missing Price/Mileage.
-# ──────────────────────────────────────────
+Example: In a customers table, declare the email column as UNIQUE because no two customers should have the same email address. CREATE TABLE customers ( customer_id INT PRIMARY KEY, email VARCHAR(100) UNIQUE, name VARCHAR(50) );
 
-# dropna then groupby.
+When to declare UNIQUE instead of PRIMARY KEY:
 
-print(df.dropna(subset=['Price','Mileage']).groupby('Make')['Price'].mean())
+Use UNIQUE when the column must be distinct but is not the primary row identifier. email, phone_number, and national_id_number are examples where uniqueness is required but the table's official identifier is a surrogate key like customer_id.
 
+Use UNIQUE when the column may occasionally hold NULL. PRIMARY KEY never allows NULL, but UNIQUE does. If a value is optional but must be unique whenever it is provided, UNIQUE is the right choice.
 
-# ──────────────────────────────────────────
-# C8 (b-iii) Distribution of Fuel_Type across Make; most popular fuel per brand.
-# ──────────────────────────────────────────
+Use UNIQUE when there are multiple candidate keys. A table can have only one PRIMARY KEY but any number of UNIQUE constraints. All other candidate keys beyond the primary key should be enforced with UNIQUE.
 
-# crosstab + idxmax.
+Use PRIMARY KEY for the main row identifier used in foreign key references. Choosing PRIMARY KEY makes the referencing relationships explicit and ensures the referenced column always has a value.
 
-ct=pd.crosstab(df['Make'],df['Fuel_Type']); print(ct.idxmax(axis=1))
 
+Write a SQL query to find all duplicate emails in a table named Person.
 
-# ──────────────────────────────────────────
-# C9 (b-iv) Price vs age; manual vs automatic differences; plots + comment.
-# ──────────────────────────────────────────
+To find duplicate emails in the Person table, group rows by the Email column and use HAVING to keep only those email values that appear more than once.
 
-# Scatter with transmission hue.
+SELECT Email FROM Person GROUP BY Email HAVING COUNT(*) > 1;
 
-sns.scatterplot(data=df,x='Age',y='Price',hue='Transmission'); plt.show()
+Explanation: GROUP BY Email collects all rows sharing the same email into one group. COUNT(*) counts how many rows are in each group. HAVING COUNT(*) > 1 keeps only groups where the same email appears in two or more rows.
 
+For the table containing (1, a@b.com), (2, c@d.com), (3, a@b.com), the query returns a@b.com because it is present in rows 1 and 3.
 
-# ──────────────────────────────────────────
-# C10 (b-v) Most-listed make; support with plot.
-# ──────────────────────────────────────────
+An alternative using a self-join: SELECT DISTINCT p1.Email FROM Person p1 JOIN Person p2 ON p1.Email = p2.Email AND p1.Id <> p2.Id;
 
-# value_counts + countplot.
+This joins the table to itself to find pairs of different rows that share the same email.
 
-sns.countplot(data=df,y='Make',order=df['Make'].value_counts().index); plt.show()
 
+How to add columns to a table in MySQL. Explain with proper example.
 
-# ╔══════════════════════════════════════════════════════════╗
-# ║  November 2023  ·  100 marks · dataset: water.csv, titanic.csv║
-# ╚══════════════════════════════════════════════════════════╝
+To add a new column to an existing table, use ALTER TABLE with the ADD COLUMN clause.
 
+Syntax: ALTER TABLE table_name ADD COLUMN column_name datatype [constraints];
 
-# ══  Section A — Theory  ══
+Example 1 — add a single column: ALTER TABLE employees ADD COLUMN phone_number VARCHAR(15); Adds a phone_number column of type VARCHAR(15) to the employees table. Existing rows get NULL in this new column.
 
+Example 2 — add a column with a default and NOT NULL: ALTER TABLE employees ADD COLUMN status VARCHAR(10) NOT NULL DEFAULT 'Active'; The status column may not be NULL and defaults to Active for existing rows.
 
-# ──────────────────────────────────────────
-# A1 What is type conversion in Python?
-# ──────────────────────────────────────────
+Example 3 — control the position of the new column: ALTER TABLE employees ADD COLUMN middle_name VARCHAR(30) AFTER first_name; The AFTER keyword places the new column immediately after first_name. ALTER TABLE employees ADD COLUMN employee_code INT FIRST; FIRST places the column as the very first column within the table.
 
-# Changing a value from one type to another: explicit (int('5'), str(9))
-# or implicit (Python auto-promotes int+float to float).
+Example 4 — add multiple columns in one statement: ALTER TABLE employees ADD COLUMN city VARCHAR(50), ADD COLUMN country VARCHAR(50);
 
-int('5'); float(3); str(10)
+Use DESCRIBE employees; after the ALTER to verify the new column was added correctly.
 
 
-# ──────────────────────────────────────────
-# A2 What are *args and **kwargs?
-# ──────────────────────────────────────────
+Given a scenario, an attribute named First Name consists of duplicate values and as well as NULL values. Is it possible to apply Group By clause on First Name?
 
-# *args = extra positional args as a tuple; **kwargs = extra keyword
-# args as a dict.
+Yes, GROUP BY can be applied to the First Name column even when it contains duplicate values and null entries, and it handles both correctly.
 
-def f(*args, **kwargs): print(args, kwargs)
+Duplicate values: GROUP BY is designed exactly for this. It collects all rows that share the same First Name value into one group. Having many rows with the same first name is not a problem — it is the whole point of grouping. The result will have one row per unique First Name value with aggregate functions applied to each group.
 
+null entries: GROUP BY treats all missing entries as belonging to the same group. All rows where First Name is NULL are grouped together as one NULL group. This is a deliberate behavior in MySQL — even though NULL does not equal NULL in comparisons (NULL = NULL is UNKNOWN), GROUP BY treats NULLs as equal for grouping purposes.
 
-# ──────────────────────────────────────────
-# A3 Difference between del(), clear(), remove(), pop().
-# ──────────────────────────────────────────
+Example: SELECT first_name, COUNT(*) AS count FROM employees GROUP BY first_name;
 
-# del removes by index/slice (statement); clear() empties the list;
-# remove(v) deletes first matching value; pop(i) removes by index and
-# returns it.
+If the table has first_name values John, John, Alice, NULL, NULL, the result contains three groups: John with count 2, Alice with count 1, and NULL with count 2.
 
-a=[1,2,3]; a.pop(); a.remove(1); a.clear(); del a
+So yes, GROUP BY works correctly on a column with both duplicates and NULLs.
 
 
-# ──────────────────────────────────────────
-# A4 What are map and reduce functions?
-# ──────────────────────────────────────────
+What is the difference between RANK() and DENSE_RANK()? Justify the answer with sample code.
 
-# map applies a function to each element; reduce (functools) folds the
-# sequence to one value.
+Both RANK() and DENSE_RANK() are window functions that assign a numerical rank to each record based on a specified ordering. They differ in how they handle ties.
 
-from functools import reduce; reduce(lambda a,b:a+b,[1,2,3])
+RANK() assigns the same rank to tied rows but then skips ranks for the number of tied rows, creating gaps in the sequence. If two rows tie for rank 1, the next row receives rank 3 — rank 2 is skipped.
 
+DENSE_RANK() assigns the same rank to tied rows but does not skip any ranks. The next distinct value always receives the next consecutive integer. If two rows tie for rank 1, the next distinct value receives rank 2 — no gap.
 
-# ──────────────────────────────────────────
-# A5 What is Dictionary and List comprehension?
-# ──────────────────────────────────────────
+Example: Salaries: 60000, 60000, 50000, 40000.
 
-# Concise one-line construction. List: [expr for x in seq]. Dict: {k:v
-# for ... }.
+With RANK(): 60000 — rank 1 60000 — rank 1 50000 — rank 3 (rank 2 is skipped) 40000 — rank 4
 
-[x*x for x in range(5)]
-{c:ord(c) for c in 'abc'}
+With DENSE_RANK(): 60000 — rank 1 60000 — rank 1 50000 — rank 2 (consecutive, no gap) 40000 — rank 3
 
+Sample SQL: SELECT employee_id, salary, RANK() OVER (ORDER BY salary DESC) AS rank_val, DENSE_RANK() OVER (ORDER BY salary DESC) AS dense_rank_val FROM employees;
 
-# ──────────────────────────────────────────
-# A6 How to combine different DataFrames in pandas?
-# ──────────────────────────────────────────
+Use DENSE_RANK when you need consecutive ranking for finding the second or Nth highest value. Use RANK when gaps in ranking are meaningful, such as competition standings where two tied first-place winners mean no second place exists.
 
-# pd.concat to stack; pd.merge for SQL-style joins on keys; df.join on
-# index.
 
-pd.concat([d1,d2]); pd.merge(d1,d2,on='id')
+How do you control the data in the child table when there is a change in the parent table? Explain with an example.
 
+You control dependent table behavior using the ON DELETE and ON UPDATE options in the FOREIGN KEY constraint. These options specify what action the database should take on the child rows automatically when the referenced parent row is deleted or updated.
 
-# ──────────────────────────────────────────
-# A7 Identify and deal with missing values in a DataFrame.
-# ──────────────────────────────────────────
+Available actions:
 
-# Detect with isnull().sum(). Handle by dropna() or
-# fillna(mean/median/mode).
+CASCADE: The change is automatically propagated to the dependent table. Deleting a parent row deletes all matching child rows. Updating the parent key updates all matching child foreign key values.
 
-df.isnull().sum(); df.fillna(df.mean(numeric_only=True))
+SET NULL: The foreign key column in the child is set to NULL when the parent row is deleted or updated. The child rows are not removed.
 
+RESTRICT: The operation on the parent is blocked if any child rows reference it. An error is returned.
 
-# ──────────────────────────────────────────
-# A8 Explain ranking methods for Series.
-# ──────────────────────────────────────────
+NO ACTION: Similar to RESTRICT — the delete or update is rejected if it would create orphan records.
 
-# rank() assigns ranks; method= average (default), min, max, first,
-# dense controls tie handling.
+Example: CREATE TABLE departments (dept_id INT PRIMARY KEY, dept_name VARCHAR(50));
 
-s.rank(method='dense')
+CREATE TABLE employees ( emp_id INT PRIMARY KEY, name VARCHAR(50), dept_id INT, FOREIGN KEY (dept_id) REFERENCES departments(dept_id) ON DELETE CASCADE ON UPDATE CASCADE );
 
+With this setup: if a department is deleted from the departments table, all employees in that department are automatically deleted from the employees table. If a dept_id is updated in departments, the corresponding dept_id values in all employee rows are automatically updated to match.
 
-# ──────────────────────────────────────────
-# A9 Difference between reshape() and resize().
-# ──────────────────────────────────────────
 
-# reshape returns a new compatible-size array (original unchanged);
-# resize modifies in place and may change total size.
+What is a foreign key? How to implement the same in MySQL?
 
-a.reshape(2,3); a.resize(3,3)
+A foreign key is a column (or set of columns) in a single table whose values reference the primary key of another table. It creates a logical link between the two tables and enforces referential integrity by ensuring every foreign key value either matches an existing primary key value in the parent table or is NULL.
 
+The table containing the foreign key is called the dependent table and the table containing the referenced primary key is called the parent table.
 
-# ──────────────────────────────────────────
-# A10 Difference between sort_values() and sort_index().
-# ──────────────────────────────────────────
+Implementation in MySQL:
 
-# sort_values orders by the data; sort_index orders by index labels.
+Method 1 — define the foreign key when creating the table: CREATE TABLE orders ( order_id INT PRIMARY KEY, customer_id INT NOT NULL, order_date DATE, FOREIGN KEY (customer_id) REFERENCES customers(customer_id) );
 
-s.sort_values(); s.sort_index()
+Method 2 — add a foreign key to an existing table using ALTER TABLE: ALTER TABLE orders ADD CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id);
 
+Method 3 — add with cascade options: ALTER TABLE orders ADD CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE ON UPDATE CASCADE;
 
-# ══  Section B — Programming  ══
+Prerequisites: the child and parent columns must have compatible data types. The parent column must have a PRIMARY KEY or UNIQUE constraint. For foreign keys to be enforced in MySQL, the tables must use the InnoDB storage engine.
 
 
-# ──────────────────────────────────────────
-# B1 Movie age-limit checker + UsernameValidation(str) per notebook rules.
-# ──────────────────────────────────────────
+Write a SQL query to get the second highest salary from the Employee table. If there is no second highest salary, then the query should return null.
 
-# Username rule pattern: length window, starts with letter, only
-# letters/digits/underscore, no trailing underscore.
+Approach 1 — nested MAX subquery (most straightforward): SELECT MAX(Salary) AS SecondHighestSalary FROM Employee WHERE Salary < (SELECT MAX(Salary) FROM Employee);
 
-def UsernameValidation(s):
-    return (4 <= len(s) <= 25 and s[0].isalpha()
-            and s.replace('_','').isalnum() and not s.endswith('_'))
-print(UsernameValidation('user_1'))  # True
+The inner subquery finds the highest salary. The outer query finds the highest salary among all salaries strictly below that maximum. If only one distinct salary exists, the outer MAX returns NULL automatically.
 
+Approach 2 — LIMIT with OFFSET: SELECT IFNULL( (SELECT DISTINCT Salary FROM Employee ORDER BY Salary DESC LIMIT 1 OFFSET 1), NULL ) AS SecondHighestSalary;
 
-# ──────────────────────────────────────────
-# B2 telephone_match(s): match a string against a phone-keypad digit mapping.
-# ──────────────────────────────────────────
+DISTINCT removes duplicate salary values. ORDER BY DESC sorts from highest to lowest. OFFSET 1 skips the first row (the highest) and LIMIT 1 takes the next one. IFNULL handles the case where no second-highest exists.
 
-# Map each letter to its phone digit, translate the string, compare.
-# Core idea: a dict letter->digit.
+Approach 3 — DENSE_RANK window function: SELECT salary AS SecondHighestSalary FROM ( SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk FROM Employee ) ranked WHERE rnk = 2 LIMIT 1;
 
-keypad = {**dict.fromkeys('abc','2'), **dict.fromkeys('def','3'),
-          **dict.fromkeys('ghi','4'), **dict.fromkeys('jkl','5'),
-          **dict.fromkeys('mno','6'), **dict.fromkeys('pqrs','7'),
-          **dict.fromkeys('tuv','8'), **dict.fromkeys('wxyz','9')}
-def to_digits(word): return ''.join(keypad.get(c,c) for c in word.lower())
-print(to_digits('hello'))  # 43556
+For the given table with salaries 100, 200, 300, all three approaches return 200.
 
 
-# ──────────────────────────────────────────
-# B3 Calculate strength of a password (per notebook rules).
-# ──────────────────────────────────────────
+If we drop a table, does it also drop related objects like constraints, indexes, columns, defaults, Views and Stored Procedures? State different types of constraints.
 
-# Score by checks: length>=8, has upper, lower, digit, special. More
-# checks passed = stronger.
+When you execute DROP TABLE, MySQL permanently removes the table and everything that is stored as part of the table itself. This includes all columns, all indexes (primary key, unique, and regular indexes), all constraints defined on the table (NOT NULL, DEFAULT, CHECK, PRIMARY KEY, UNIQUE, FOREIGN KEY constraints declared on the table), and all triggers on the table.
 
-import re
-def strength(p):
-    score = sum([len(p)>=8, bool(re.search(r'[A-Z]',p)),
-                 bool(re.search(r'[a-z]',p)), bool(re.search(r'[0-9]',p)),
-                 bool(re.search(r'[^A-Za-z0-9]',p))])
-    return ['Very Weak','Weak','Medium','Strong','Very Strong','Excellent'][score]
-print(strength('Abc12!xy'))
+Objects outside the table are handled differently: Views that reference the dropped table are NOT automatically dropped. The view definition remains in the database, but querying it will produce an error because the source table no longer exists. Stored procedures and functions that reference the dropped table are NOT dropped. They remain but will fail when executed. Foreign key constraints in other tables that point to the dropped table will cause an error if FOREIGN_KEY_CHECKS is enabled. You must drop or alter the dependent tables first.
 
+Types of constraints in SQL: NOT NULL ensures a column may not hold a missing entry — each individual row must supply a value. UNIQUE ensures all values in a column are distinct — no duplicates allowed, but one NULL is typically permitted. PRIMARY KEY uniquely identifies each record — combines NOT NULL and UNIQUE; only one primary key per table. FOREIGN KEY links a column to the primary key of another table and enforces referential integrity. CHECK validates column values against a Boolean condition — values violating the condition are rejected. DEFAULT sets an automatic value for a column when no value is explicitly provided during INSERT.
 
-# ──────────────────────────────────────────
-# B4 Collatz conjecture for a starting value (sequence on one line).
-# ──────────────────────────────────────────
 
-# Even -> n/2, odd -> 3n+1, stop at 1. Collect steps in a list.
+Explain multi-row operators for subqueries with an example.
 
-def collatz(n):
-    seq=[n]
-    while n!=1:
-        n = n//2 if n%2==0 else 3*n+1
-        seq.append(n)
-    return seq
-print(*collatz(6))
+Multi-row operators are used when a subquery returns several row. Standard single-value comparison operators like equals or greater-than cannot handle multi-row results. Multi-row operators are designed to evaluate a value against a set of values.
 
+IN checks whether a value matches any value in the set returned by the inner query. Example: SELECT employee_id, name FROM employees WHERE department_id IN (SELECT department_id FROM departments WHERE location = 'Mumbai'); Returns all employees who belong to any department located in Mumbai.
 
-# ══  Section C — Data Analysis (EDA)  ══
+NOT IN returns rows where the value does not match any value in the inner query result. Example: SELECT customer_id FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders); Returns customers who have never placed an order.
 
+ANY (equivalently SOME) evaluates to TRUE if the comparison is true for at least one value in the inner query result. Example: SELECT salary FROM employees WHERE salary > ANY (SELECT salary FROM employees WHERE department_id = 5); Returns employees whose salary is greater than at least one salary in department 5.
 
-# ──────────────────────────────────────────
-# C1 (a1) Water: samples with TDS>500; average hardness of those; inference.
-# ──────────────────────────────────────────
+ALL evaluates to TRUE only if the comparison is true for every value in the inner query result. Example: SELECT salary FROM employees WHERE salary > ALL (SELECT salary FROM employees WHERE department_id = 5); Returns employees whose salary is greater than every salary in department 5 — effectively employees earning more than the department 5 maximum.
 
-# Filter then mean; one-line inference.
 
-df=pd.read_csv('water.csv')
-hi=df[df['TDS']>500]
-print(len(hi), hi['Hardness'].mean())
+Explain difference between WHERE Clause and GROUP BY Clause?
 
+The WHERE clause and the GROUP BY clause serve entirely different purposes in SQL.
 
-# ──────────────────────────────────────────
-# C2 (a2) Two DataFrames potable vs non-potable; show range (min,max) per parameter.
-# ──────────────────────────────────────────
+WHERE filters individual rows from the table based on a condition. It runs before any grouping takes place. WHERE works on every raw row of the table one at a time. Rows that do not satisfy the WHERE condition are excluded from all further processing. Aggregate functions may not be used in WHERE.
 
-# Mask by Potability, then agg min/max.
+Example: SELECT * FROM employees WHERE salary > 50000; returns only individual employee rows where the salary exceeds 50000.
 
-pot=df[df['Potability']==1]; npot=df[df['Potability']==0]
-print(pot.agg(['min','max']))
+GROUP BY organizes the remaining rows (after WHERE) into groups based on matching values in at least a single columns. Each group collapses into one summary row when combined with aggregate functions like COUNT(), SUM(), AVG(). GROUP BY is executed after WHERE.
 
+Example: SELECT department_id, COUNT(*) FROM employees GROUP BY department_id; groups employees by department and counts how many are in each department.
 
-# ──────────────────────────────────────────
-# C3 (a3) Average, min, max turbidity for each potability status.
-# ──────────────────────────────────────────
+Order of execution: WHERE → GROUP BY → HAVING → SELECT → ORDER BY. This means WHERE filters individual rows first, then GROUP BY groups the filtered rows, then HAVING filters the resulting groups using aggregate conditions.
 
-# groupby Potability, agg the three stats.
+They can work together in one query: SELECT department_id, AVG(salary) FROM employees WHERE salary > 20000 GROUP BY department_id; first removes employees earning 20000 or less, then groups the remaining employees by department and calculates the average salary per group.
 
-print(df.groupby('Potability')['Turbidity'].agg(['mean','min','max']))
 
+What is the result of the following command? DROP VIEW view_name. Is it possible to update the views? If yes, How, If not Why?
 
-# ──────────────────────────────────────────
-# C4 (a4) Category column for Hardness: Low/Moderate/High.
-# ──────────────────────────────────────────
+DROP VIEW view_name removes the view definition named view_name from the database. The view itself — which is just a stored SELECT query — is deleted from the database catalog. The underlying source tables and all data in them are completely unaffected.
 
-# apply a banding function (thresholds per dataset).
+Regarding updating views — it depends on the type of view:
 
-def hc(h): return 'Low' if h<100 else 'Moderate' if h<200 else 'High'
-df['Hardness_Cat']=df['Hardness'].apply(hc)
+Simple views can be updated. A simple view is created from a single table using a basic SELECT without GROUP BY, DISTINCT, aggregate functions, UNION, or subqueries. You can perform INSERT, UPDATE, and DELETE on a simple view and the changes are applied directly to the underlying source table.
 
+Example of updating through a simple view: UPDATE employee_names_view SET first_name = 'Alice' WHERE employee_id = 101; This updates the first_name in the underlying employees table.
 
-# ──────────────────────────────────────────
-# C5 (a5) Samples that are potable OR hardness>200.
-# ──────────────────────────────────────────
+Complex views may not be updated. A view is not updatable if it uses: GROUP BY or HAVING. Aggregate functions such as SUM, COUNT, AVG. The DISTINCT keyword. UNION or UNION ALL. Subqueries in the SELECT list. Joins in most circumstances.
 
-# Combine masks with | (remember parentheses).
+The reason complex views may not be updated is that MySQL is not always able to determine which source table rows to modify when the view is built from multiple tables or derived computations.
 
-print(df[(df['Potability']==1) | (df['Hardness']>200)])
+The WITH CHECK OPTION clause can be added to a simple view to make sure that any INSERT or UPDATE done through the view must still satisfy the view's WHERE condition. If an updated row would no longer appear in the view, the operation is rejected.
 
 
-# ──────────────────────────────────────────
-# C6 (b1) Titanic: survival proportion per embarked port; plot.
-# ──────────────────────────────────────────
+List the conditions when joins should be used instead of nested sub queries.
 
-# groupby Embarked, mean of Survived; bar plot.
+Joins are generally preferred over nested subqueries in the following situations:
 
-t=pd.read_csv('titanic.csv')
-print(t.groupby('Embarked')['Survived'].mean())
-t.groupby('Embarked')['Survived'].mean().plot(kind='bar'); plt.show()
+When you need columns from multiple tables in the result set. A JOIN naturally combines columns from all joined tables in one output row. A subquery in the WHERE clause cannot return columns from the inner query table alongside the parent query columns.
 
+When performance matters with large tables. The database query optimizer can use indexes across joined tables very effectively. Correlated subqueries can be slow because they re-execute once per outer row.
 
-# ──────────────────────────────────────────
-# C7 (b2) Youngest and oldest passengers.
-# ──────────────────────────────────────────
+When joining more than two tables. Chaining three or more JOINs is cleaner and more readable than nesting multiple subqueries inside each other.
 
-# min/max of Age (or idxmin/idxmax for the row).
+When using aggregate functions across multiple tables. A single query with GROUP BY and JOIN across tables is more efficient than computing aggregates in nested subqueries.
 
-print(t['Age'].min(), t['Age'].max())
+When the relationship is a simple foreign key match. Linking a dependent table to its parent through a JOIN on the foreign key is the natural and intended way to retrieve related data.
 
+When the optimizer can eliminate joins or push predicates down. Explicit JOINs give the optimizer more information to work with than hidden subquery logic.
 
-# ──────────────────────────────────────────
-# C8 (b3) Count passengers per age group (children/adults/seniors).
-# ──────────────────────────────────────────
+Subqueries remain appropriate when: the logic is a filter based on a calculated value (salary greater than the average), when using NOT IN or NOT EXISTS to find non-matching records, when the result needed is a scalar value for comparison, or when the inner query is logically independent of the parent query and the intent is clearer as a subquery.
 
-# Bin Age with pd.cut, then value_counts.
 
-t['AgeGroup']=pd.cut(t['Age'],[0,12,60,120],labels=['Child','Adult','Senior'])
-print(t['AgeGroup'].value_counts())
+What are the levels at which check constraints can be created? Justify your answer, on what all data types the constraints can be applied.
 
+CHECK constraints can be created at two levels:
 
-# ──────────────────────────────────────────
-# C9 (b4) Group by Embarked: count, average age, median fare per port.
-# ──────────────────────────────────────────
+Column-level constraint is defined inline with the column definition. It applies only to the single column it is attached to and can reference only that column in its condition. Example: CREATE TABLE employees ( age INT CHECK (age >= 18), salary DECIMAL(10,2) CHECK (salary > 0) );
 
-# groupby with a dict of aggregations.
+Table-level constraint is defined after all column definitions at the end of the CREATE TABLE block. It can reference multiple columns in the same table, making it suitable for cross-column validation. Example: CREATE TABLE bookings ( start_date DATE, end_date DATE, CONSTRAINT chk_dates CHECK (end_date > start_date) );
 
-print(t.groupby('Embarked').agg(n=('PassengerId','count'),
-      avg_age=('Age','mean'), med_fare=('Fare','median')))
+Both levels can also be added to existing tables: ALTER TABLE employees ADD CONSTRAINT chk_age CHECK (age >= 18 AND age <= 65);
 
+Data types on which CHECK constraints can be applied:
 
-# ──────────────────────────────────────────
-# C10 (b5) family_size column via get_family_size + lambda over rows.
-# ──────────────────────────────────────────
+Numeric types (INT, DECIMAL, FLOAT, DOUBLE) — useful for range checks such as price > 0 or quantity BETWEEN 0 AND 10000. Character types (VARCHAR, CHAR) — useful for value list checks such as status IN ('Active', 'Inactive') or format constraints. Date and Time types (DATE, DATETIME, TIMESTAMP) — useful for date range checks such as hire_date >= '2000-01-01' or ensuring end_date is after start_date. Boolean equivalents (TINYINT used as 0 or 1) — CHECK (active IN (0, 1)).
 
-# Define function (sibsp+parch+1), apply row-wise with lambda.
+CHECK constraints can be applied to any data type that supports Boolean comparison expressions. From MySQL 8.0.16 onwards they are fully enforced.
 
-def get_family_size(sib,par): return sib+par+1
-t['family_size']=t.apply(lambda r: get_family_size(r['SibSp'],r['Parch']), axis=1)
 
+How to add foreign keys in MySQL?
 
-# ──────────────────────────────────────────
-# C11 (b6) Extract cabin type from Cabin; visualize survival rates; plot.
-# ──────────────────────────────────────────
+A foreign key can be added in MySQL in two ways:
 
-# First letter of Cabin = deck; groupby that, mean survival; bar plot.
+Method 1 — during table creation: CREATE TABLE orders ( order_id INT PRIMARY KEY, customer_id INT NOT NULL, FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ); The FOREIGN KEY clause names the child column and REFERENCES specifies the parent table and column.
 
-t['Deck']=t['Cabin'].astype(str).str[0]
-t.groupby('Deck')['Survived'].mean().plot(kind='bar'); plt.show()
+Method 2 — to an existing table using ALTER TABLE: ALTER TABLE orders ADD CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id); The CONSTRAINT keyword names the foreign key so it can be referenced later if you need to drop it.
 
+Adding with CASCADE options: ALTER TABLE orders ADD CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE ON UPDATE CASCADE; ON DELETE CASCADE automatically deletes child rows when the parent is deleted. ON UPDATE CASCADE automatically updates child foreign key values when the parent key changes.
 
-# ╔══════════════════════════════════════════════════════════╗
-# ║  March 2024 (ESA)  ·  100 marks · dataset: athletes.csv, regions.csv║
-# ╚══════════════════════════════════════════════════════════╝
+Prerequisites: the child and parent columns must have compatible data types. The parent column must be a PRIMARY KEY or have a UNIQUE constraint. Both tables must use the InnoDB storage engine for foreign keys to be enforced.
 
 
-# ══  Section A — Theory  ══
+Is it possible to have two primary keys in a table? Explain what is meant by alternate keys in RDBMS with an example.
 
+No. A table can have only one primary key. This is a fundamental rule of relational database design. However, a primary key can be a composite key — made up of two or more columns together — but it still counts as one primary key.
 
-# ──────────────────────────────────────────
-# A1 What is type casting? Explain with respect to Python.
-# ──────────────────────────────────────────
+Alternate Key: An alternate key is a candidate key that was not selected as the primary key.
 
-# Converting a value's type. Explicit via int(), float(), str();
-# implicit when Python auto-promotes (int+float -> float).
+To understand this, a candidate key is any column or combination of columns that can uniquely identify each individual row within the table and may not be NULL. A table can have multiple candidate keys.
 
-int('7'); float(2); str(99)
+When the database designer selects one candidate key to serve as the primary key, all the remaining candidate keys that were not chosen become alternate keys.
 
+Example: Consider a students table with columns student_id, email, and phone_number, all of which uniquely identify a student.
 
-# ──────────────────────────────────────────
-# A2 Difference between tuples and lists.
-# ──────────────────────────────────────────
+All three are candidate keys: student_id, email, and phone_number. If student_id is chosen as the primary key, then email and phone_number become alternate keys.
 
-# List mutable (), changeable, []; tuple immutable, () , hashable,
-# slightly faster.
+Alternate keys are enforced using UNIQUE constraints: CREATE TABLE students ( student_id INT PRIMARY KEY, email VARCHAR(100) UNIQUE, phone_number VARCHAR(15) UNIQUE, name VARCHAR(50) );
 
-[1,2].append(3)   # ok
-(1,2)[0]=9        # ERROR
+Here, email and phone_number are alternate keys. They remain unique identifiers of a student but are not the designated primary key.
 
 
-# ──────────────────────────────────────────
-# A3 Lambda that prints the sum of [5,8,10,20,50,100].
-# ──────────────────────────────────────────
+What is a view? Mention differences between Simple and Complex view.
 
-# Lambda wraps sum over the list.
+A view is a virtual table whose content is defined by a stored SQL SELECT query. It holds no actual any data. When you query a view, MySQL executes the underlying SELECT and provides the results as if they came from a real table.
 
-total = lambda lst: sum(lst)
-print(total([5,8,10,20,50,100]))  # 193
+Views simplify complex queries, restrict access to sensitive columns, and allow the same query logic to be reused without rewriting it.
 
+A Simple View is created from one source table using a basic SELECT statement. It contains no GROUP BY, no aggregate functions, no DISTINCT, no UNION, no subqueries, and typically no joins. Simple views are updatable — you can perform INSERT, UPDATE, and DELETE through a simple view and the changes are applied directly to the underlying base table.
 
-# ──────────────────────────────────────────
-# A4 What is a string and explain slicing.
-# ──────────────────────────────────────────
+Example of a simple view: CREATE VIEW employee_names AS SELECT employee_id, first_name, last_name FROM employees; You can update through this: UPDATE employee_names SET first_name = 'Ravi' WHERE employee_id = 10;
 
-# An immutable ordered sequence of characters. Slice s[start:stop:step];
-# negative indexes count from the end.
+A Complex View is created using multiple tables, or involves GROUP BY, aggregate functions, DISTINCT, UNION, or subqueries. Complex views are generally not updatable because MySQL is not always able to determine how to map the change back to the correct rows in the source tables.
 
-'Python'[1:4]   # 'yth'
-'Python'[::-1]  # reversed
+Example of a complex view: CREATE VIEW dept_headcount AS SELECT d.department_name, COUNT(e.employee_id) AS headcount FROM employees e JOIN departments d ON e.department_id = d.department_id GROUP BY d.department_name;
 
+Main differences: simple views use a single table; complex views can use many. Simple views support DML; complex views generally do not. Simple views have no aggregation; complex views can. Simple views are easy to maintain; complex views encapsulate sophisticated business logic.
 
-# ──────────────────────────────────────────
-# A5 What are *args and **kwargs?
-# ──────────────────────────────────────────
 
-# *args = tuple of extra positional args; **kwargs = dict of extra
-# keyword args.
+What is the difference between nested and correlated subqueries?
 
-def f(*a, **k): pass
+A nested subquery (non-correlated subquery) is an inner query that is completely independent of the parent query. It does not reference any column from the outer query. It can be executed automatically and produces a fixed result. The nested subquery runs once, its result is used by the outer query for all rows.
 
+Example of a nested subquery: SELECT employee_id, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees); The inner query SELECT AVG(salary) FROM employees runs once and gives back one value. The outer query uses that fixed value to filter all employees.
 
-# ──────────────────────────────────────────
-# A6 Difference between pivot table and cross table.
-# ──────────────────────────────────────────
+A correlated subquery references at least a single column from the parent query. Because it depends on the outer query's current row, it cannot run independently. It is re-executed once for each individual row processed by the outer query, each time using the current row's values.
 
-# pivot_table aggregates a value over categories with any aggfunc;
-# crosstab counts frequencies of two categoricals.
+Example of a correlated subquery: SELECT employee_id, salary, department_id FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE department_id = e.department_id); For each employee in the parent query, the inner query runs with that employee's department_id, calculating the average salary for that specific department.
 
-pd.pivot_table(df,index='A',values='V',aggfunc='mean')
+Main differences: A nested subquery runs once; a correlated subquery runs once per outer row. Nested subqueries are independent and can be tested alone; correlated subqueries depend on the parent query. Nested subqueries are generally faster; correlated subqueries can be slow on large tables because of repeated execution. Nested subqueries are simpler to read; correlated subqueries are more powerful for per-row comparisons.
 
 
-# ──────────────────────────────────────────
-# A7 How can you get a random number in Python?
-# ──────────────────────────────────────────
+Name the operator which is used in the query for pattern matching?
 
-# random.random() float; random.randint(a,b) int.
+The LIKE operator is used in SQL for pattern matching. It is placed in the WHERE clause to search for a specified pattern in a character column.
 
-import random; random.randint(1,100)
+LIKE uses two wildcard characters:
 
+The percent sign % matches any sequence of zero or more characters. Example: SELECT * FROM customers WHERE name LIKE 'A%'; returns all customers whose name starts with the letter A. Example: SELECT * FROM products WHERE code LIKE '%SQL%'; returns all products whose code contains the string SQL anywhere.
 
-# ──────────────────────────────────────────
-# A8 What are map and reduce functions?
-# ──────────────────────────────────────────
+The underscore _ matches exactly one character. Example: SELECT * FROM products WHERE code LIKE 'A_C'; matches any three-character code starting with A and ending with C, such as ABC or AXC.
 
-# map applies fn to each element; reduce folds to one value.
+NOT LIKE is the negation — it returns rows where the column does not match the pattern.
 
-list(map(str,[1,2,3]))
+The ESCAPE clause is used when you need to search for a literal percent or underscore character: SELECT * FROM products WHERE description LIKE '50\%' ESCAPE ''; finds descriptions containing the literal text 50%.
 
+For more powerful regular expression matching, MySQL also provides REGEXP (or RLIKE): SELECT * FROM employees WHERE name REGEXP '^[A-C]'; returns names starting with A, B, or C.
 
-# ──────────────────────────────────────────
-# A9 How is vstack() different from hstack()?
-# ──────────────────────────────────────────
 
-# vstack stacks arrays as rows (vertical); hstack joins them as columns
-# (horizontal).
+What are character manipulation functions? Give some examples.
 
-np.vstack([a,b]); np.hstack([a,b])
+Character manipulation functions are built-in SQL functions that operate on string (text) data. They transform, extract, search, or format character values.
 
+UPPER(string) converts all characters to uppercase. Example: SELECT UPPER('hello'); returns HELLO.
 
-# ──────────────────────────────────────────
-# A10 How can sorted() and sort() be used with a list?
-# ──────────────────────────────────────────
+LOWER(string) converts all characters to lowercase. Example: SELECT LOWER('WORLD'); returns world.
 
-# sort() in place returns None; sorted() returns a new list.
+LENGTH(string) returns the number of characters in a string. Example: SELECT LENGTH('Database'); returns 8.
 
-a.sort(); b=sorted(a)
+SUBSTRING(string, start, length) extracts a portion of a string starting at the given position for the specified number of characters. Example: SELECT SUBSTRING('Database', 1, 4); returns Data.
 
+CONCAT(str1, str2, ...) joins two or more strings into one. Example: SELECT CONCAT('Data', 'base'); returns Database.
 
-# ══  Section B — Programming  ══
+TRIM(string) removes leading and trailing spaces. Example: SELECT TRIM('  hello  '); returns hello.
 
+REPLACE(string, from_str, to_str) replaces all occurrences of a substring with another string. Example: SELECT REPLACE('Hello World', 'World', 'SQL'); returns Hello SQL.
 
-# ──────────────────────────────────────────
-# B1 Stock investing: compute purchase cost, buy commission, sale price, sale commission, profit margin.
-# ──────────────────────────────────────────
+INSTR(string, substring) returns the position of the first occurrence of a substring within a string. Example: SELECT INSTR('Database', 'base'); returns 5.
 
-# Plain arithmetic; commission = rate * transaction value; profit = net
-# sale - net cost.
+LPAD(string, length, pad) and RPAD() pad a string to a specified length by prepending or appending a pad string. Example: SELECT LPAD('5', 4, '0'); gives 0005.
 
-units, buy, sell, comm = 2000, 40, 42.75, 0.03
-cost = units*buy; buy_comm = cost*comm
-revenue = units*sell; sell_comm = revenue*comm
-profit = (revenue - sell_comm) - (cost + buy_comm)
-print(cost, buy_comm, revenue, sell_comm, profit)
 
+Explain Check Constraint in-detail with an example.
 
-# ──────────────────────────────────────────
-# B2 product_inventory dict; update_inventory(inv,shipment); apply_discount(inv,discounts).
-# ──────────────────────────────────────────
+A CHECK constraint is a rule defined on a column or table that restricts which values can be stored. Any INSERT or UPDATE that would result in a value violating the CHECK condition is rejected by the database with a constraint error.
 
-# Dict updates: .update() merges shipment quantities; discount function
-# overwrites prices.
+CHECK constraints ensure domain integrity by enforcing business rules at the database level, preventing invalid data regardless of where the data entry originates.
 
-product_inventory = {'pen':10}
-def update_inventory(inv, shipment):
-    inv.update(shipment); return inv
-def apply_discount(inv, discounts):
-    for k,price in discounts.items():
-        if k in inv: inv[k]=price
-    return inv
+Column-level CHECK (applies to a single column): CREATE TABLE employees ( employee_id INT PRIMARY KEY, age INT CHECK (age >= 18 AND age <= 65), salary DECIMAL(10,2) CHECK (salary > 0) ); The age column only accepts values between 18 and 65. The salary column only accepts positive values.
 
+Table-level CHECK (can reference multiple columns): CREATE TABLE products ( product_id INT PRIMARY KEY, price DECIMAL(10,2), discounted_price DECIMAL(10,2), CONSTRAINT chk_discount CHECK (discounted_price < price) ); This guarantees the discounted price is always lower than the original price.
 
-# ──────────────────────────────────────────
-# B3 find_special_codes(str): return alphanumeric words with no special characters.
-# ──────────────────────────────────────────
+Enum-style validation: CREATE TABLE orders ( order_id INT PRIMARY KEY, status VARCHAR(20) CHECK (status IN ('Pending', 'Shipped', 'Delivered', 'Cancelled')) ); Only the four listed values are accepted in the status column.
 
-# Split on whitespace, keep tokens that are purely alphanumeric.
+Adding a CHECK constraint to an existing table: ALTER TABLE employees ADD CONSTRAINT chk_age CHECK (age >= 18);
 
-def find_special_codes(s):
-    return [w for w in s.split() if w.isalnum()]
-print(find_special_codes('abc12 x@y 7h7 !!'))  # ['abc12','7h7']
+Important: MySQL fully enforces CHECK constraints from version 8.0.16 onwards. In earlier versions they were accepted syntactically but not actually enforced.
 
 
-# ──────────────────────────────────────────
-# B4 map()+filter(): list of squares of even numbers in 1..10.
-# ──────────────────────────────────────────
+Compare sub-query and joins.
 
-# filter evens, map to squares.
+Subqueries and JOINs are both used to work with data from multiple tables, but they operate differently and are suited to different problems.
 
-print(list(map(lambda x:x*x, filter(lambda x:x%2==0, range(1,11)))))
+A subquery is a SELECT statement embedded inside another SQL statement. It is evaluated first and its result is used by the parent query. Subqueries can appear in the WHERE clause to filter rows, in the FROM clause as a derived table, or in the SELECT list as a scalar value. They are best used when the logic is a filter based on a calculated or looked-up value, or when checking for the presence or absence of related records with EXISTS or NOT EXISTS.
 
+A JOIN combines columns from two or more tables into one result set based on a related column. JOINs return data from all joined tables in one row and are evaluated as part of the FROM clause. They are best used when you need columns from multiple tables in the output, when linking tables through foreign keys, or when aggregate operations span multiple tables.
 
-# ──────────────────────────────────────────
-# B5 Fibonacci via list comprehension, comma-separated, n from user.
-# ──────────────────────────────────────────
+Performance: JOINs are generally faster because query optimizers handle them well with indexed keys. Correlated subqueries can be slow as they re-execute for every outer row. Non-correlated subqueries execute once and are comparable to JOINs.
 
-# Comprehensions can't truly self-reference; build iteratively then
-# join. (Examiner accepts a generator/loop.)
+Readability: Subqueries can be easier to read for filtering logic like salary greater than average. JOINs are clearer when retrieving columns from multiple related tables.
 
-def fib(n):
-    a,b,out=0,1,[]
-    for _ in range(n): out.append(a); a,b=b,a+b
-    return out
-print(','.join(map(str, fib(10))))
+Result shape: A JOIN expands the row width by adding columns from the joined table. A subquery in WHERE only filters rows — it does not add columns from the inner query.
 
+Both can often produce identical results and the choice depends on readability, performance, and whether column output from the related table is needed.
 
-# ──────────────────────────────────────────
-# B6 Enter 10 numbers (1–15); replace entries >10 with 10 using map().
-# ──────────────────────────────────────────
 
-# map with a capping lambda.
+What are the advantages of using Analytical functions?
 
-nums=[3,12,7,15,9,11,2,14,5,10]
-print(list(map(lambda x: 10 if x>10 else x, nums)))
+Analytical functions (window functions) offer several important advantages over traditional aggregate functions and subquery-based approaches.
 
+Row-level detail is preserved. Unlike GROUP BY which collapses multiple rows into one summary row, analytical functions return a value for each individual row while also computing group-level statistics. You can see both individual data and summary values in the same result without a second query.
 
-# ══  Section C — Data Analysis (EDA)  ══
+Complex self-joins are eliminated. Before window functions, getting a running total or accessing a value from a previous row required joining a table to itself, which was verbose and hard to debug. Window functions achieve this in one, readable expression.
 
+Cumulative and rolling calculations become simple. Running totals, cumulative revenue, and moving averages that previously required multiple subqueries can be expressed with one OVER clause and a ROWS BETWEEN frame specification.
 
-# ──────────────────────────────────────────
-# C1 1. Merge athletes and regions.
-# ──────────────────────────────────────────
+Flexible partitioning without collapsing rows. PARTITION BY applies the function independently within each group (like GROUP BY), but every individual row still appears in the output.
 
-# pd.merge on the shared region/NOC key.
+Powerful ranking within groups. RANK(), DENSE_RANK(), and ROW_NUMBER() assign ranks within a partition without any complex self-join. Identifying the top three products per category is one query.
 
-ath=pd.read_csv('athletes.csv'); reg=pd.read_csv('regions.csv')
-df=pd.merge(ath, reg, on='NOC', how='left')
+Time-series and sequential analysis is straightforward. LAG() and LEAD() directly access the previous or next row's value, enabling month-over-month comparisons and gap detection in one query.
 
+Better performance in many cases. A single query with window functions often replaces several nested subqueries or self-joins, reducing the number of full table scans and improving execution time.
 
-# ──────────────────────────────────────────
-# C2 2. Sport with the most Gold medals (Top 5).
-# ──────────────────────────────────────────
 
-# Filter Medal=='Gold', groupby Sport, count, top 5.
+What is a view, and why use it? Can we create a view based on another view?
 
-g=df[df['Medal']=='Gold']
-print(g['Sport'].value_counts().head(5))
+A view is a virtual table defined by a stored SQL SELECT query. It holds no actual data. When you query a view, MySQL executes its underlying SELECT at that moment and provides the result as if it came from a real table.
 
+Why use views:
 
-# ──────────────────────────────────────────
-# C3 3. Total Female athletes in each Summer Olympics; plot.
-# ──────────────────────────────────────────
+Simplification: complex multi-table joins and calculations can be hidden behind a simple view name. Users query the view with a basic SELECT without needing to understand the underlying complexity.
 
-# Filter Sex=='F' & Season=='Summer', groupby Year, nunique of names;
-# bar plot.
+Security: views can expose only selected columns while keeping sensitive columns hidden. Access can be granted to a view without granting access to the source tables.
 
-f=df[(df['Sex']=='F') & (df['Season']=='Summer')]
-out=f.groupby('Year')['Name'].nunique()
-out.plot(kind='bar'); plt.title('Female athletes per Summer Games'); plt.show()
+Reusability: common query patterns are defined once and reused across many queries and applications without repeating the logic.
 
+Abstraction: if source table structures change, only the view definition needs updating, not every query that uses the view.
 
-# ──────────────────────────────────────────
-# C4 4. Male vs female participation over time (Summer & Winter); line charts.
-# ──────────────────────────────────────────
+Consistency: a view guarantees that every user querying it gets results from the same verified logic.
 
-# groupby Year+Sex (per season), count, unstack, plot lines.
+Can a view be created based on another view? Yes. A view can reference another view instead of a source table. This is called a nested view or chained view.
 
-for s in ['Summer','Winter']:
-    sub=df[df['Season']==s]
-    p=sub.groupby(['Year','Sex'])['Name'].nunique().unstack()
-    p.plot(); plt.title(s); plt.show()
+Example: CREATE VIEW high_earners AS SELECT employee_id, salary FROM employees WHERE salary > 50000;
 
+CREATE VIEW very_high_earners AS SELECT employee_id, salary FROM high_earners WHERE salary > 100000;
 
-# ──────────────────────────────────────────
-# C5 5. Year India won its first Summer Olympics Gold.
-# ──────────────────────────────────────────
+The second view references the first. When very_high_earners is queried, MySQL resolves the full chain of views back to the source table and executes the combined logic.
 
-# Filter India + Gold + Summer, take min Year.
+Nested views work but should be used carefully, as deep chains can make debugging, performance tuning, and understanding the data lineage more difficult.
 
-ind=df[(df['region']=='India') & (df['Medal']=='Gold') & (df['Season']=='Summer')]
-print(ind['Year'].min())
 
+What is normalization in SQL, and why use it?
 
-# ──────────────────────────────────────────
-# C6 6. Category column: Tall/Short & Heavy/Light (H>=1.8, W>=80).
-# ──────────────────────────────────────────
+Normalization is the systematic process of structuring a relational database schema to reduce data redundancy and ensure data integrity. It works by decomposing tables into smaller, well-focused tables and defining clear relationships among them based on dependency rules.
 
-# apply a row function combining two thresholds.
+Why use normalization:
 
-def cat(r):
-    t='Tall' if r['Height']>=1.8 else 'Short'
-    w='Heavy' if r['Weight']>=80 else 'Light'
-    return t+' and '+w
-df['Build']=df.apply(cat, axis=1)
+Eliminates data redundancy. Without normalization, the same piece of information might be stored in many rows. If a department name changes, it would need to be updated in every employee row. Normalization stores the department name once in a departments table and references it via a foreign key.
 
+Prevents update anomalies. An update anomaly occurs when changing one occurrence of duplicated data but missing others, leaving the database in an inconsistent state.
 
-# ──────────────────────────────────────────
-# C7 7. Cities hosting Winter Olympics football between 1930 and 2010.
-# ──────────────────────────────────────────
+Prevents insert anomalies. An insert anomaly occurs when you cannot add new data without also inserting unrelated or incomplete data.
 
-# Filter season/sport/year window, take unique City.
+Prevents delete anomalies. A delete anomaly occurs when removing a row accidentally destroys important related information that was stored in the same row.
 
-m=df[(df['Season']=='Winter') & (df['Sport']=='Football') &
-     (df['Year'].between(1930,2010))]
-print(m['City'].unique())
+Improves data integrity. Clear dependencies between tables and enforced foreign key relationships make sure that data remains accurate and consistent.
 
+Makes the schema easier to understand and extend. Smaller, focused tables are easier to read, modify, and scale.
 
-# ──────────────────────────────────────────
-# C8 8. Function: given a player name, return unique countries, sports, Olympics attended.
-# ──────────────────────────────────────────
+Normalization levels: 1NF — atomic values, no repeating groups, unique rows. 2NF — removes partial dependencies on composite primary keys. 3NF — removes transitive dependencies (non-key columns depending on other non-key columns). BCNF — a stricter version of 3NF, requiring every determinant to be a superkey.
 
-# Filter to the player, then .unique() on each column.
 
-def player_info(name):
-    p=df[df['Name']==name]
-    return p['region'].unique(), p['Sport'].unique(), p['Games'].unique()
+What is the difference between INNER JOIN and LEFT JOIN in SQL? Provide an example of each.
 
+An INNER JOIN returns only the rows where there is a matching record in both tables. Rows from either table that have no match in the other table are excluded entirely from the result.
 
-# ──────────────────────────────────────────
-# C9 9. Sport with most medals in Summer and Winter separately.
-# ──────────────────────────────────────────
+Example of INNER JOIN: SELECT customers.customer_id, customers.name, orders.order_id FROM customers INNER JOIN orders ON customers.customer_id = orders.customer_id; This returns only customers who have at least one order. Customers with no orders and orders with no matching customer are both excluded.
 
-# Drop NaN medals, groupby Season+Sport, count, idxmax per season.
+A LEFT JOIN (LEFT OUTER JOIN) outputs all rows from the left (first) table and the matching rows from the right table. Where no match exists in the right table, the columns from the right table appear as NULL in the result. The left table rows are never excluded.
 
-won=df.dropna(subset=['Medal'])
-for s in ['Summer','Winter']:
-    c=won[won['Season']==s]['Sport'].value_counts()
-    print(s, '->', c.idxmax())
+Example of LEFT JOIN: SELECT customers.customer_id, customers.name, orders.order_id FROM customers LEFT JOIN orders ON customers.customer_id = orders.customer_id; This returns every customer including those who have never placed an order. For customers with no orders, the order_id column shows NULL.
 
+The key practical difference: INNER JOIN keeps only matched rows from both sides. LEFT JOIN always keeps all rows from the left table and fills in NULL where the right side has no match. LEFT JOIN is especially useful for finding records in a single table that have no corresponding records in another, by filtering for WHERE right_table.id IS NULL after the join.
 
-# ╔══════════════════════════════════════════════════════════╗
-# ║  March 2024 (scanned set)  ·  100 marks · dataset: countries.csv, adult.csv║
-# ╚══════════════════════════════════════════════════════════╝
 
+Explain the concept of normalization in database design. Why is it important?
 
-# ══  Section A — Theory  ══
+Normalization is the process of organizing a relational database to minimize redundancy and ensure logical data storage. It is achieved by applying a series of rules called normal forms, each building on the previous.
 
+Why it is important:
 
-# ──────────────────────────────────────────
-# A1 Count occurrences of a particular element in a list. a_list=['a',...]
-# ──────────────────────────────────────────
+Reduces data redundancy. The same fact is stored only once. When customer information is stored in a dedicated customers table rather than repeated across every order row, one update to the customer changes the data everywhere instantly.
 
-# list.count(value) returns how many times value appears.
+Prevents data anomalies: Update anomaly: when the same data is stored in multiple places, updating one copy while missing another creates inconsistency. Insert anomaly: being unable to record one fact without also recording an unrelated fact. Delete anomaly: accidentally losing important data when an unrelated row is deleted.
 
-a_list=['a','b','a','c']; print(a_list.count('a'))  # 2
+Improves data integrity. Normalized schemas use foreign keys and clear dependencies to enforce that data is always valid and consistent.
 
+Simplifies maintenance. Smaller, single-purpose tables are easier to understand, modify, query, and extend as the application grows.
 
-# ──────────────────────────────────────────
-# A2 What is the global keyword in Python?
-# ──────────────────────────────────────────
+Supports better query design. Well-normalized schemas join cleanly along defined relationships rather than requiring complex WHERE conditions to resolve stored redundancies.
 
-# global lets a function modify a variable defined at module (global)
-# scope instead of creating a local one.
+Normal forms and what they address: First Normal Form (1NF) eliminates repeating groups and non-atomic values. Second Normal Form (2NF) removes partial dependencies from composite primary keys. Third Normal Form (3NF) removes transitive dependencies between non-key columns. Boyce-Codd Normal Form (BCNF) resolves complex dependency cases left by 3NF.
 
-x=0
-def inc():
-    global x; x+=1
 
+Define what a primary key is in a database. How does it differ from a foreign key?
 
-# ──────────────────────────────────────────
-# A3 How can you get a random number in Python?
-# ──────────────────────────────────────────
+A primary key is a column or combination of columns in a table that uniquely identifies each record. Every value in the primary key must be unique across all rows and may not be NULL. A table can have only one primary key. The primary key serves as the authoritative row identifier and is the main target for foreign key references from other tables.
 
-# random.random()/randint from the random module.
+Example: In an employees table, employee_id INT PRIMARY KEY uniquely identifies each employee.
 
-import random; random.randint(1,10)
+A foreign key is a column in a single table whose values reference the primary key of another table. It establishes a relationship between the two tables and enforces referential integrity by ensuring every foreign key value either matches an existing primary key value in the parent table or is NULL.
 
+Example: In an orders table, customer_id is a foreign key referencing customer_id in the customers table.
 
-# ──────────────────────────────────────────
-# A4 List and dictionary comprehensions with an example.
-# ──────────────────────────────────────────
+Differences:
 
-# One-line build. List: [f(x) for x in seq]; dict: {k:v for ...}.
+Purpose: the primary key identifies rows within its own table. The foreign key creates a relationship between two tables by pointing to the primary key of the parent table.
 
-[i*i for i in range(5)]
-{i:i*i for i in range(5)}
+Uniqueness: primary key values must be unique per table. Foreign key values can repeat — many rows in the dependent table can reference the same parent row (for example, many orders can belong to the same customer).
 
+null entries: the primary key never allows NULL. The foreign key can be NULL, meaning the row is not linked to any parent.
 
-# ──────────────────────────────────────────
-# A5 Explain negative indexing with example.
-# ──────────────────────────────────────────
+Count: one primary key per table. A table can have multiple foreign keys, each pointing to a different parent table.
 
-# Negative indexes count from the end: -1 is last, -2 second last.
+Location: the primary key resides in the parent table. The foreign key resides in the dependent table and points to the parent.
 
-'abc'[-1]   # 'c'
 
+What are SQL aggregate functions? List at least three aggregate functions and describe their purposes.
 
-# ──────────────────────────────────────────
-# A6 Which function removes duplicates in DataFrames?
-# ──────────────────────────────────────────
+Aggregate functions are built-in SQL functions that perform a calculation on a set of rows and return one summary value. They operate on groups of rows, ignoring null entries in most cases, and are commonly used with GROUP BY.
 
-# drop_duplicates() removes duplicate rows; subset= limits which columns
-# define a duplicate.
+COUNT() counts the number of rows or non-null entries. COUNT(*) counts all rows including those with missing entries. COUNT(column) counts only rows where the specified column is not NULL. Example: SELECT COUNT(*) FROM employees; returns the total number of employees. Example: SELECT department_id, COUNT(*) FROM employees GROUP BY department_id; counts employees per department.
 
-df.drop_duplicates()
+SUM() returns the total of all non-NULL numeric values in a column. Example: SELECT SUM(salary) FROM employees; returns the total payroll. Example: SELECT department_id, SUM(salary) FROM employees GROUP BY department_id; returns total salary per department.
 
+AVG() returns the arithmetic mean of all non-NULL numeric values in a column. Example: SELECT AVG(salary) FROM employees; returns the average salary across all employees.
 
-# ──────────────────────────────────────────
-# A7 Identify and deal with missing values in a DataFrame.
-# ──────────────────────────────────────────
+MIN() returns the smallest non-missing entry in a column. Works on numbers, text (alphabetically), and dates. Example: SELECT MIN(hire_date) FROM employees; returns the earliest hiring date.
 
-# isnull().sum() to find; dropna()/fillna() to handle.
+MAX() returns the largest non-missing entry in a column. Example: SELECT MAX(salary) FROM employees; returns the highest salary.
 
-df.isnull().sum(); df.fillna(0)
+All aggregate functions except COUNT(*) ignore null entries in their computation.
 
 
-# ──────────────────────────────────────────
-# A8 Explain different ranking methods for Series.
-# ──────────────────────────────────────────
+How does the GROUP BY clause work in SQL? In which situations would you use it?
 
-# rank(method=...): average, min, max, first, dense — differ in how ties
-# are scored.
+The GROUP BY clause organizes rows that share an the same value in at least one specified columns into groups. Once rows are grouped, aggregate functions like COUNT(), SUM(), AVG(), MIN(), MAX() are applied to each group separately, and one summary row is produced per group.
 
-s.rank(method='min')
+How it works: SQL first filters rows with WHERE, then GROUP BY collects rows sharing an the same value in the grouping columns, then aggregate functions compute results within each group, then HAVING optionally filters those groups, and finally the result is returned.
 
+Syntax: SELECT column, aggregate_function(column) FROM table WHERE condition GROUP BY column HAVING aggregate_condition;
 
-# ──────────────────────────────────────────
-# A9 What is GroupBy in pandas?
-# ──────────────────────────────────────────
+Example: Count employees per department: SELECT department_id, COUNT(*) AS employee_count FROM employees GROUP BY department_id; Each unique department_id becomes one row in the output, with a count of employees in that department.
 
-# Split-apply-combine: split rows by a key, apply an aggregate, combine
-# into a result.
+Important rule: every column in the SELECT list that is not wrapped in an aggregate function must appear in the GROUP BY clause.
 
-df.groupby('k')['v'].sum()
+Situations to use GROUP BY:
 
+When generating per-category summaries: total sales per region, average salary per department, count of orders per customer.
 
-# ──────────────────────────────────────────
-# A10 Which plot visualizes distribution of data? Which methods?
-# ──────────────────────────────────────────
+When finding groups that meet a threshold using HAVING: departments with more than 10 employees, products with total sales above 100000.
 
-# Histogram, KDE, boxplot, distplot/histplot. seaborn: histplot,
-# kdeplot, boxplot.
+When creating reports that require subtotals: monthly revenue breakdown, product-line profitability by year.
 
-sns.histplot(df['x']); sns.boxplot(x=df['x'])
+When ranking or comparing groups: which department has the highest average salary, which month had the most orders.
 
 
-# ══  Section B — Programming  ══
+Describe the purpose of the ORDER BY clause in an SQL query. How is it different when sorting in ascending versus descending order?
 
+The ORDER BY clause sorts the rows in the result set of a SELECT query by at least one specified columns. Without ORDER BY, SQL does not guarantee any particular order for the rows returned — the database can return them in any order.
 
-# ──────────────────────────────────────────
-# B1 Happy number check.
-# ──────────────────────────────────────────
+Ascending order (ASC) sorts rows from the smallest value to the largest. For numbers, this is lowest to highest. For text, this is alphabetical from A to Z. For dates, this is earliest date first. ASC is the default and requires no to be written explicitly. Example: SELECT * FROM employees ORDER BY salary; or SELECT * FROM employees ORDER BY salary ASC; — both list employees from lowest to highest salary.
 
-# Repeatedly sum squares of digits; track seen numbers; happy if it
-# reaches 1.
+Descending order (DESC) sorts rows from the largest value to the smallest. For numbers, highest to lowest. For text, reverse alphabetical Z to A. For dates, most recent date first. DESC must be written explicitly. Example: SELECT * FROM employees ORDER BY salary DESC; — lists the highest earners first.
 
-def is_happy(n):
-    seen=set()
-    while n!=1 and n not in seen:
-        seen.add(n)
-        n=sum(int(d)**2 for d in str(n))
-    return n==1
-print(is_happy(19))  # True
+You can sort by multiple columns: SELECT * FROM employees ORDER BY department_id ASC, salary DESC; This sorts first by department in alphabetical order, and within each department sorts by salary from highest to lowest.
 
+NULL handling: in MySQL, null entries are treated as lower than any non-missing entry in ascending order (they appear first) and as higher in descending order (they appear last).
 
-# ──────────────────────────────────────────
-# B2 Grade test scores: A>=90, B 80-89, C 70-79, D 60-69, F<60; print grade list.
-# ──────────────────────────────────────────
+ORDER BY is the final clause evaluated in a SELECT query — it runs after WHERE, GROUP BY, HAVING, and SELECT.
 
-# Map each score to a letter via a banding function.
 
-def grade(s):
-    return 'A' if s>=90 else 'B' if s>=80 else 'C' if s>=70 else 'D' if s>=60 else 'F'
-scores=[95,82,77,61,40]
-print([grade(s) for s in scores])
+What is a subquery in SQL? Provide an example situation where a subquery might be useful.
 
+A subquery is a SELECT statement nested inside another SQL statement, called the parent query. The subquery executes first and its result is passed to the outer query. Subqueries can appear in the WHERE clause, FROM clause, SELECT list, or HAVING clause.
 
-# ──────────────────────────────────────────
-# B3 Validate a date: full month name + day number; check the day is valid for that month.
-# ──────────────────────────────────────────
+Types of subqueries: Single-row subquery outputs one row and a single column, used with = or comparison operators. Multi-row subquery returns multiple rows, used with IN, ANY, ALL, or EXISTS. Correlated subquery references a column from the parent query and re-executes for each outer row. Scalar subquery gives back a single value and can appear in the SELECT list.
 
-# Dict month->max days; compare the entered day against it.
+Example situation 1 — Filtering based on an aggregate value: Find all employees earning more than the company average salary. SELECT employee_id, first_name, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees); The subquery computes the average once; the parent query uses it to filter employees. This cannot easily be done without a subquery.
 
-days={'January':31,'February':28,'March':31,'April':30,'May':31,'June':30,
-      'July':31,'August':31,'September':30,'October':31,'November':30,'December':31}
-def valid(month, day): return month in days and 1<=day<=days[month]
-print(valid('February',30))  # False
+Example situation 2 — Finding non-matching records: Find customers who have never placed an order. SELECT customer_id, name FROM customers WHERE customer_id NOT IN (SELECT DISTINCT customer_id FROM orders);
 
+Example situation 3 — Row-by-row comparison using a correlated subquery: Find employees who earn more than the average salary in their own department. SELECT employee_id, salary FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE department_id = e.department_id);
 
-# ──────────────────────────────────────────
-# B4 Superstore tiered pricing (Category A/B by quantity bands) + bill discounts; loop until STOP.
-# ──────────────────────────────────────────
+Each of these situations involves a value that must first be calculated from another table or from the same table before it can be used for filtering.
 
-# Lookup unit price by category and quantity band, accumulate, then
-# apply 5%/10% discount thresholds.
 
-def unit_price(cat, q):
-    if cat=='A': return 15 if q<30 else 12 if q<100 else 10
-    else:       return 30 if q<50 else 25 if q<100 else 20
-def bill(items):           # items: list of (cat, qty)
-    total=sum(unit_price(c,q)*q for c,q in items)
-    if total>1500: total*=0.90
-    elif total>1000: total*=0.95
-    return total
+Describe the role of the HAVING clause in SQL. How is it different from the WHERE clause?
 
+The HAVING clause filters groups of rows that result from a GROUP BY operation. It applies conditions to aggregated results after grouping has been performed. HAVING allows questions such as: show only departments with more than 5 employees, or show only product categories with an average price above 100.
 
-# ──────────────────────────────────────────
-# B5 UsernameValidation(str): 4-25 chars, starts with letter, only letters/digits/_, no trailing _.
-# ──────────────────────────────────────────
+Syntax: SELECT column, aggregate_function(column) FROM table GROUP BY column HAVING aggregate_condition;
 
-# Same validation pattern as other papers; return 'true'/'false'.
+Example: SELECT department_id, COUNT(*) AS emp_count FROM employees GROUP BY department_id HAVING COUNT(*) > 5; This groups employees by department, counts them per group, and returns only departments with more than 5 employees.
 
-def UsernameValidation(s):
-    ok=(4<=len(s)<=25 and s[0].isalpha()
-        and s.replace('_','').isalnum() and not s.endswith('_'))
-    return 'true' if ok else 'false'
+Difference from WHERE:
 
+WHERE filters individual rows before grouping. It is evaluated before GROUP BY. WHERE may not contain aggregate functions because aggregation has not yet happened. WHERE removes specific rows from the table before any groups are formed.
 
-# ══  Section C — Data Analysis (EDA)  ══
+HAVING filters groups after GROUP BY and after aggregate functions have been computed. HAVING can and is intended to contain aggregate functions. HAVING removes groups whose aggregate condition fails.
 
+They can work together: SELECT department_id, AVG(salary) FROM employees WHERE salary > 20000 GROUP BY department_id HAVING AVG(salary) > 50000; WHERE first removes employees earning 20000 or less, GROUP BY then groups the remaining rows by department, and HAVING then removes departments where the average of the remaining salaries is 50000 or below.
 
-# ──────────────────────────────────────────
-# C1 (countries 1) Overall life expectancy across the world.
-# ──────────────────────────────────────────
+HAVING without GROUP BY is permitted and treats the entire table as one group.
 
-# Mean of the life-expectancy column.
 
-c=pd.read_csv('countries.csv')
-print(c['life_expectancy'].mean())
+What is the purpose of the DISTINCT keyword in SQL? How does it affect the results of a query?
 
+The DISTINCT keyword eliminates duplicate rows from the result set of a SELECT query. When included, only unique combinations of the selected columns are returned — if two or more rows would produce the same values in all selected columns, only one of them appears in the output.
 
-# ──────────────────────────────────────────
-# C2 (countries 2) DataFrame of 10 countries with highest populations.
-# ──────────────────────────────────────────
+Syntax: SELECT DISTINCT column1, column2 FROM table;
 
-# Sort descending by population, head(10).
+Effect on results: Without DISTINCT: SELECT department_id FROM employees; outputs one row per employee. If 50 employees are spread across 5 departments, 50 rows are returned with many repeated department IDs. With DISTINCT: SELECT DISTINCT department_id FROM employees; returns 5 rows — one for each unique department ID.
 
-print(c.sort_values('population', ascending=False).head(10))
+When multiple columns are selected, DISTINCT applies to the combination of all selected columns together, not to each column independently. Example: SELECT DISTINCT city, country FROM customers; This returns each unique city-country pair, not just unique cities.
 
+DISTINCT with COUNT: SELECT COUNT(DISTINCT department_id) FROM employees; counts how many unique departments exist, not how many employees.
 
-# ──────────────────────────────────────────
-# C3 (countries 3) Add overall GDP column = population * per-capita GDP.
-# ──────────────────────────────────────────
+Common use cases: Listing all unique values in a column such as all distinct countries or product categories. Counting unique values with COUNT(DISTINCT column). Removing accidental or intentional duplicate rows from a result set. Displaying available options without repetition in dropdown lists or reports.
 
-# Vectorised column multiply.
+DISTINCT adds a sort or deduplication step internally, which can slow down queries on large result sets.
 
-c['gdp']=c['population']*c['gdp_per_capita']
 
+Explain the significance of ACID properties in SQL.
 
-# ──────────────────────────────────────────
-# C4 (countries 4) 10 countries with lowest GDP-per-capita among population>160 million.
-# ──────────────────────────────────────────
+ACID properties are the four fundamental guarantees that define what a reliable database transaction must provide. They ensure correctness, consistency, and fault tolerance in multi-user database systems.
 
-# Filter population, sort ascending by per-capita, head(10).
+Atomicity: A transaction is treated as one indivisible unit of work. Either every operation in the transaction is executed and committed, or none of them take effect. If a transaction fails midway, all completed operations within it are automatically rolled back. This prevents partial updates that would leave the database in a corrupted state. As an illustration, if a bank transfer debits one account but fails before crediting another, Atomicity ensures the debit is also reversed.
 
-big=c[c['population']>160_000_000]
-print(big.sort_values('gdp_per_capita').head(10))
+Consistency: A transaction always moves the database from one valid state to another valid state. Every integrity constraint, rule, trigger, and cascade must be satisfied both before and after the transaction completes. The database can never be left in a logically inconsistent or rule-violating state by any transaction.
 
+Isolation: Concurrent transactions execute as if they were running one at a time. The intermediate state of one transaction is not visible to other transactions until it is committed. This prevents problems like dirty reads (reading uncommitted changes), non-repeatable reads, and phantom reads. Isolation levels such as READ COMMITTED, REPEATABLE READ, and SERIALIZABLE control the degree of isolation applied.
 
-# ──────────────────────────────────────────
-# C5 (countries 5) Count countries per continent.
-# ──────────────────────────────────────────
+Durability: Once a transaction is committed, its changes are permanent. The data is written to persistent storage and will survive system failures, crashes, or power losses. A committed transaction may not be undone by any subsequent failure.
 
-# value_counts or groupby size.
+Together, ACID properties guarantee that the database behaves reliably and predictably even when errors occur or many transactions run at the same time.
 
-print(c['continent'].value_counts())
 
+What is a foreign key constraint, and why is it used?
 
-# ──────────────────────────────────────────
-# C6 (countries 6) How does population distribution vary across continents?
-# ──────────────────────────────────────────
+A foreign key constraint is a rule that links a column (or set of columns) in a dependent table to the primary key of a parent table. It ensures referential integrity by guaranteeing that every value in the foreign key column either matches an existing primary key value in the parent table or is NULL.
 
-# Boxplot of population by continent.
+Example: CREATE TABLE orders ( order_id INT PRIMARY KEY, customer_id INT, FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ); The customer_id column in orders is a foreign key. Every order must belong to a customer that exists in the customers table.
 
-sns.boxplot(data=c, x='continent', y='population'); plt.xticks(rotation=45); plt.show()
+Why foreign key constraints are used:
 
+Enforcing referential integrity: they prevent orphan records. You cannot insert an order with a customer_id that does not exist in the customers table, and you cannot delete a customer who still has orders (unless CASCADE is configured).
 
-# ──────────────────────────────────────────
-# C7 (countries 7) Categorize by life expectancy using apply -> new column.
-# ──────────────────────────────────────────
+Cascading operations: with ON DELETE CASCADE or ON UPDATE CASCADE, the database automatically propagates changes from the parent to child rows. Deleting a customer can automatically delete all their orders, keeping the database consistent without manual intervention.
 
-# apply a banding function.
+Documenting relationships: foreign keys make the logical relationships between tables explicit in the schema, improving clarity and making JOIN conditions obvious.
 
-def le(v): return 'Low' if v<60 else 'Medium' if v<75 else 'High'
-c['LE_Cat']=c['life_expectancy'].apply(le)
+Preventing data inconsistency: without foreign keys, application bugs could insert invalid references that corrupt the logical structure of the data without the database detecting it.
 
+Improving query reliability: foreign keys indicate exactly how tables should be joined, reducing the risk of incorrect join conditions in queries.
 
-# ──────────────────────────────────────────
-# C8 (countries 8) Average population per continent where avg life expectancy > 75.
-# ──────────────────────────────────────────
 
-# groupby continent; filter groups by mean LE; take mean population.
+Describe 1NF, 2NF, and 3NF in database normalization.
 
-g=c.groupby('continent')
-mask=g['life_expectancy'].mean()>75
-print(g['population'].mean()[mask])
+First Normal Form (1NF) requires that a table satisfies these conditions: every column holds only atomic (single, indivisible) values with no lists or sets stored in one cell. Each column contains only one value per row. Each column has a unique name. All values in a column are of the same data type. Every row is unique (there is a primary key). A table that stores multiple phone numbers in one cell such as 9876543210, 9123456789 violates 1NF because the value is not atomic. The fix is to create a separate row for each phone number or move them to a related table.
 
+Second Normal Form (2NF) requires the table to already be in 1NF and additionally every non-key column must be fully functionally dependent on the entire primary key — no partial dependencies. Partial dependency means a non-key column depends on only part of a composite (multi-column) primary key rather than on the whole key. This is relevant only when the primary key consists of two or more columns. Example: if a table has a composite primary key of (student_id, course_id) and a column student_name, student_name depends only on student_id not on the full key. This partial dependency must be resolved by moving student_name to a separate students table.
 
-# ──────────────────────────────────────────
-# C9 (adult 1) Proportion of German citizens (native-country).
-# ──────────────────────────────────────────
+Third Normal Form (3NF) requires the table to already be in 2NF and additionally there must be no transitive dependencies. A transitive dependency exists when a non-key column A depends on another non-key column B, which itself depends on the primary key. Example: in a table with columns employee_id (primary key), department_id, and department_name, department_name depends on department_id and department_id depends on employee_id. Department_name is transitively dependent on the primary key through department_id. The fix is to move department_id and department_name to a separate departments table and reference it via a foreign key.
 
-# Value count of Germany / total.
 
-a=pd.read_csv('adult.csv')
-print((a['native-country']=='Germany').mean())
+What is a correlated subquery?
 
+A correlated subquery is a subquery that references at least a single columns from the outer (enclosing) query. Because it uses a value from the parent query's current row, the inner query may not be executed independently independently — it must be re-evaluated once for each individual row the outer query processes.
 
-# ──────────────────────────────────────────
-# C10 (adult 2) Most common occupation.
-# ──────────────────────────────────────────
+However, a regular (non-correlated) subquery is fully independent of the parent query and runs only once.
 
-# mode / value_counts top.
+Example: SELECT employee_id, first_name, salary FROM employees e_outer WHERE salary > ( SELECT AVG(salary) FROM employees WHERE department_id = e_outer.department_id );
 
-print(a['occupation'].mode()[0])
+In this query, the inner subquery references e_outer.department_id from the parent query. For each employee row processed by the outer query, the inner query runs with that employee's department_id and calculates the average salary for that specific department. The outer query then checks whether the current employee's salary exceeds their department's average.
 
+Correlated subqueries are used with EXISTS and NOT EXISTS to check whether related records exist, with comparison operators for per-row calculations, and inside HAVING for group-level correlated filtering.
 
-# ──────────────────────────────────────────
-# C11 (adult 3) Mean & std of age for >50K vs <=50K earners.
-# ──────────────────────────────────────────
+The main trade-off is performance: because the inner query runs once per outer row, correlated subqueries can be slow on large tables. They can often be rewritten as JOINs with GROUP BY for better performance, but correlated subqueries are sometimes clearer to read and write.
 
-# groupby salary, agg mean+std of age.
 
-print(a.groupby('salary')['age'].agg(['mean','std']))
+Explain the WITH clause and provide an example.
 
+The WITH clause defines a Common Table Expression (CTE), which is a temporary named result set that exists only for the duration of the query. The CTE is defined at the beginning of the query and can be referenced at least one times within the main SELECT, UPDATE, INSERT, or DELETE that follows.
 
-# ──────────────────────────────────────────
-# C12 (adult 4) Do >50K earners always have at least high-school education?
-# ──────────────────────────────────────────
+Syntax: WITH cte_name AS ( SELECT columns FROM table WHERE condition ) SELECT * FROM cte_name WHERE further_condition;
 
-# Check which education levels appear among >50K earners.
+Benefits of the WITH clause: Improves readability by breaking a complex query into named, understandable steps. Avoids repeating the same subquery multiple times in one statement. Allows multiple CTEs to be chained, with each CTE able to reference previously defined CTEs. Supports recursive queries for hierarchical data (WITH RECURSIVE).
 
-hi=a[a['salary']=='>50K']
-print(hi['education'].unique())
+Example 1 — Finding employees with above-average salary: WITH company_avg AS ( SELECT AVG(salary) AS avg_sal FROM employees ) SELECT employee_id, first_name, salary FROM employees CROSS JOIN company_avg WHERE salary > avg_sal;
 
+The CTE company_avg computes the average salary once and gives it a name that can be used cleanly in the WHERE clause.
 
-# ──────────────────────────────────────────
-# C13 (adult 5) Among married vs single men, who has higher proportion of >50K?
-# ──────────────────────────────────────────
+Example 2 — Chaining two CTEs: WITH dept_totals AS ( SELECT department_id, SUM(salary) AS total_salary FROM employees GROUP BY department_id ), top_departments AS ( SELECT department_id FROM dept_totals WHERE total_salary > 500000 ) SELECT * FROM employees WHERE department_id IN (SELECT department_id FROM top_departments);
 
-# Filter Male; group by marital status family; compare >50K share.
+The first CTE computes department salary totals. The second CTE filters to high-spending departments. The main query retrieves employees from those departments.
 
-men=a[a['sex']=='Male']
-men=men.assign(married=men['marital-status'].str.startswith('Married'))
-print(men.groupby('married').apply(lambda g:(g['salary']=='>50K').mean()))
 
+What are views in MySQL and why are they used?
 
-# ──────────────────────────────────────────
-# C14 (adult 6) Max hours-per-week; how many work that; % earning >50K among them.
-# ──────────────────────────────────────────
+A view in MySQL is a virtual table defined by a stored SQL SELECT query. It holds no actual any data. When you query a view, MySQL executes the underlying SELECT statement at that moment and provides the results as if they came from a regular table.
 
-# max, count of max, share of >50K within them.
+Why views are used:
 
-mx=a['hours-per-week'].max()
-sub=a[a['hours-per-week']==mx]
-print(mx, len(sub), (sub['salary']=='>50K').mean())
+Simplification: complex multi-table joins, subqueries, and business logic can be encapsulated in a view. Users can query the view with a simple SELECT * without needing to know the underlying complexity.
 
+Security and access control: a view can expose only selected columns of a table, hiding sensitive data like passwords, salaries, or personal identifiers. Database administrators can grant users access to the view without granting access to the source tables.
 
-# ──────────────────────────────────────────
-# C15 (adult 7) Average work hours for low vs high earners per country.
-# ──────────────────────────────────────────
+Reusability: frequently used queries are written once as a view and referenced in multiple places, avoiding code duplication and ensuring consistent logic across applications.
 
-# groupby country+salary, mean of hours.
+Data abstraction: if the source table structure changes — columns renamed, tables split — only the view definition needs updating. Applications using the view continue to work without modification.
 
-print(a.groupby(['native-country','salary'])['hours-per-week'].mean())
+Consistency: every user who queries the same view gets results produced by the same verified query logic.
 
+Creating a view: CREATE VIEW active_employees AS SELECT employee_id, first_name, department_id FROM employees WHERE status = 'Active';
 
-# ╔══════════════════════════════════════════════════════════╗
-# ║  August 2021  ·  80 marks · dataset: covid.csv           ║
-# ╚══════════════════════════════════════════════════════════╝
+Querying the view: SELECT * FROM active_employees;
 
+Dropping a view: DROP VIEW active_employees; This removes only the view definition. The underlying employees table is unaffected.
 
-# ══  Section A — Theory  ══
 
+State the difference between Primary key and candidate key.
 
-# ──────────────────────────────────────────
-# A1 Immutable built-in datatypes; demonstrate immutability with code.
-# ──────────────────────────────────────────
+A Candidate Key is any column or combination of columns that can uniquely identify each record within the table. A table can have multiple candidate keys. Each one qualifies to become the primary key.
 
-# Immutable: int, float, bool, str, tuple, frozenset, bytes. Reassigning
-# makes a new object.
+A Primary Key is the candidate key officially chosen as the main row identifier. A table can have only one primary key. The primary key column prohibits null entries and does not allow duplicate values.
 
-t=(1,2)
-# t[0]=9  -> TypeError
-print(id(t)); t=t+(3,); print(id(t))  # new id
+A table can have only one primary key but multiple candidate keys. The primary key may not hold NULL whereas a candidate key not chosen as primary may allow NULLs. All primary keys are candidate keys but not all candidate keys are primary keys. The primary key is automatically enforced by the RDBMS through a unique index and is used as the target for foreign key references from other tables.
 
 
-# ──────────────────────────────────────────
-# A2 Explain negative indexing.
-# ──────────────────────────────────────────
+What is a cross join?
 
-# Index from the end: -1 last element, -2 second last.
+A cross join produces the Cartesian product of two tables. It combines each individual row from the first table with every row from the second table. If the first table has M rows and the second has N rows, the result contains M multiplied by N rows.
 
-[10,20,30][-1]   # 30
+A cross join requires no any join condition — there is no ON clause. Every possible combination of rows from both tables is returned.
 
+Syntax: SELECT * FROM table1 CROSS JOIN table2;
 
-# ──────────────────────────────────────────
-# A3 What is a string; explain slicing.
-# ──────────────────────────────────────────
+Example: If an employees table has 10 rows and a departments table has 5 rows, the cross join produces 50 rows.
 
-# Immutable character sequence. Slice s[start:stop:step].
+Cross joins are rarely used in production because they generate very large result sets. They are mainly used for generating all possible combinations, building test data, or constructing calendar or matrix structures.
 
-'hello'[1:4]   # 'ell'
 
+What are LEAD and LAG functions? Explain.
 
-# ──────────────────────────────────────────
-# A4 What are map and reduce functions?
-# ──────────────────────────────────────────
+LAG() and LEAD() are window functions that let you access values from other rows relative to the current row without needing a self-join.
 
-# map transforms each element; reduce folds to one value.
+LAG(column, offset, default) returns the value from a row that is a given number of positions before the current row in the ordered partition. The default offset is 1. If no prior row exists at that offset the default value is returned instead.
 
-from functools import reduce; reduce(lambda a,b:a*b,[1,2,3,4])  # 24
+Example: SELECT employee_id, hire_date, LAG(hire_date, 1) OVER (ORDER BY hire_date) AS prev_hire_date FROM employees; — shows each employee's hire date alongside the hire date of the employee hired just before them.
 
+LEAD(column, offset, default) is the opposite — it returns the value from a row that is a given number of positions after the current row.
 
-# ──────────────────────────────────────────
-# A5 Is Python statically or dynamically typed? Explain.
-# ──────────────────────────────────────────
+Example: SELECT invoice_id, invoice_date, LEAD(invoice_date, 1) OVER (PARTITION BY customer_id ORDER BY invoice_date) AS next_invoice_date FROM invoices; — shows each invoice date alongside that customer's next invoice date.
 
-# Dynamically typed: types are bound at runtime, no declarations; a name
-# can be rebound to another type.
+Both functions are used with OVER() and ORDER BY. PARTITION BY can be added to reset the window per group. Common uses include month-over-month comparisons, calculating time gaps between consecutive events, and detecting changes from one row to the next.
 
-x=5; x='now a string'   # legal
 
+Explain EXISTS operator with an example.
 
-# ──────────────────────────────────────────
-# A6 Significant features of pandas.
-# ──────────────────────────────────────────
+The EXISTS operator tests whether a subquery returns at least one row. It evaluates to TRUE if the inner query produces one or more rows and FALSE if the inner query gives back no rows. EXISTS is purely a membership check — it does not return values from the subquery.
 
-# DataFrame/Series structures, label-based indexing, easy I/O
-# (CSV/Excel/SQL), groupby, missing-data handling, time series,
-# merging/joining.
+Syntax: SELECT columns FROM table WHERE EXISTS (subquery);
 
+Example: Find all customers who have placed at least one order. SELECT customer_id, customer_name FROM customers WHERE EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id);
 
-# ──────────────────────────────────────────
-# A7 Explain categorical data in pandas.
-# ──────────────────────────────────────────
+The convention SELECT 1 inside EXISTS is used because EXISTS only cares whether any row is returned, not what value is returned. You could write SELECT *, SELECT id, or SELECT 1 and the result is identical.
 
-# The category dtype stores repeated text labels efficiently and
-# supports ordering; saves memory and speeds groupby.
+NOT EXISTS is the negation — it evaluates to TRUE when the inner query gives back no rows. This serves to find records that have no match in another table. Example: SELECT customer_id FROM customers WHERE NOT EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id); — returns customers who have never placed an order.
 
-df['c']=df['c'].astype('category')
+EXISTS is typically faster than IN for large datasets because it short-circuits: it stops the moment the first matching row is found rather than evaluating the entire subquery result set.
 
 
-# ──────────────────────────────────────────
-# A8 Difference between matrices and arrays.
-# ──────────────────────────────────────────
+What is the difference between isnull operator() and ifnull() function?
 
-# np.array is N-dimensional and the general workhorse; np.matrix is
-# strictly 2-D with * meaning matrix multiply. Arrays are preferred.
+ISNULL(expression) takes exactly one argument and checks whether that expression is NULL. It gives 1 if the value is NULL or 0 if it is not NULL. ISNULL is a test — it does not replace the NULL with anything, it simply tells you whether the value is NULL.
 
-np.array([[1,2],[3,4]])
+Example: SELECT ISNULL(NULL); gives 1. SELECT ISNULL(5); gives 0.
 
+IFNULL(expression, replacement) takes two arguments. If the first argument is not NULL it returns the first argument unchanged. If the first argument is NULL it returns the second argument as a substitute value.
 
-# ──────────────────────────────────────────
-# A9 Create a multi-dimensional array from a 1-D array.
-# ──────────────────────────────────────────
+Example: SELECT IFNULL(NULL, 'Not Available'); returns Not Available. SELECT IFNULL(salary, 0) FROM employees; replaces any NULL salary with 0 in the result.
 
-# Use reshape to change the shape without changing data.
+The fundamental distinction is purpose and behaviour. ISNULL answers the question of whether a value is NULL by returning 0 or 1. IFNULL answers the question of what to display when a value is NULL by returning a fallback. ISNULL is used in conditional logic; IFNULL serves to substitute meaningful defaults for null entries in output.
 
-np.arange(6).reshape(2,3)
 
+What is the ACID property in a database?
 
-# ──────────────────────────────────────────
-# A10 Difference between sort_values() and sort_index() for a Series.
-# ──────────────────────────────────────────
+ACID stands for Atomicity, Consistency, Isolation, and Durability. These four properties define the guarantees that every reliable database transaction must provide.
 
-# sort_values orders by the values; sort_index orders by the index
-# labels.
+Atomicity means a transaction is all or nothing. Either every operation in the transaction executes and is committed successfully, or none of the operations are applied. If any step fails the entire transaction is automatically rolled back to the state before it began.
 
-s.sort_values(); s.sort_index()
+Consistency means a transaction always moves the database from one valid state to another valid state. All integrity constraints, rules, and cascades must be satisfied after the transaction completes. The database can never be left in a logically invalid or corrupted state.
 
+Isolation means concurrent transactions execute independently of each other. The intermediate state of one transaction is not visible to other transactions. Each transaction behaves as though it is the only transaction running, even when hundreds of transactions execute at the same time.
 
-# ══  Section B — Programming  ══
+Durability means that the same time a transaction is committed, its changes are permanent. The committed data is written to persistent storage and will survive system failures including crashes, power outages, and server restarts.
 
 
-# ──────────────────────────────────────────
-# B1 Nested list: find minimum element and average of all elements. list1=[[20,25,30],24,...]
-# ──────────────────────────────────────────
+What is the difference between the RANK() and DENSE_RANK() functions?
 
-# Flatten (handle ints and sublists), then min() and mean.
+Both RANK() and DENSE_RANK() are window functions that assign a numerical rank to rows based on a specified ordering. They differ only in how they handle tied values.
 
-list1=[[20,25,30],24,56,[10,15,18],[12,45,20],35,20,23,28]
-flat=[]
-for x in list1:
-    flat += x if isinstance(x,list) else [x]
-print('min:', min(flat))
-print('avg:', sum(flat)/len(flat))
+RANK() gives tied rows the same rank and then skips the subsequent rank numbers equal to the count of tied rows, creating gaps in the sequence. If two rows tie for rank 1, the next row receives rank 3 and rank 2 is skipped entirely.
 
+DENSE_RANK() also gives tied rows the same rank but never skips any rank numbers. The next distinct value always receives the immediately following integer. If two rows tie for rank 1, the next distinct value receives rank 2 with no gap.
 
-# ──────────────────────────────────────────
-# B2 Job-fair scheduling: pick max non-overlapping company slots (greedy by end time).
-# ──────────────────────────────────────────
+Example with salaries 60000, 60000, 50000, 40000: RANK():       60000 → 1, 60000 → 1, 50000 → 3, 40000 → 4 DENSE_RANK(): 60000 → 1, 60000 → 1, 50000 → 2, 40000 → 3
 
-# Classic activity-selection: sort by end time, greedily pick each slot
-# that starts after the last chosen end.
+Sample SQL: SELECT employee_id, salary, RANK() OVER (ORDER BY salary DESC) AS rnk, DENSE_RANK() OVER (ORDER BY salary DESC) AS dense_rnk FROM employees;
 
-companies=[('DataVision',8.0,9.0),('InfoWorld',8.0,9.5),('SkyView',11.0,11.5)]
-companies.sort(key=lambda c:c[2])     # sort by end time
-chosen=[]; last_end=0
-for name,s,e in companies:
-    if s>=last_end:
-        chosen.append(name); last_end=e
-print(chosen)
-
-
-# ──────────────────────────────────────────
-# B3 Verify every number in a list is even, using user-defined functions and map-reduce.
-# ──────────────────────────────────────────
-
-# map each to a boolean, reduce with AND.
-
-from functools import reduce
-def is_even(x): return x%2==0
-def all_even(nums): return reduce(lambda a,b:a and b, map(is_even,nums), True)
-print(all_even([2,4,6]))   # True
-
-
-# ══  Section C — Data Analysis (EDA)  ══
-
-
-# ──────────────────────────────────────────
-# C1 (a1) Convert columns ['cp','fbs','restecg','keratin_type','Immunity'] to categorical.
-# ──────────────────────────────────────────
-
-# astype('category') on the listed columns.
-
-df=pd.read_csv('covid.csv')
-for col in ['cp','fbs','restecg','keratin_type','Immunity']:
-    df[col]=df[col].astype('category')
-
-
-# ──────────────────────────────────────────
-# C2 (a2) Drop the patient id column.
-# ──────────────────────────────────────────
-
-# drop with axis=1.
-
-df=df.drop(columns=['pid'])
-
-
-# ──────────────────────────────────────────
-# C3 (a3) Visualize Age distribution over blood_group; comment.
-# ──────────────────────────────────────────
-
-# Boxplot Age by blood group.
-
-sns.boxplot(data=df,x='blood_grp',y='Age'); plt.show()
-
-
-# ──────────────────────────────────────────
-# C4 (a4) Visualize relationship between Age and thalachh; comment.
-# ──────────────────────────────────────────
-
-# Scatter plot.
-
-sns.scatterplot(data=df,x='Age',y='thalachh'); plt.show()
-# Comment: max heart rate tends to fall with age.
-
-
-# ──────────────────────────────────────────
-# C5 (a5) Unique values in Addiction; how many different types.
-# ──────────────────────────────────────────
-
-# unique() and nunique().
-
-print(df['Addiction'].unique(), df['Addiction'].nunique())
-
-
-# ──────────────────────────────────────────
-# C6 (b1) Cross table Diabetes type vs survived; survival % per diabetes type; inference.
-# ──────────────────────────────────────────
-
-# crosstab then row-normalize to percentages.
-
-ct=pd.crosstab(df['Diabetestype'], df['Survive_status'])
-pct=ct.div(ct.sum(axis=1), axis=0)*100
-print(pct)
-
-
-# ──────────────────────────────────────────
-# C7 (b2) Average hemoglobin for male/female; count of each sex with hemoglobin<10.
-# ──────────────────────────────────────────
-
-# groupby Sex mean; filter then count by sex.
-
-print(df.groupby('Sex')['Hemoglobin'].mean())
-print(df[df['Hemoglobin']<10].groupby('Sex').size())
-
-
-# ──────────────────────────────────────────
-# C8 (b3) Distribution of trtbps, 20 bins.
-# ──────────────────────────────────────────
-
-# histplot with bins=20.
-
-sns.histplot(df['trtbps'], bins=20); plt.show()
-
-
-# ──────────────────────────────────────────
-# C9 (b4) Distribution of chol, 20 bins; comment.
-# ──────────────────────────────────────────
-
-# histplot bins=20; comment on skew.
-
-sns.histplot(df['chol'], bins=20); plt.show()
-
-
-# ╔══════════════════════════════════════════════════════════╗
-# ║  July 2021  ·  80 marks · dataset: website ratings dataset║
-# ╚══════════════════════════════════════════════════════════╝
-
-
-# ══  Section A — Theory  ══
-
-
-# ──────────────────────────────────────────
-# A1 Difference between List and Tuple.
-# ──────────────────────────────────────────
-
-# List mutable [], tuple immutable (); tuple hashable and slightly
-# faster.
-
-[1,2].append(3); # (1,2) cannot change
-
-
-# ──────────────────────────────────────────
-# A2 Difference between index() and find() for strings.
-# ──────────────────────────────────────────
-
-# Both locate a substring; find() returns -1 if absent, index() raises
-# ValueError.
-
-'abc'.find('z')   # -1
-# 'abc'.index('z') # error
-
-
-# ──────────────────────────────────────────
-# A3 What is type casting in Python?
-# ──────────────────────────────────────────
-
-# Explicit conversion of type with int(), float(), str(), etc.
-
-int('5')+2   # 7
-
-
-# ──────────────────────────────────────────
-# A4 How to change the value of a key in a dictionary?
-# ──────────────────────────────────────────
-
-# Assign to the key directly.
-
-d={'a':1}; d['a']=99
-
-
-# ──────────────────────────────────────────
-# A5 What are anonymous functions?
-# ──────────────────────────────────────────
-
-# Lambdas: nameless one-expression functions.
-
-(lambda x:x+1)(4)   # 5
-
-
-# ──────────────────────────────────────────
-# A6 What is an identity matrix; create it with numpy.
-# ──────────────────────────────────────────
-
-# Square matrix with 1s on the diagonal, 0 elsewhere.
-
-np.eye(3)
-
-
-# ──────────────────────────────────────────
-# A7 Explain split() for arrays.
-# ──────────────────────────────────────────
-
-# np.split divides an array into multiple sub-arrays along an axis.
-
-np.split(np.arange(6), 3)   # 3 arrays
-
-
-# ──────────────────────────────────────────
-# A8 Explain reshape().
-# ──────────────────────────────────────────
-
-# Returns a new view with a different shape; total elements must match.
-
-np.arange(6).reshape(2,3)
-
-
-# ──────────────────────────────────────────
-# A9 Difference between sort_values() and sort_index().
-# ──────────────────────────────────────────
-
-# By data vs by index labels.
-
-s.sort_values(); s.sort_index()
-
-
-# ──────────────────────────────────────────
-# A10 Which plot visualizes distribution? Which methods?
-# ──────────────────────────────────────────
-
-# Histogram / KDE / boxplot; seaborn histplot, kdeplot, boxplot.
-
-sns.histplot(df['x'])
-
-
-# ══  Section B — Programming  ══
-
-
-# ──────────────────────────────────────────
-# B1 Computer assembly bill: price list of parts, take user choices, add 12% GST.
-# ──────────────────────────────────────────
-
-# Nested dict of part->type->price; look up choices; total then GST =
-# total*0.12.
-
-prices={'HDD':{'1TB':5000,'2TB':7500,'4TB':10000},
-        'RAM':{'8GB':4000,'16GB':6000},
-        'Processor':{'I5':15000,'I7':18000}}
-chosen={'HDD':'1TB','RAM':'16GB','Processor':'I5'}
-total=sum(prices[item][typ] for item,typ in chosen.items()) + 4000
-gst=total*0.12
-print('Total with GST:', total+gst)
-
-
-# ──────────────────────────────────────────
-# B2 Fractional knapsack: maximize profit within weight limit.
-# ──────────────────────────────────────────
-
-# Greedy by profit/weight ratio; take whole items then a fraction of the
-# next.
-
-def knapsack(profit, weight, cap):
-    items=sorted(zip(profit,weight), key=lambda x:x[0]/x[1], reverse=True)
-    taken=[0]*len(items); earned=0
-    for i,(p,w) in enumerate(items):
-        if cap>=w: taken[i]=1; cap-=w; earned+=p
-        elif cap>0: taken[i]=cap/w; earned+=p*(cap/w); cap=0
-    return taken, earned
-print(knapsack([1,2,3,4],[6,3,8,10],10))
-
-
-# ──────────────────────────────────────────
-# B3 Series 0,1,3,6,10,15,...; sum of terms from k to l; accept n,k,l.
-# ──────────────────────────────────────────
-
-# Triangular numbers: term i = i*(i+1)//2. Build, then slice-sum.
-
-def series(n): return [i*(i+1)//2 for i in range(n)]
-def sum_range(n,k,l):
-    s=series(n); return sum(s[k:l+1])
-print(series(11)); print(sum_range(11,2,5))
-
-
-# ══  Section C — Data Analysis (EDA)  ══
-
-
-# ──────────────────────────────────────────
-# C1 (a1) Read meta-data: head(10), dtypes, count numeric vs non-numeric, statistical summary.
-# ──────────────────────────────────────────
-
-# The standard inspection quartet.
-
-df=pd.read_csv('ratings.csv')
-print(df.head(10)); print(df.dtypes)
-num=df.select_dtypes('number').shape[1]
-print('numeric:', num, 'non-numeric:', df.shape[1]-num)
-print(df.describe())
-
-
-# ──────────────────────────────────────────
-# C2 (a2) avg_rating column = mean of Ucredit,Ureview,Web_review, rounded to 1 dp.
-# ──────────────────────────────────────────
-
-# Row mean of three columns, round, assign.
-
-df['avg_rating']=df[['Ucredit','Ureview','Web_review']].mean(axis=1).round(1)
-
-
-# ──────────────────────────────────────────
-# C3 (a3) Count distinct products purchased/rated across product_1/2/3.
-# ──────────────────────────────────────────
-
-# Stack the three product columns, take nunique.
-
-prods=pd.concat([df['Product_1'],df['product_2'],df['product_3']])
-print(prods.nunique())
-
-
-# ──────────────────────────────────────────
-# C4 (a4) Boxplot for Web_review and Exp_review.
-# ──────────────────────────────────────────
-
-# Boxplot of the two columns.
-
-sns.boxplot(data=df[['Web_review','Exp_review']]); plt.show()
-
-
-# ──────────────────────────────────────────
-# C5 (b1) Which metric is used for most ratings?
-# ──────────────────────────────────────────
-
-# mode / value_counts top of assigned_metric.
-
-print(df['assigned_metric'].value_counts().idxmax())
-
-
-# ──────────────────────────────────────────
-# C6 (b2) Users with consecutive_usage > 4; average user review of that group.
-# ──────────────────────────────────────────
-
-# Filter then mean.
-
-grp=df[df['consecutive_usage']>4]
-print(grp['Ureview'].mean())
-
-
-# ──────────────────────────────────────────
-# C7 (b3) Heatmap of correlation among 5 numeric columns.
-# ──────────────────────────────────────────
-
-# corr() on the subset, heatmap with annot.
-
-cols=['Ucredit','Ureview','Web_review','consecutive_usage','Exp_review']
-sns.heatmap(df[cols].corr(), annot=True, cmap='coolwarm'); plt.show()
-
-
-# ──────────────────────────────────────────
-# C8 (b4) Count-plot for assigned ratings.
-# ──────────────────────────────────────────
-
-# countplot of assigned_rating.
-
-sns.countplot(data=df, x='assigned_rating'); plt.show()
-
-
-# ──────────────────────────────────────────
-# C9 (b5) Distribution of avg_rating, 30 bins.
-# ──────────────────────────────────────────
-
-# histplot bins=30.
-
-sns.histplot(df['avg_rating'], bins=30); plt.show()
-
-
-# ╔══════════════════════════════════════════════════════════╗
-# ║  Model Set  ·  100 marks · dataset: student stress dataset║
-# ╚══════════════════════════════════════════════════════════╝
-
-
-# ══  Section A — Theory  ══
-
-
-# ──────────────────────────────────────────
-# A1 Demonstrate 'Python is case sensitive'.
-# ──────────────────────────────────────────
-
-# Identifiers differing only by case are different names.
-
-Var=1; var=2; print(Var, var)   # 1 2
-
-
-# ──────────────────────────────────────────
-# A2 Two examples of implicit type casting.
-# ──────────────────────────────────────────
-
-# Python auto-widens types in mixed operations.
-
-print(2 + 3.0)     # int->float = 5.0
-print(True + 1)    # bool->int = 2
-
-
-# ──────────────────────────────────────────
-# A3 What is a complex data type in Python?
-# ──────────────────────────────────────────
-
-# complex holds real+imaginary parts, written a+bj.
-
-z=2+3j; print(z.real, z.imag)
-
-
-# ──────────────────────────────────────────
-# A4 What is a default parameter in a function?
-# ──────────────────────────────────────────
-
-# A parameter with a fallback value used when no argument is passed.
-
-def greet(name='Guest'): print('Hi', name)
-greet()
-
-
-# ──────────────────────────────────────────
-# A5 Arithmetic operators usable with strings.
-# ──────────────────────────────────────────
-
-# + concatenates, * repeats.
-
-'ab'+'cd'   # 'abcd'
-'ab'*3       # 'ababab'
-
-
-# ──────────────────────────────────────────
-# A6 Significant features of NumPy.
-# ──────────────────────────────────────────
-
-# ndarray, vectorized math, broadcasting, linear algebra, random module,
-# fast C-backed operations.
-
-
-# ──────────────────────────────────────────
-# A7 Difference between pivot table and cross table.
-# ──────────────────────────────────────────
-
-# pivot_table aggregates a value with any function; crosstab counts
-# frequencies.
-
-pd.crosstab(df.a, df.b)
-
-
-# ──────────────────────────────────────────
-# A8 Explain the random package of NumPy.
-# ──────────────────────────────────────────
-
-# np.random provides rand, randint, randn, choice, shuffle, seed for
-# reproducibility.
-
-np.random.seed(0); np.random.rand(3)
-
-
-# ──────────────────────────────────────────
-# A9 How to delete rows and columns from a DataFrame?
-# ──────────────────────────────────────────
-
-# drop with axis=0 for rows (by index) and axis=1 for columns (by name).
-
-df.drop(index=0); df.drop(columns=['c'])
-
-
-# ──────────────────────────────────────────
-# A10 How to rank rows of a DataFrame?
-# ──────────────────────────────────────────
-
-# rank() on a column, choosing a tie method.
-
-df['r']=df['score'].rank(ascending=False)
-
-
-# ══  Section B — Programming  ══
-
-
-# ──────────────────────────────────────────
-# B1 List ops on ['Ann','Pat','David','Tisha','Sumantha']: lengths; names<5; dict name->len; sort by length desc; most frequent char.
-# ──────────────────────────────────────────
-
-# Comprehensions for the first three; sorted(key=len, reverse) for
-# fourth; Counter for the fifth.
-
-names=['Ann','Pat','David','Tisha','Sumantha']
-lengths=[len(n) for n in names]
-short=[n for n in names if len(n)<5]
-d={n:len(n) for n in names}
-sorted_desc=sorted(names, key=len, reverse=True)
-from collections import Counter
-freq=Counter(''.join(names)).most_common(1)[0][0]
-print(lengths, short, d, sorted_desc, freq)
-
-
-# ──────────────────────────────────────────
-# B2 Farmer truck (knapsack-style): max revenue within 500kg, honoring must-sell minimums.
-# ──────────────────────────────────────────
-
-# Reserve must-sell quantities first, then fill remaining capacity
-# greedily by price-per-kg.
-
-veg={'Tomato':(150,500,50),'Potato':(200,420,70),'Garlic':(250,700,70),'Brinjal':(100,600,40)}
-# (yield_kg, price_per_10kg, must_sell_kg)
-cap=500; load={}
-for v,(_,_,must) in veg.items(): load[v]=must; cap-=must
-order=sorted(veg, key=lambda v: veg[v][1]/10, reverse=True)  # price per kg
-for v in order:
-    avail=veg[v][0]-load[v]
-    take=min(avail, cap); load[v]+=take; cap-=take
-print(load)
-
-
-# ──────────────────────────────────────────
-# B3 From vehicle plates, output dict number->even/odd.
-# ──────────────────────────────────────────
-
-# Extract the trailing digits, test parity.
-
-import re
-plates=['MH 12 XJ-2234','UP04LG -2455','GJ34RV- 2442','KL 07AP-2433']
-out={}
-for p in plates:
-    num=int(re.findall(r'(\d+)$', p.replace(' ',''))[0])
-    out[num]='even' if num%2==0 else 'odd'
-print(out)
-
-
-# ══  Section C — Data Analysis (EDA)  ══
-
-
-# ──────────────────────────────────────────
-# C1 (a1) % of stressed students.
-# ──────────────────────────────────────────
-
-# Mean of the binary Stress column * 100.
-
-df=pd.read_csv('stress.csv')
-print(df['Stress'].mean()*100)
-
-
-# ──────────────────────────────────────────
-# C2 (a2) Average age of female students.
-# ──────────────────────────────────────────
-
-# Filter sex=='F', mean of age.
-
-print(df[df['sex']=='F']['age'].mean())
-
-
-# ──────────────────────────────────────────
-# C3 (a3) avg_grade column = mean of G1,G2,G3.
-# ──────────────────────────────────────────
-
-# Row mean of the three grades.
-
-df['avg_grade']=df[['G1','G2','G3']].mean(axis=1)
-
-
-# ──────────────────────────────────────────
-# C4 (a4) Correlation between studytime and avg_grade.
-# ──────────────────────────────────────────
-
-# corr between the two columns.
-
-print(df['studytime'].corr(df['avg_grade']))
-
-
-# ──────────────────────────────────────────
-# C5 (a5) Distribution of avg_grade.
-# ──────────────────────────────────────────
-
-# histplot.
-
-sns.histplot(df['avg_grade'], bins=20); plt.show()
-
-
-# ──────────────────────────────────────────
-# C6 (b1) Crosstab famrel vs Stress.
-# ──────────────────────────────────────────
-
-# crosstab of the two.
-
-print(pd.crosstab(df['famrel'], df['Stress']))
-
-
-# ──────────────────────────────────────────
-# C7 (b2) Pivot table: stressed-student count by famsize and famsup.
-# ──────────────────────────────────────────
-
-# pivot_table with sum of Stress.
-
-print(pd.pivot_table(df,index='famsize',columns='famsup',values='Stress',aggfunc='sum'))
-
-
-# ──────────────────────────────────────────
-# C8 (b3) Min and max avg_grade for students whose parents have higher education.
-# ──────────────────────────────────────────
-
-# Filter Medu==4 or Fedu==4, agg min/max.
-
-he=df[(df['Medu']==4) | (df['Fedu']==4)]
-print(he['avg_grade'].min(), he['avg_grade'].max())
-
-
-# ──────────────────────────────────────────
-# C9 (b4) Avg free time for famsize='GT3'; among those, count stressed students with freetime < that average.
-# ──────────────────────────────────────────
-
-# Filter family size, compute mean freetime, count stressed below it.
-
-big=df[df['famsize']=='GT3']
-avg_ft=big['freetime'].mean()
-print(avg_ft, len(big[(big['freetime']<avg_ft) & (big['Stress']==1)]))
-
-
-# ──────────────────────────────────────────
-# C10 (b5) working_mother column (yes/no); plot its impact on stress count.
-# ──────────────────────────────────────────
-
-# Map Mjob to working/not, then countplot with hue=Stress.
-
-df['working_mother']=df['Mjob'].apply(lambda j:'no' if j=='at_home' else 'yes')
-sns.countplot(data=df, x='working_mother', hue='Stress'); plt.show()
-
-
-# ──────────────────────────────────────────
-# C11 (c1) Boxplot of absences by gender.
-# ──────────────────────────────────────────
-
-# boxplot absences vs sex.
-
-sns.boxplot(data=df, x='sex', y='absences'); plt.show()
-
-
-# ──────────────────────────────────────────
-# C12 (c2) Pie chart of father's occupations.
-# ──────────────────────────────────────────
-
-# value_counts then pie.
-
-df['Fjob'].value_counts().plot(kind='pie', autopct='%1.1f%%'); plt.show()
-
-
-# ──────────────────────────────────────────
-# C13 (c3) How many students improve across G1<G2<G3.
-# ──────────────────────────────────────────
-
-# Boolean mask on the chain.
-
-imp=df[(df['G1']<df['G2']) & (df['G2']<df['G3'])]
-print(len(imp))
-
-
-# ──────────────────────────────────────────
-# C14 (c4) Students in romantic relationships who improve; gender-wise distribution.
-# ──────────────────────────────────────────
-
-# Add romantic filter, group by sex.
-
-r=df[(df['romantic']=='yes') & (df['G1']<df['G2']) & (df['G2']<df['G3'])]
-print(r.groupby('sex').size())
+Use DENSE_RANK when you need consecutive numbering with no gaps — for example, finding the second highest salary using WHERE dense_rnk = 2. Use RANK when gaps are meaningful, such as competition standings where two joint winners in first place means no second place exists.
+'''

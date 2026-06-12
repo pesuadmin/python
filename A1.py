@@ -11,28 +11,6 @@ P29.  view, P30. CTE-then-rank.
 P31. Cast-money, P32. Split-name, P33. NULL-avoid, P34. LIKE-filter  P.35 Ratio-of-avgs, Aggregate-percentage, Percent-rank-filter
  P.38  Union (stack two result sets)
    
-P1. SELECT * FROM ( SELECT *, DENSE_RANK() OVER (PARTITION BY group_col ORDER BY rank_col DESC) AS rnk FROM table_name ) t WHERE rnk <= N ORDER BY group_col, rnk;  - - 'top 3 per location', 'top 5 countries per year', 'highest runtime per genre'
-P2. SELECT col, year_col, AVG(metric) OVER ( PARTITION BY group_col ORDER BY year_col ROWS BETWEEN 2 PRECEDING AND CURRENT ROW ) AS rolling_avg FROM table_name; -- '3-year moving average', '3-month moving average', 'rolling avg' -- 'ROWS BETWEEN 2 PRECEDING AND CURRENT ROW' = window of 3 rows. Change 2 to N-1 for an N-period window.
-
-P3. SELECT col, SUM(metric) OVER ( PARTITION BY group_col ORDER BY order_col ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) AS running_total FROM table_name; -  UNBOUNDED PRECEDING = from the very first row of the partition. No PARTITION BY = single running total across all rows. --  'running total', 'cumulative salary', 'cumulative revenue', 'cumulative count'
-P4. SELECT customerid, invoice_date, LAG(invoice_date, 2) OVER ( PARTITION BY customerid ORDER BY invoice_date ) AS previous_date FROM invoice; LAG(col, 1) is the default. LAG(col, 2) gives two rows back. LEAD() looks forward instead. -- 'previous invoice date', 'previous value', 'compare with last row' -  lag(offset - how many rows to look back)
-P5. SELECT * FROM ( SELECT *, PERCENT_RANK() OVER ( PARTITION BY location ORDER BY price DESC ) AS pct_rank FROM table_name ) t WHERE pct_rank <= 0.10  -- top 10% AND bath > 3;         -- additional filter - PERCENT_RANK() returns 0 to 1. <= 0.10 means top 10%. Ascending ORDER BY = lowest percentile first. -- Trigger words: 'top 10%', 'top 5% by price in the group'. -- - remove order by desc for bottom 10%
-
-P6. SELECT movie_title, release_date, genre, FIRST_VALUE(release_date) OVER ( PARTITION BY genre ORDER BY release_date ASC ) AS first_release_in_genre FROM movie_genre_view; -- FIRST_VALUE with ORDER BY ASC = minimum. ORDER BY DESC = maximum. Use ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING to see the value on every row. - 'earliest release date in its genre', 'first in group', 'minimum per partition'
-
-P7. SELECT name, price, AVG(price) OVER (PARTITION BY restaurant_id) AS group_avg, price - AVG(price) OVER (PARTITION BY restaurant_id) AS diff_from_avg FROM food_items; -- Window AVG shows both the row value and group average side by side. Correlated subquery filters to only above-avg rows.
--- OR as a correlated subquery filter: SELECT * FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE department_id = e.department_id); -- 'compare each item price vs restaurant avg', 'employees earning above their dept avg'
-
-P8.  
--- 2nd value per group: NTH_VALUE(weight, 2) OVER (PARTITION BY breed ORDER BY weight ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
--- Quartile buckets (1–4): NTILE(4) OVER (ORDER BY weight)
--- Cumulative distribution (0 to 1) × 100 = percentile: CAST(CUME_DIST() OVER (ORDER BY weight) * 100 AS UNSIGNED).  -- '2nd lightest per breed', 'weight quartiles', 'percentile', 'next heaviest' 
--- Next row in group: LEAD(weight, 1) OVER (PARTITION BY breed ORDER BY weight)
-
-
-
-
-
 P6. SELECT * FROM table_name WHERE col = (SELECT MAX(col) FROM table_name); - -- Global max: -- Max per group (correlated): - 'country with highest X', 'cheapest house in each location', 'max price record'
 P7. SELECT * FROM table_name t1 WHERE col = (SELECT MIN(col) FROM table_name t2 WHERE t2.group_col = t1.group_col); - Correlated subquery runs once per outer row. Use for 'cheapest in each location', 'highest per dept'.
 P8. -- NOT IN: SELECT * FROM customers WHERE customerNumber NOT IN ( SELECT DISTINCT customerNumber FROM orders); -- 'customers who have NOT ordered', 'circuits with no races', 'inactive clients', 'movies without rating'
@@ -66,6 +44,33 @@ P28. SELECT mp.name, ABS(DATEDIFF( STR_TO_DATE(mp.tenure_start, '%Y-%d-%m'), STR
 
 P29. Trigger : Trigger words:
 -- Step 1: Create the view: CREATE OR REPLACE VIEW view_name AS SELECT col1, col2, aggregate_col FROM table1 JOIN table2 ON ... GROUP BY col1, col2; --  'create a virtual table', 'create a view called X', 'using the view fetch...'
+
+CREATE VIEW customer_order_value AS
+SELECT
+c.customer_id,
+c.customer_name,
+SUM(oi.quantity * oi.unit_price) AS total_order_value
+FROM customers c
+JOIN orders o
+ON c.customer_id = o.customer_id
+JOIN order_items oi
+ON o.order_id = oi.order_id
+GROUP BY
+c.customer_id,
+c.customer_name;
+
+
+-- (b) Query the view to show customers whose total order value exceeds 3000,
+-- highest first
+
+SELECT
+customer_id,
+customer_name,
+total_order_value
+FROM customer_order_value
+WHERE total_order_value > 3000
+ORDER BY total_order_value DESC;
+
 -- Step 2 : Use a select statement to check if the view works.
 -- Step 2: Query the view (can add WHERE, ORDER BY, window functions): SELECT * FROM view_name WHERE condition ORDER BY col;
 
@@ -138,3 +143,106 @@ SELECT * FROM clients;      -- verify the change
 ROLLBACK TO SAVEPOINT a;    -- undo back to bookmark
 SELECT * FROM clients;      -- verify restored
 COMMIT;                     -- finalise (no-op here, restoring)
+
+CTE 
+
+WITH customer_payments AS (
+    SELECT
+        c.customer_id,
+        c.customer_name,
+        SUM(p.amount_paid) AS total_paid
+    FROM customers c
+    JOIN orders o
+        ON c.customer_id = o.customer_id
+    JOIN payments p
+        ON o.order_id = p.order_id
+    GROUP BY
+        c.customer_id,
+        c.customer_name
+)
+SELECT
+    customer_id,
+    customer_name,
+    total_paid,
+    RANK() OVER (ORDER BY total_paid DESC) AS payment_rank
+FROM customer_payments
+ORDER BY total_paid DESC
+LIMIT 5;
+
+
+CTE Universal Template:
+
+WITH cte_name AS (
+    SELECT
+        column1,
+        column2,
+        aggregate_column
+    FROM table_name
+    WHERE condition
+    GROUP BY column1, column2
+)
+SELECT *
+FROM cte_name
+WHERE condition
+ORDER BY column1;
+
+
+Check Constraint:
+
+CREATE TABLE table_name (
+    id_column INT PRIMARY KEY,
+    column1 datatype CHECK (condition),
+    column2 datatype CHECK (column2 IN ('value1','value2','value3')),
+    column3 datatype CHECK (column3 BETWEEN min_value AND max_value)
+);
+
+CHECK (salary > 0)
+CHECK (age >= 18)
+CHECK (course_duration <= 21)
+CHECK (status IN ('Active','Inactive'))
+CHECK (marks BETWEEN 0 AND 100)
+
+
+TCL. Steps 
+
+SET autocommit = 0;  / makes manual
+
+SAVEPOINT before_data_change;
+
+INSERT INTO table_name (column1, column2, column3) VALUES (value1, value2, value3);
+OR
+UPDATE table_name SET column_name = new_value WHERE condition;
+OR
+DELETE FROM table_name WHERE condition;
+
+SELECT * FROM table_name;
+
+ROLLBACK TO SAVEPOINT before_data_change;    / changes are lost or accidental changes are dropped
+
+SELECT * FROM table_name;
+
+COMMIT;
+
+
+VIEW or Virtual table:
+
+CREATE VIEW view_name AS
+SELECT
+    t1.column1,
+    t1.column2,
+    t2.column3,
+    AGG_FUNCTION(t1.column4) AS metric
+FROM table1 t1
+JOIN table2 t2
+    ON t1.common_key = t2.common_key
+WHERE condition
+GROUP BY
+    t1.column1,
+    t1.column2,
+    t2.column3
+HAVING AGG_FUNCTION(t1.column4) > value;
+
+SELECT *
+FROM view_name
+WHERE condition
+ORDER BY column_name;

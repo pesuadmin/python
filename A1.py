@@ -760,3 +760,116 @@ for fuel in df['Fuel_Type'].unique():
 
 
 
+#OLS
+
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score
+)
+
+
+# STEP 1 : LOAD DATA
+
+
+df = pd.read_csv("data.csv")
+
+
+# STEP 2 : DEFINE X AND Y
+
+
+X = df[['Feature1', 'Feature2', 'Feature3']]
+y = df['Target']
+# STEP 3 : ADD INTERCEPT (β0)
+X = sm.add_constant(X)
+
+# STEP 4 : TRAIN TEST SPLIT
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+# STEP 5 : FIT OLS MODEL
+
+model = sm.OLS(y_train, X_train).fit()
+
+# STEP 6 : COMPLETE REPORT
+
+
+print(model.summary())
+
+# STEP 7 : COEFFICIENTS
+
+
+print("\nCoefficients")
+print(model.params)
+
+# STEP 8 : P-VALUES
+
+
+print("\nP-values")
+print(model.pvalues)
+
+# STEP 9 : CONFIDENCE INTERVALS
+
+print("\n95% Confidence Intervals")
+print(model.conf_int())
+
+# STEP 10 : PREDICTIONS
+
+y_pred = model.predict(X_test)
+
+# STEP 11 : MODEL EVALUATION
+
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print("\nEvaluation Metrics")
+print("MSE :", mse)
+print("RMSE:", rmse)
+print("MAE :", mae)
+print("R²  :", r2)
+
+# STEP 12 : ADJUSTED R²
+
+print("\nAdjusted R²")
+print(model.rsquared_adj)
+
+# STEP 13 : F-STATISTIC
+
+print("\nF Statistic")
+print(model.fvalue)
+
+print("\nF-test p-value")
+print(model.f_pvalue)
+
+# STEP 14 : RESIDUALS
+
+residuals = model.resid
+
+print("\nResidual Mean")
+print(np.mean(residuals))
+
+# STEP 15 : PREDICT NEW DATA
+
+new_data = pd.DataFrame({
+    'Feature1':[10],
+    'Feature2':[20],
+    'Feature3':[30]
+})
+
+new_data = sm.add_constant(new_data)
+
+prediction = model.predict(new_data)
+
+print("\nPrediction:")
+print(prediction)
+

@@ -699,46 +699,8 @@ principal_components = X_std @ eigenvectors
 print("\nPrincipal components shape:", principal_components.shape)
 print("First 5 rows of principal components:\n", principal_components[:5])
 
-# Apply **PCA step by step** on the **Wine dataset** and find the principal components that capture **95% variance**.
-# ```
 
-import numpy as np  # ADDED: was missing in original
-# PCA from scratch on the wine dataset — find PCs that capture >= 95% variance.
-from sklearn.datasets import load_wine
-from sklearn.preprocessing import StandardScaler
 
-data = load_wine()#
-X = data.data
-print('Original shape:', X.shape)
-
-# Step 1: standardize
-X_std = StandardScaler().fit_transform(X)
-
-# Step 2: covariance matrix
-cov = np.cov(X_std, rowvar=False)
-
-# Step 3: eigen decomposition
-eigvals, eigvecs = np.linalg.eigh(cov)   # eigh for symmetric matrices
-
-# Step 4: sort descending
-order = np.argsort(eigvals)[::-1]
-eigvals = eigvals[order]
-eigvecs = eigvecs[:, order]
-
-# Step 5: explained variance
-explained = eigvals / eigvals.sum()
-cum = np.cumsum(explained)
-print('PC | Variance | Cumulative')
-for i, (e, c) in enumerate(zip(explained, cum), 1):
-    print(f'{i:2d} | {e:.4f}  | {c:.4f}')
-
-k = int(np.searchsorted(cum, 0.95) + 1)#
-print(f'\n=> {k} principal components capture >= 95% variance')
-
-# Step 6: project
-W = eigvecs[:, :k]
-X_pca = X_std @ W
-print(f'Reduced shape: {X_pca.shape}  (from 13 features down to {k})')
 
 # Compute **PCA** on the following data:
 #

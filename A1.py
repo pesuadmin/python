@@ -28,6 +28,22 @@ P18. SELECT c.customerName, SUM(od.quantityOrdered * od.priceEach) AS total_valu
 
 
 P19. SELECT DISTINCT a.Country_name FROM world_happiness_report a JOIN world_happiness_report b ON a.Country_name = b.Country_name WHERE a.year = 2019 AND a.Freedom_to_make_life_choices > 0.8 AND b.year = 2020 AND  b.Freedom_to_make_life_choices > 0.8;  --  'countries where X > 0.8 in BOTH 2019 AND 2020', 'customers with same first name' -- The self-join approach (alias a, b) is cleaner for two-year conditions. The HAVING approach works for duplicate-value detection. -- Two-year condition (same table joined to itself): 
+SELECT region_id
+FROM region_yearly_stats
+WHERE year IN (2023,2024)
+AND growth_rate > 5
+GROUP BY region_id
+HAVING COUNT(DISTINCT year) = 2;
+
+SELECT r2023.region_id
+FROM region_yearly_stats r2023
+JOIN region_yearly_stats r2024
+ON r2023.region_id = r2024.region_id
+WHERE r2023.year = 2023
+AND r2024.year = 2024
+AND r2023.growth_rate > 5
+AND r2024.growth_rate > 5;
+
 P20. SELECT c1.customerid, c1.firstname FROM customer c1 WHERE c1.firstname IN ( SELECT firstname FROM customer GROUP BY firstname HAVING COUNT(*) > 1); -- -- Same first name:
 P21. SELECT c.circuitId, c.name FROM circuits c LEFT JOIN races r ON c.circuitId = r.circuitId WHERE r.raceId IS NULL;  -- NULL means no matching row = no race. -- 'circuits where no races held', 'films never rented' -- LEFT JOIN keeps all left-table rows. WHERE right_table.id IS NULL filters to only rows with no match. This is the anti-join pattern.
 

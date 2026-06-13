@@ -1,1170 +1,1740 @@
-'''
-State the difference between a Primary key and a Candidate key.
+# Assume level of significance = 0.05 unless stated otherwise.
+# Find the determinant of the matrix $A$:
+import sympy as sp
+
+# Define matrix
+A = sp.Matrix([
+    [2, 4, 5],
+    [6, 1, 3],
+    [4, 0, 7]
+])
+# Determinant
+det_A = A.det()
+
+print("Determinant =", det_A)
+if det_A != 0:
+    print("Matrix is non-singular (invertible).")
+else:
+    print("Matrix is singular (not invertible).")
+
+# Calculate the following for the matrices $A$, $B$, $C$, and $D$ where $I$ is a 3×3 Identity matrix:
+#
+# - $|A + I|$
+# - $BC$
+# - $AB$
+# - $A^2$
+# - Value of $D^2 - 5D - 2I$
+#
+# $$A = \begin{bmatrix} 5 & 6 & 2 \\ 4 & 7 & 19 \\ 0 & 3 & 12 \end{bmatrix}, \quad B = \begin{bmatrix} 14 \\ 4 \\ 5 \end{bmatrix}, \quad C = \begin{bmatrix} 1 & 2 & 3 \end{bmatrix}, \quad D = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}$$
+
+import numpy as np
+
+# Define matrices A, B, C, D and 3x3 Identity matrix I
+A = np.array([[5, 6, 2], [4, 7, 19], [0, 3, 12]], dtype=float)
+
+B = np.array([[14], [4], [5]], dtype=float)
+
+C = np.array([[1, 2, 3]], dtype=float)
+
+D = np.array([[1, 2], [3, 4]], dtype=float)
+
+I3 = np.eye(3)
+I2 = np.eye(2)
+
+# 1. |A + I|
+det_A_plus_I = np.linalg.det(A + I3)
+
+# 2. BC
+BC = B @ C
 
-A Candidate Key is any column or combination of columns that can uniquely identify each record within the table. A table can have multiple candidate keys. Each candidate key qualifies to become the primary key.
+# 3. AB
+AB = A @ B
 
-A Primary Key is the one candidate key that the designer selects as the official row identifier. A table can have only one primary key. The primary key column prohibits null entries and does not allow duplicate values.
+# 4. A^2
+A_squared = A @ A
+
+# 5. D^2 - 5D - 2I
+D_result = (D @ D) - (5 * D) - (2 * I2)
+
+# Print results
+print("det(A + I) =", det_A_plus_I)
+print("\nBC =\n", BC)
+print("\nAB =\n", AB)
+print("\nA^2 =\n", A_squared)
+print("\nD^2 - 5D - 2I =\n", D_result)
 
-A table can have only one primary key but multiple candidate keys. The primary key may not contain null entries, whereas a candidate key that is not chosen as the primary key may allow NULLs depending on the design. All primary keys are candidate keys, but not all candidate keys are primary keys. The primary key is automatically enforced by the RDBMS through a unique index, and it is commonly used as the target of foreign key references from other tables.
+# Consider the following matrices:
+#
+# $$A = \begin{bmatrix} 2 & 4 \\ 1 & 3 \end{bmatrix}, \quad B = \begin{bmatrix} 5 & 6 \\ 7 & 8 \end{bmatrix}$$
+#
+# 1. Find the result of the matrix addition $(A + B)$.
+# 2. Calculate the matrix multiplication $(A \times B)$.
+# 3. Find the transpose of matrix $A$.
+# 4. Calculate the determinant of matrix $B$.
+# 5. Verify if matrix $A$ is invertible by calculating its determinant and, if it is invertible, find the inverse of $A$.
 
+import numpy as np
 
-Explain any two string functions with an example.
+# Define matrices A and B
+A = np.array([[2, 4], [1, 3]], dtype=float)
 
-String functions perform operations on character data and return either a string or a numeric result.
+B = np.array([[5, 6], [7, 8]], dtype=float)
 
-CONCAT() joins two or more strings into one. Syntax: CONCAT(string1, string2, ...) Example: SELECT CONCAT('Hello', ' ', 'World'); returns Hello World. In practice: SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employees; builds a full name from two columns.
+# 1. Find the result of the matrix addition (A + B)
+A_plus_B = A + B
 
-SUBSTRING() extracts a part of a string from a given starting position for a given number of characters. Syntax: SUBSTRING(string, start, length). Positions begin at 1. Example: SELECT SUBSTRING('Database', 1, 4); returns Data.
+# 2. Calculate the matrix multiplication (A x B)
+A_times_B = A @ B
 
-LENGTH() returns the number of characters in a string. Example: SELECT LENGTH('Hello'); returns 5.
+# 3. Find the transpose of matrix A
+A_T = A.T
 
-UPPER() and LOWER() convert a string to all uppercase or all lowercase. Example: SELECT UPPER('hello'); returns HELLO. SELECT LOWER('WORLD'); returns world.
+# 4. Calculate the determinant of matrix B
+det_B = np.linalg.det(B)
 
-TRIM() removes leading and trailing whitespace. Example: SELECT TRIM('  hello  '); returns hello.
+# 5. Verify if matrix A is invertible by calculating its determinant
+# If it is invertible, find the inverse of A
+det_A = np.linalg.det(A)
+is_invertible = not np.isclose(det_A, 0)
+inv_A = np.linalg.inv(A) if is_invertible else None
 
-REPLACE() substitutes every occurrence of a substring with another string. Example: SELECT REPLACE('Hello World', 'World', 'SQL'); returns Hello SQL.
+# Print results
+print("1. A + B =\n", A_plus_B)
+print("\n2. A x B =\n", A_times_B)
+print("\n3. Transpose of A =\n", A_T)
+print("\n4. det(B) =", det_B)
+print("\n5. det(A) =", det_A)
+print("   Is A invertible? :", is_invertible)
+print("   Inverse of A =\n", inv_A)
 
+# Find the inverse of the following matrix:
+#
+# $$A = \begin{bmatrix} 1 & 5 & 7 \\ 2 & 6 & 0 \\ 3 & 5 & 1 \end{bmatrix}$$
 
-Can we use aggregate functions in where clause? Justify your answer.
+import numpy as np
 
-No. Aggregate functions such as COUNT(), SUM(), AVG(), MIN(), and MAX() may not be used directly inside the WHERE clause.
+# Define the matrix A
+A = np.array([[1, 5, 7], [2, 6, 0], [3, 5, 1]], dtype=float)
 
-The reason is the order of SQL clause evaluation. The WHERE clause runs before GROUP BY and before any aggregation takes place. Aggregate functions compute their results across groups of rows, so their values simply do not exist yet when WHERE is being evaluated.
+# Calculate the determinant to check for invertibility
+det_A = np.linalg.det(A)
+is_invertible = not np.isclose(det_A, 0)
 
-The following query is invalid: SELECT department_id, COUNT(*) FROM employees WHERE COUNT(*) > 5 GROUP BY department_id; MySQL returns an error because COUNT(*) cannot appear in the WHERE clause.
+# Calculate the inverse if the determinant is non-zero
+inv_A = np.linalg.inv(A) if is_invertible else None
 
-The correct approach is to use the HAVING clause, which filters groups after GROUP BY and aggregation have been applied: SELECT department_id, COUNT(*) FROM employees GROUP BY department_id HAVING COUNT(*) > 5;
+print("det(A) =", det_A)
+print("Is A invertible? :", is_invertible)
+print("Inverse of A =\n", inv_A)
 
-HAVING is specifically designed to filter on aggregate results, while WHERE filters individual rows before any grouping.
+# Find the inverse of the following matrix using the **adjoint method**:
+#
+# $$A = \begin{bmatrix} 1 & 5 & 7 \\ 2 & 6 & 0 \\ 0 & 3 & 5 \end{bmatrix}$$
 
+!pip install sympy
+import numpy as np
+import sympy as sp
 
-What is Cross-Join?
+# Define the matrix symbols using sympy to perform analytical adjoint calculations
+A_sym = sp.Matrix([[1, 5, 7], [2, 6, 0], [0, 3, 5]])
 
-A CROSS JOIN (also called a Cartesian join) combines each individual row from the first table with every row from the second table. If the first table has M rows and the second has N rows, the result has M × N rows. There is no ON condition — every possible pair is produced.
+# 1. Calculate the determinant
+det_A = A_sym.det()
 
-Syntax: SELECT * FROM table1 CROSS JOIN table2;
+# 2. Calculate the matrix of cofactors (Adjoint matrix is the transpose of the cofactor matrix)
+# In sympy, the adjugate() function computes the analytical Adjoint matrix directly.
+adj_A = A_sym.adjugate()
 
-Example: If an employees table has 10 rows and a departments table has 5 rows, the CROSS JOIN produces 50 rows.
+# 3. Calculate the inverse using the formula: Inverse = Adjoint / Determinant
+inv_A = adj_A / det_A
 
-CROSS JOIN is different from other joins because it requires no any matching condition. It is rarely used in production because it can produce enormous result sets. Legitimate uses include generating all combinations of two sets (such as all size-colour combinations for a product catalogue), creating test data, or building a calendar grid.
+# Convert to float arrays for clean numerical outputs
+A_num = np.array(A_sym).astype(float)
+adj_num = np.array(adj_A).astype(float)
+inv_num = np.array(inv_A).astype(float)
 
+print("Matrix A =\n", A_num)
+print("\n1. Determinant of A =", float(det_A))
+print("\n2. Adjoint of A =\n", adj_num)
+print("\n3. Inverse of A (Adjoint Method) =\n", inv_num)
 
-Aryan, a database administrator, has grouped records of a table with the help of group by clause. He needs to further filter groups of records generated through group by clause. Suggest suitable clause for it and properly explain its usage with the help of an example.
+# Given $A = \begin{bmatrix} 1 & 0 & -1 \\ 2 & 1 & 0 \\ 3 & 0 & 5 \end{bmatrix}$, find $AA^T$. Also verify that $AA^T$ is symmetric.
 
-The suitable clause is HAVING.
+import numpy as np
 
-The HAVING clause filters groups of rows after the GROUP BY clause has created them. It plays the same role for grouped results that WHERE plays for individual rows. WHERE may not be used here because aggregate functions are evaluated after grouping, and HAVING is evaluated after GROUP BY.
+# Define the matrix A
+A = np.array([[1, 0, -1], [2, 1, 0], [3, 0, 5]], dtype=float)
 
-Syntax: SELECT column, aggregate_function(column) FROM table GROUP BY column HAVING condition;
+# 1. Find the transpose of A
+A_T = A.T
 
-Example: Find all departments where the total salary bill exceeds 50000. SELECT department_id, SUM(salary) AS total_salary FROM employees GROUP BY department_id HAVING SUM(salary) > 50000;
+# 2. Compute the product A * A^T
+AA_T = A @ A_T
 
-In this example, GROUP BY groups rows by department, SUM calculates the total salary per department, and HAVING retains only those departments where the total exceeds 50000. Without HAVING, you would get every department. HAVING lets you filter on the aggregated result.
+# 3. Verify that AA_T is symmetric by checking if it equals its own transpose
+# A matrix M is symmetric if M == M^T
+is_symmetric = np.allclose(AA_T, AA_T.T)
 
-The mandatory order of clauses is: WHERE filters rows first, then GROUP BY creates groups, then HAVING filters groups, then ORDER BY sorts the final output.
+print("Matrix A =\n", A)
+print("\nTranspose of A (A^T) =\n", A_T)
+print("\nProduct AA_T =\n", AA_T)
+print("\nIs AA_T symmetric? :", is_symmetric)
 
+# INFERENCE
+# (A*A^T)^T = (A^T)^T * A^T = A * A^T — so AA^T is ALWAYS symmetric for any matrix A.
+print("\n Mathematical property: AA^T is always symmetric for any real matrix A.")
 
-What are the uses of Window Function?
+# Find $X$ and $Y$, if:
+#
+# $$2X + 3Y = \begin{bmatrix} 2 & 3 \\ 4 & 0 \end{bmatrix} \quad \text{and} \quad 3X + 2Y = \begin{bmatrix} 2 & -2 \\ -1 & 5 \end{bmatrix}$$
 
-Window functions (also called analytical functions) carry out computations across a set of related rows — the window — while keeping each record individually visible in the output. Unlike GROUP BY, they do not collapse rows into one summary row.
+import numpy as np
 
-Ranking rows within groups: RANK(), DENSE_RANK(), and ROW_NUMBER() assign a rank to each record within a partition. As an illustration, ranking employees by salary within each department without collapsing the rows.
+M1 = np.array([[2, 3],
+               [4, 0]], dtype=float)
 
-Running totals and cumulative aggregates: SUM() OVER or COUNT() OVER with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW computes a cumulative running total as rows are added.
+M2 = np.array([[2, -2],
+               [-1, 5]], dtype=float)
 
-Accessing previous or next rows: LAG() retrieves the value from a prior row and LEAD() retrieves the value from a following row. This serves to compare this month's sales to last month without a self-join.
+# Coefficients from:
+# 2X + 3Y = M1
+# 3X + 2Y = M2
 
-Moving averages and rolling calculations: AVG() OVER with a frame clause such as ROWS BETWEEN 2 PRECEDING AND CURRENT ROW produces a sliding window average over a configurable number of rows.
+a, b = 2, 3
+c, d = 3, 2
 
-Distribution analysis: PERCENT_RANK() and CUME_DIST() calculate what percentile a row falls in. NTILE() divides the result set into equal-sized buckets.
+# Determinant of coefficient matrix
+det = a * d - b * c
 
-Finding boundary values within a group: FIRST_VALUE() and LAST_VALUE() return the first or last value within the ordered window partition.
+# Solve using elimination formula
+X = (d * M1 - b * M2) / det
+Y = (a * M2 - c * M1) / det
 
-The primary advantage is that all of these calculations return a result for each individual row alongside the original row data, something that GROUP BY aggregation cannot do.
+print("Determinant =", det)
 
+print("\nMatrix X =\n", X)
+print("\nMatrix Y =\n", Y)
 
-Explain about EXISTS operator.
+# Verification
+print("\nVerification:")
+print("2X + 3Y =", np.allclose(2 * X + 3 * Y, M1), "(matches M1)")
+print("3X + 2Y =", np.allclose(3 * X + 2 * Y, M2), "(matches M2)")
 
-The EXISTS operator tests whether a subquery returns at least one row. It evaluates to TRUE if the inner query produces one or more rows and FALSE if it produces no rows. EXISTS does not return the actual column values from the subquery — it is purely a membership check.
+# Find the number of independent vectors (rank) in the following matrix:
+#
+# $$A = \begin{bmatrix} 1 & 3 & 5 & 6 \\ 3 & 5 & 0 & 7 \\ 2 & 6 & 2 & 0 \\ 7 & 5 & 1 & 0 \end{bmatrix}$$
 
-Syntax: SELECT columns FROM table WHERE EXISTS (subquery);
+import numpy as np
 
-Example: Find all customers who have placed at least one order. SELECT customer_id, customer_name FROM customers WHERE EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id);
+# Define the matrix A
+A = np.array([[1, 3, 5, 6], [3, 5, 0, 7], [2, 6, 2, 0], [7, 5, 1, 0]], dtype=float)
 
-The inner query SELECT 1 is a convention — EXISTS only cares whether any row is returned, not what the value is. You can write SELECT *, SELECT column_name, or SELECT 1; the result is the same.
+# Compute the rank (number of linearly independent vectors) of the matrix
+# As specified in the quick-reference card of the notebook template
+rank_A = np.linalg.matrix_rank(A)
 
-NOT EXISTS is the negation. It evaluates to TRUE when the inner query gives back no rows, allowing you to find records that have no match in another table. Example: Find customers who have never placed an order. SELECT customer_id FROM customers WHERE NOT EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id);
+print("rank(A) =", rank_A)
 
-EXISTS is often faster than IN for large datasets because it stops searching as soon as the first matching row is found (short-circuit evaluation), whereas IN must evaluate the entire subquery result.
+# INFERENCE
+print(f"\nRank = {rank_A} → {rank_A} linearly independent row(s)/column(s) out of {A.shape[0]}")
+if rank_A < A.shape[0]:
+    print(f"{A.shape[0]-rank_A} row(s) are linearly dependent.")
+else:
+    print("Matrix is full rank — all rows are linearly independent.")
 
+# Verify that the vectors $[2\ 2\ 1]$, $[-4\ 6\ 5]$, $[1\ 0\ 0]$ are linearly independent.
 
-What is percent rank? Explain with an example.
+import numpy as np
 
-PERCENT_RANK() is a window function that calculates the relative rank of a row as a value between 0.0 and 1.0, where 0 represents the lowest rank and 1 represents the highest.
+# Define the vectors as arrays
+v1 = np.array([2, 2, 1])
+v2 = np.array([-4, 6, 5])
+v3 = np.array([1, 0, 0])
 
-Formula: PERCENT_RANK = (rank of the row minus 1) divided by (total number of rows in the partition minus 1).
+# Stack the vectors as columns to form a square matrix M
+M = np.column_stack([v1, v2, v3])
+print("M =\n", M)
 
-The first row in any ordering always receives a PERCENT_RANK of 0. The last row always receives 1.0.
+# Calculate the determinant and rank to check for linear independence
+det_M = np.linalg.det(M)
+rank_M = np.linalg.matrix_rank(M)
 
-Syntax: SELECT column, PERCENT_RANK() OVER (PARTITION BY group_col ORDER BY value_col) AS pct_rank FROM table;
+print("det(M) =", det_M)
+print("rank(M) =", rank_M)
 
-Example: Rank each employee's salary within their department. SELECT employee_id, department_id, salary, PERCENT_RANK() OVER (PARTITION BY department_id ORDER BY salary) AS pct_rank FROM employees;
+# A matrix with det != 0 and rank == dimension contains linearly independent vectors
+if not np.isclose(det_M, 0) and rank_M == 3:
+    print("=> Linearly INDEPENDENT (det!=0, rank=3)")
+else:
+    print("=> Linearly DEPENDENT")
 
-If a department has five employees with salaries 20000, 30000, 40000, 50000, 60000, their PERCENT_RANK values are 0.0, 0.25, 0.5, 0.75, and 1.0 respectively.
+# Given $A = \begin{bmatrix} 2 & 3 \\ x & y \end{bmatrix}$ has eigenvalues $\lambda_1 = 4$, $\lambda_2 = 8$. Find $x$ and $y$.
 
-A PERCENT_RANK of 0.75 means that employee's salary is higher than 75 percent of employees in that department.
+import numpy as np
 
-Common use: filtering the top 10 percent of earners by adding WHERE pct_rank >= 0.9, or identifying which percentile a given value falls in for reporting and analysis.
+# Find x and y given A = [[2,3],[x,y]] with eigenvalues 4 and 8
+# KEY PROPERTIES:
+#   Trace(A)  = sum of eigenvalues  → 2 + y = λ1 + λ2
+#   Det(A)    = product of eigenvalues → 2y - 3x = λ1 × λ2
 
+lambda1, lambda2 = 4, 8
 
-State and explain in brief types of Locks in database.
+# From trace: 2 + y = 4 + 8 = 12  =>  y = 10
+y_val = (lambda1 + lambda2) - 2
+print("Trace:   2 + y =", lambda1 + lambda2, "  =>  y =", y_val)
 
-Locks are database mechanisms that control concurrent access to data. When multiple transactions attempt to read or modify the same data at the same time, locks prevent conflicts and maintain data consistency.
+# From determinant: 2y - 3x = 4 × 8 = 32  =>  x = (2y - 32)/3
+det_val = lambda1 * lambda2
+x_val = (2 * y_val - det_val) / 3
+print("Det:  2y - 3x =", det_val, "  =>  x =", x_val)
 
-Locking levels: Row-level lock locks one row, allowing other transactions to access all other rows in the same table at the same time. This is the most granular lock and causes the least contention. Page-level lock locks a block of rows stored together on a data page. Table-level lock locks the entire table, blocking other transactions from accessing any row in it. Simple to manage but significantly reduces concurrency.
+print(f"\n Answer: x = {x_val}, y = {y_val}")
 
-Types of locks:
+# Verification
+A_check = np.array([[2, 3], [x_val, y_val]])
+eigvals_check = np.linalg.eigvals(A_check)
+print("Verification — Eigenvalues:", np.round(sorted(eigvals_check), 4),
+      "(expected [4, 8])")
 
-Shared Lock (S Lock, also called Read Lock): A shared lock is acquired when a transaction wants to read data. Multiple transactions can hold shared locks on the same data at the same time because reading alone does not change the data. A shared lock prevents other transactions from acquiring an exclusive (write) lock while reading is in progress.
+# INFERENCE: Trace and determinant are eigenvalue-invariant properties.
+# They provide a quick algebraic path to recover unknown matrix entries.
 
-Exclusive Lock (X Lock, also called Write Lock): An exclusive lock is acquired when a transaction wants to modify data through INSERT, UPDATE, or DELETE. Only one transaction at a time can hold an exclusive lock on a piece of data. No other transaction can read or write the data while an exclusive lock is held, ensuring that only one transaction makes changes at any moment.
+# Consider the following vectors where $m$ is an unknown scalar:
+#
+# $$A = \begin{bmatrix} 1 \\ 2 \\ -1 \end{bmatrix}, \quad B = \begin{bmatrix} 3 \\ -1 \\ 4 \end{bmatrix}, \quad C = \begin{bmatrix} 2 \\ m \\ 5 \end{bmatrix}$$
+#
+# (i) Form a matrix $M$ with these vectors as columns. For what value of $m$, if any, do the vectors become linearly dependent? Also, find the rank of the matrix for this value of $m$. **(4 marks)**
+#
+# (ii) Check if the matrix $M$ is an orthogonal matrix when $m = 1$. **(3 marks)**
 
-Together, shared and exclusive locks implement a concurrency protocol: readers can co-exist (shared locks are compatible), but a writer gets sole access (exclusive locks are not compatible with any other lock).
+import sympy as sp
 
+m = sp.symbols('m')
 
-Explain the different ways you can restrict the data in a column. Demonstrate with Examples.
+A = sp.Matrix([1, 2, -1]) # for 3 X1 matrix
+# A = sp.Matrix([[1, 2, -1]]) for 1X 3  matrix
+B = sp.Matrix([3, -1, 4])
+C = sp.Matrix([2, m, 5])
 
-You restrict data in a column by defining SQL constraints. Constraints are rules enforced at the database level that ensure only valid data is accepted.
+M = sp.Matrix.hstack(A, B, C)
 
-NOT NULL prevents a column from holding an empty (NULL) value. Every row must supply a value for the column. Example: CREATE TABLE employees (id INT NOT NULL, name VARCHAR(50) NOT NULL);
+# (i) Find m so columns are linearly dependent
+m_vals = sp.solve(M.det(), m)
+print("m values giving det(M)=0:", m_vals)
 
-UNIQUE ensures every value in the column is distinct across all rows. No two rows can share an the same value. A UNIQUE column can still hold null entries. Example: CREATE TABLE users (email VARCHAR(100) UNIQUE);
+m_val = m_vals[0]
+M_dep = M.subs(m, m_val)
+print("rank at m =", m_val, "is", M_dep.rank())
 
-PRIMARY KEY combines NOT NULL and UNIQUE. It is the main row identifier. A table may have only one primary key. Example: CREATE TABLE students (student_id INT PRIMARY KEY, name VARCHAR(50));
+# (ii) Check orthogonality when m = 1
+M1 = M.subs(m, 1)
+print("\nM when m = 1:")
+print(M1)
 
-FOREIGN KEY links a column to the primary key of another table, enforcing referential integrity. Values in the foreign key column must exist in the parent table or be NULL. Example: CREATE TABLE orders ( order_id INT PRIMARY KEY, customer_id INT, FOREIGN KEY (customer_id) REFERENCES customers(customer_id) );
+print("\nM^T * M when m = 1:")
+print(M1.T * M1)
 
-CHECK validates column values against a Boolean condition. Any INSERT or UPDATE violating the condition is rejected. Example: CREATE TABLE products ( price DECIMAL CHECK (price > 0), quantity INT CHECK (quantity >= 0) );
+is_orthogonal = (M1.T * M1) == sp.eye(3)
+print("Is M orthogonal when m = 1?", is_orthogonal)
 
-DEFAULT sets an automatic value when no value is explicitly provided during INSERT. Example: CREATE TABLE employees (status VARCHAR(10) DEFAULT 'Active');
+# Consider the matrix:
+#
+# $$A = \begin{bmatrix} 1 & 2 & 1 \\ 5 & 1 & 4 \\ 7 & 6 & 9 \end{bmatrix}$$
+#
+# - Step 1: Find the Eigenvalues of $A$.
+# - Step 2: Find the Eigenvalues of $A^2$.
+# - Step 3: Find the Eigenvalues of $A^{-1}$.
+# - Step 4: Interpret Results.
+#
+# **Note:** The eigenvalues of $A^2$ are the squares of the eigenvalues of $A$. The eigenvalues of $A^{-1}$ are the reciprocals of the eigenvalues of $A$.
 
+# Example: compute eigenvalues/vectors and verify A v = lambda v.
+A = np.array([
+    [1, 2, 1],
+    [5, 1, 4],
+    [7, 6, 9]
+])
 
-What is the difference between primary key and unique key?
+eigvals, eigvecs = np.linalg.eig(A)
+print('Eigenvalues:', eigvals)
+print('Eigenvectors (columns):\n', eigvecs)
 
-A PRIMARY KEY uniquely identifies each individual row within the table. It automatically enforces both the NOT NULL and UNIQUE constraints. A table can have exactly one primary key. The primary key is the main reference point for foreign keys in other tables. The column designated as the primary key may not contain a missing entry under any circumstances.
+# Step 1: Eigenvalues of A
+eig_A, _ = np.linalg.eig(A)
 
-A UNIQUE KEY (or UNIQUE constraint) also guarantees that no two rows have an the same value in the constrained column or combination of columns. However, a UNIQUE key column can contain null entries — typically one NULL is permitted because NULL is not considered equal to another NULL by the UNIQUE constraint. A table can have multiple UNIQUE keys.
+print("Eigenvalues of A:")
+print(eig_A)
 
-In summary: a primary key is a unique key that additionally prohibits NULLs and is limited to one per table, while a unique key permits one NULL and a table can define many unique keys. Both create an underlying index that enforces uniqueness and speeds up lookups.
+# Eigenvalues of A^2
+A2 = A @ A
+eig_A2, _ = np.linalg.eig(A2)
 
+print("\nEigenvalues of A^2:")
+print(eig_A2)
 
-What is the difference between the DELETE TABLE and TRUNCATE TABLE commands in MySQL?
+# Eigenvalues of A^-1
+A_inv = np.linalg.inv(A)
+eig_A_inv, _ = np.linalg.eig(A_inv)
 
-DELETE is a DML (Data Manipulation Language) command. It removes rows from a table based on an optional WHERE condition. With a WHERE clause it removes specific rows; without a WHERE clause it removes all rows. DELETE is transactional — it can be rolled back within an active transaction. DELETE fires any triggers defined on the table. It logs each deleted row individually, making it slower on large tables.
+print("\nEigenvalues of A^-1:")
+print(eig_A_inv)
 
-TRUNCATE is a DDL (Data Definition Language) command. It removes all rows from a table by deallocating the data pages in one operation. TRUNCATE cannot include a WHERE clause — it always removes each individual row. TRUNCATE is auto-committed and generally may not be rolled back. It skips row-level triggers. TRUNCATE is significantly faster than DELETE for large tables because it does not produce individual row-deletion log entries. TRUNCATE also resets the AUTO_INCREMENT counter to its initial value.
+# Interpretation
+print("\nVerification:")
 
-Main differences: DELETE can target specific rows with WHERE; TRUNCATE always removes all rows. DELETE can be rolled back; TRUNCATE is permanent. DELETE is slower on large tables; TRUNCATE is much faster. DELETE fires triggers; TRUNCATE does not.
+print("\n(lambda of A)^2:")
+print(eigvals**2)  # FIXED: was eig_A (undefined)
 
+print("\n1/(lambda of A):")
+print(1/eigvals)   # FIXED: was eig_A (undefined)
 
-What is meant by transaction? What are ACID properties?
+print('\nVerification A v = lambda v:')
+for i in range(len(eigvals)):
+    lhs = A @ eigvecs[:, i]
+    rhs = eigvals[i] * eigvecs[:, i]
+    print(f'  lambda={eigvals[i]:.4f}:  A v = {lhs},   lambda v = {rhs}')
 
-A transaction is one logical unit of work that groups at least one SQL operation so that they all succeed or all fail together. A transaction is treated as indivisible — if any operation in it fails, the entire transaction is rolled back to the state before it began.
+print(f'\nTrace check: sum of eigvals = {eigvals.sum():.4f},  trace(A) = {np.trace(A)}')
+print(f'Det check:   prod of eigvals = {np.prod(eigvals):.4f},  det(A) = {np.linalg.det(A):.4f}')
 
-A classic example is a bank transfer: debiting one account and crediting another must both succeed. If the credit fails after the debit, the database would be in an incorrect state. A transaction prevents this by ensuring both operations happen together or neither does.
+# **(a)** Find the Vector Projection and Scalar Projection of $\mathbf{u}$ on $\mathbf{v}$:
+# - $\mathbf{u} = [6, 7, 8]$
+# - $\mathbf{v} = [2, 3, -1]$
+# **(b)** Verify that $Q$ is orthogonal:
+# $$Q = \frac{1}{3} \begin{bmatrix} 2 & -2 & 1 \\ 1 & 2 & 2 \\ 2 & -1 & -2 \end{bmatrix}$$
+# (i) Find the **scalar projection** of $\mathbf{u}$ on $\mathbf{v}$. *(3 marks)*
+# $$\text{Scalar Projection} = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{v}\|}$$
+# (ii) Find the **vector projection** of $\mathbf{u}$ on $\mathbf{v}$. *(3 marks)*
+# $$\text{Vector Projection} = \left(\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{v}\|^2}\right) \mathbf{v}$$
 
-ACID properties are the four guarantees that every transaction must provide:
+import numpy as np
 
-Atomicity means the transaction is treated as one unit. Either all statements in the transaction execute and are committed, or none of them take effect. Partial completion is not allowed.
+# Part (a)
+u = np.array([6, 7, 8])
+v = np.array([2, 3, -1])
 
-Consistency means a transaction moves the database from one valid state to another valid state. All integrity constraints, rules, and cascades must be satisfied after the transaction. The database is never left in a logically inconsistent state.
+dot = np.dot(u, v)
+norm_v = np.linalg.norm(v)
 
-Isolation means concurrent transactions do not interfere with each other. The intermediate state of one transaction is invisible to other transactions. Each transaction behaves as if it runs in isolation, even when hundreds of transactions execute at the same time.
+scalar_projection = dot / norm_v
+vector_projection = (dot / (norm_v ** 2)) * v
 
-Durability means that the same time a transaction is committed, its changes are permanent. The committed data is written to persistent storage and will survive system failures such as crashes, power cuts, or server restarts.
+print("Scalar projection of u on v:", scalar_projection)
+print("Vector projection of u on v:", vector_projection)
 
+# Part (b)
+Q = (1/3) * np.array([
+    [2, -2, 1],
+    [1, 2, 2],
+    [2, 1, -2]  # FIXED: was [2,-1,-2] (sign error in row 3, col 2)
+])
 
-Which MySQL function is used to concatenate string?
+QtQ = Q.T @ Q
+print("\nQ^T * Q =\n", QtQ)
+print("Is Q orthogonal?", np.allclose(QtQ, np.eye(3)))
 
-The CONCAT() function serves to join two or more strings together into one string in MySQL.
+# Consider the matrix $D$:
+#
+# $$D = \begin{bmatrix} 3 & 1 & 1 \\ -1 & 3 & 1 \end{bmatrix}$$
+# (i) Perform the Singular Value Decomposition (SVD) of matrix $D$. **(3 marks)**
+# (ii) Reconstruct matrix $D$ using only the first singular value and its corresponding vectors from $U$, $\Sigma$, and $V^T$. 
 
-Syntax: CONCAT(string1, string2, string3, ...)
+import numpy as np
 
-Example: SELECT CONCAT('Hello', ' ', 'World'); returns Hello World. SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employees; joins the first and last name columns with a space between them.
+M = np.array([[4, 2, 0],
+              [1, -1, 3]], dtype=float)
 
-If any argument passed to CONCAT() is NULL, the function returns NULL for the entire result. To handle NULLs gracefully, CONCAT_WS() (Concatenate With Separator) is used instead. It takes a separator as the first argument and ignores null entries among the remaining arguments.
+# Singular Value Decomposition
+U, S, Vt = np.linalg.svd(M, full_matrices=False)
 
-Example with CONCAT_WS: SELECT CONCAT_WS(' ', first_name, last_name) AS full_name FROM employees; — even if one name part is NULL, the other part is still returned without the separator appearing next to nothing.
+Sigma = np.diag(S)
 
+print("U =\n", U)
+print("\nSigma =\n", Sigma)
+print("\nV^T =\n", Vt)
 
-How can you change the name of any existing table by using the SQL statement?
+# Reconstruct original matrix using all singular values
+M_full = U @ Sigma @ Vt
 
-To rename an existing table in MySQL, use the RENAME TABLE statement.
+print("\nReconstructed Matrix (Full SVD):\n")
+print(M_full)
 
-Syntax: RENAME TABLE old_table_name TO new_table_name;
+# Use the FIRST singular value and its corresponding singular vectors.
+# NumPy returns singular values in descending order, so the
+# FIRST singular value is also the LARGEST singular value.
 
-Example: RENAME TABLE employees TO staff; This renames the employees table to staff. All data, indexes, constraints, and foreign key references are preserved under the new name.
+#
+# Rank-1 Approximation Formula:
+# M_approx = σ₁ · u₁ · v₁ᵀ
 
-You can rename multiple tables in one atomic statement: RENAME TABLE employees TO staff, departments TO divisions;
+sigma1 = S[0]
+u1 = U[:, 0:1]
+v1t = Vt[0:1, :]
 
-An alternative is the ALTER TABLE statement with RENAME TO: ALTER TABLE employees RENAME TO staff;
+M_approx = sigma1 * (u1 @ v1t)
 
-Both approaches produce the same result. RENAME TABLE is preferred when renaming multiple tables at the same time because the entire operation is atomic — either all tables are renamed successfully or none are renamed at all, preventing situations where only some renames complete.
+print("\nApproximation using first/largest singular value only:\n")
+print(M_approx)
 
+print("\nOriginal Matrix:\n")
+print(M)
 
-What is the view? How can you create and drop view in MySQL?
+print("\nDifference (Original - Approximation):\n")
+print(M - M_approx)
 
-A view is a virtual table in MySQL. It holds no actual data. Instead, it stores a SQL SELECT query. When you query a view, MySQL executes the underlying SELECT statement and presents the results as if they were coming from a real table. A view behaves like a table for all read operations.
+print("\nFull reconstruction correct:",
+      np.allclose(M, M_full))
 
-Views are used to simplify complex queries by hiding joins and conditions behind a simple name, to restrict access to sensitive columns by exposing only certain columns through the view, and to reuse frequently needed query logic across multiple queries.
+import numpy as np
 
-Creating a view: Syntax: CREATE VIEW view_name AS SELECT columns FROM table WHERE condition;
+A = np.array([[4, 2, 0],
+              [1, -1, 3]], dtype=float)
 
-Example: CREATE VIEW high_salary_employees AS SELECT employee_id, first_name, salary FROM employees WHERE salary > 50000;
+U, S, Vt = np.linalg.svd(A, full_matrices=False)
+Sigma = np.diag(S)
 
-You then query it like a table: SELECT * FROM high_salary_employees;
+print("U =\n", U)
+print("Sigma =\n", Sigma)
+print("V^T =\n", Vt)
 
-To update or replace an existing view: CREATE OR REPLACE VIEW high_salary_employees AS SELECT ...;
+# Reconstruct full A
+A_full = U @ Sigma @ Vt
+print("\nReconstructed A (full SVD):\n", A_full)
 
-Dropping a view: Syntax: DROP VIEW view_name; Example: DROP VIEW high_salary_employees;
+# Use only the largest singular value/vector
+sigma1 = S[0]
+u1 = U[:, 0]
+v1t = Vt[0, :]
 
-Dropping a view removes only the view definition from the database. The underlying source tables and their data are not affected in any way.
+A_approx = sigma1 * np.outer(u1, v1t)
+print("\nApproximation using largest singular value only:\n", A_approx)
 
+print("\nOriginal A:\n", A)
+print("\nDifference A - A_approx:\n", A - A_approx)
 
-What are the functions of commit and rollback statements?
+# Transform the following basis into an orthogonal basis using the Gram-Schmidt Process:
+#
+# $$U_1 = (2, 1, 0), \quad U_2 = (3, 2, 1), \quad U_3 = (4, 1, 2)$$
 
-COMMIT ends the current transaction and permanently saves all the changes made during that transaction to the database. Once a transaction is committed, the changes are written to disk and become visible to other transactions. A committed transaction may not be undone using ROLLBACK.
+import numpy as np
 
-Example: START TRANSACTION; UPDATE accounts SET balance = balance - 1000 WHERE account_id = 1; UPDATE accounts SET balance = balance + 1000 WHERE account_id = 2; COMMIT; After COMMIT, both account updates are permanently saved.
+#  Gram-Schmidt on U1=(2,1,0), U2=(3,2,1), U3=(4,1,2)
 
-ROLLBACK cancels all the changes made in the current transaction and restores the database to the state it was in before the transaction began. ROLLBACK is executed when an error occurs or when the business logic determines that the changes should not be saved.
+def gram_schmidt(vectors):
+    """Returns orthogonal (NOT orthonormal) basis via Gram-Schmidt."""
+    basis = []
+    for v in vectors:
+        w = v.copy().astype(float)
+        for b in basis:
+            proj = np.dot(w, b) / np.dot(b, b) * b
+            w = w - proj
+        if not np.allclose(w, 0):
+            basis.append(w)
+    return basis
 
-Example: START TRANSACTION; UPDATE accounts SET balance = balance - 1000 WHERE account_id = 1; -- Error: account 2 does not exist ROLLBACK; After ROLLBACK, the debit to account 1 is reversed. The database is back to its state before the transaction.
+U1 = np.array([2, 1, 0], dtype=float)
+U2 = np.array([3, 2, 1], dtype=float)
+U3 = np.array([4, 1, 2], dtype=float)
+
+orthogonal_basis = gram_schmidt([U1, U2, U3])
+
+print("Orthogonal Basis:")
+for idx, v in enumerate(orthogonal_basis, 1):
+    print(f"  v{idx} = {np.round(v, 6)}")
+
+# Verify orthogonality: each pair should have dot product ≈ 0
+print("\nOrthogonality checks (dot products should be ≈ 0):")
+v1, v2, v3 = orthogonal_basis
+print(f"  v1·v2 = {np.dot(v1,v2):.6f}")
+print(f"  v1·v3 = {np.dot(v1,v3):.6f}")
+print(f"  v2·v3 = {np.dot(v2,v3):.6f}")
+
+# Orthonormal basis (unit vectors)
+orthonormal_basis = [v / np.linalg.norm(v) for v in orthogonal_basis]
+print("\nOrthonormal Basis (unit vectors):")
+for idx, v in enumerate(orthonormal_basis, 1):
+    print(f"  q{idx} = {np.round(v, 6)}")
+
+# INFERENCE
+print("\Gram-Schmidt converts any linearly independent set into an orthogonal basis.")
+print("   The original span is preserved — only the direction of basis vectors changes.")
+
+# Given the matrix:
+#
+# $$A = \begin{bmatrix} 1 & 2 & 1 \\ 2 & 0 & 2 \\ 1 & 1 & 3 \end{bmatrix}$$
+#
+# (i) Use the **Gram-Schmidt Process** to convert the columns of matrix $A$ into an orthonormal set of vectors.
+#
+# (ii) Form a matrix $Q$ using these orthonormal vectors as columns and confirm orthonormality ($Q^T Q = I$).
+
+import numpy as np
+
+A = np.array([[1, 2, 1],
+              [2, 0, 2],
+              [1, 1, 3]], dtype=float)#
+
+def gram_schmidt_columns(X):
+    n = X.shape[1]
+    Q = np.zeros_like(X, dtype=float)
+    for j in range(n):
+        v = X[:, j].copy()
+        for i in range(j):
+            qi = Q[:, i]
+            proj = np.dot(qi, v) * qi
+            v = v - proj
+        norm = np.linalg.norm(v)
+        if norm < 1e-12:
+            raise ValueError(f"Column {j} is linearly dependent on previous columns")
+        Q[:, j] = v / norm
+    return Q
+
+Q = gram_schmidt_columns(A)
+
+print("Q =")
+print(Q)
+print("\nQ^T Q =")
+print(Q.T @ Q)
+print("\nIs Q orthonormal?", np.allclose(Q.T @ Q, np.eye(Q.shape[1])))
+
+# Find the covariance for the following set of vectors:
+#
+# $$A = \begin{bmatrix} -1 & 2 \\ 3 & 5 \\ 0 & 1 \\ 4 & 2 \\ 6 & 1 \end{bmatrix}$$
+
+import numpy as np
+
+A = np.array([
+    [-1, 2],
+    [3, 5],
+    [0, 1],
+    [4, 2],
+    [6, 1]
+], dtype=float)# row wise observations
+
+# Each column is a variable, each row is an observation
+cov_matrix = np.cov(A, rowvar=False, ddof=1)
+
+print("Covariance matrix:\n", cov_matrix)
+
+#  INFERENCE
+print("\nCovariance Interpretation:")
+print(f"  Var(X1) = {cov_matrix[0,0]:.4f}  | Var(X2) = {cov_matrix[1,1]:.4f}")
+print(f"  Cov(X1, X2) = {cov_matrix[0,1]:.4f}")
+direction = 'POSITIVE' if cov_matrix[0,1] > 0 else 'NEGATIVE'
+print(f"  {direction} covariance — variables tend to {'move together' if cov_matrix[0,1]>0 else 'move in opposite directions'}.")
+
+# The following table lists the weight and heights of 5 boys. Find the **covariance matrix** for the data:
+#
+# \[
+# \begin{array}{|c|c|c|c|c|c|}
+# \hline
+# Boy & 1 & 2 & 3 & 4 & 5 \\
+# \hline
+# Weight (lb) & 120 & 125 & 125 & 135 & 145 \\
+# \hline
+# Height (in.) & 61 & 60 & 64 & 68 & 72 \\
+# \hline
+# \end{array}
+# \]
+#
+#
+# Calculate the covariance between the Math scores $X$ and the English scores $Y$. What does the value of the covariance signify? Is there a positive or negative relationship?
+#
+# - Math Scores $X$: [60, 70, 80, 65, 75]
+# - English Scores $Y$: [62, 82, 78, 70, 80]
+
+import numpy as np
+
+data = np.array([
+    [120, 125, 125, 135, 145],  # weights
+    [61,  60,  64,  68,  72]    # heights
+], dtype=float)
+
+cov_matrix = np.cov(data, ddof=1)  # rowvar=True by default
+print("Covariance matrix:\n", cov_matrix)
+
+# INFERENCE 
+print("\nCovariance Matrix Interpretation:")
+print(f"  Var(Weight) = {cov_matrix[0,0]:.4f}")
+print(f"  Var(Height) = {cov_matrix[1,1]:.4f}")
+print(f"  Cov(Weight, Height) = {cov_matrix[0,1]:.4f}")
+if cov_matrix[0, 1] > 0:
+    print("  POSITIVE covariance: Boys who weigh more tend to be taller.")
+else:
+    print("  NEGATIVE covariance: Heavier boys tend to be shorter.")
+
+# 1. Import the **Iris dataset** from `sklearn.datasets`.
+# 2. Preprocess the data by subtracting the mean and dividing by the standard deviation of each attribute value. The resulting data should be zero-mean with variance 1. **(2 marks)**
+# 3. Compute the **covariance matrix**. **(2 marks)**
+# 4. Factorize the covariance matrix using **Singular Value Decomposition (SVD)** and obtain the eigenvalues and eigenvectors. **(2 marks)**
+# 5. Find the **principal components**. **(1 mark)**
+
+import numpy as np
+from sklearn.datasets import load_iris
+
+# 1. Load data
+iris = load_iris()
+X = iris.data  # shape (150, 4)
+
+# 2. Standardize (zero mean, variance 1)
+mu = X.mean(axis=0)
+sigma = X.std(axis=0, ddof=0)   # population std so variance = 1 after scaling
+X_std = (X - mu) / sigma
+
+print("Means after standardization (should be ~0):", X_std.mean(axis=0))
+print("Variances after standardization (should be 1):", X_std.var(axis=0))
+
+# 3. Covariance matrix (use ddof=0 to match the standardization above)
+cov = np.cov(X_std, rowvar=False, ddof=0)
+print("\nCovariance matrix:\n", cov)
+
+# 4. SVD of covariance and eigenvalues/eigenvectors
+U, S, Vt = np.linalg.svd(cov, full_matrices=False)
+eigenvalues = S            # for symmetric PSD matrix, singular values == eigenvalues
+eigenvectors = Vt.T        # columns are eigenvectors
+print("\nEigenvalues (from SVD):\n", eigenvalues)
+print("\nEigenvectors (columns):\n", eigenvectors)
+
+# 5. Principal components (project standardized data onto eigenvectors)
+principal_components = X_std @ eigenvectors
+print("\nPrincipal components shape:", principal_components.shape)
+print("First 5 rows of principal components:\n", principal_components[:5])
+
+# Apply **PCA step by step** on the **Wine dataset** and find the principal components that capture **95% variance**.
+# ```
+
+import numpy as np  # ADDED: was missing in original
+# PCA from scratch on the wine dataset — find PCs that capture >= 95% variance.
+from sklearn.datasets import load_wine
+from sklearn.preprocessing import StandardScaler
+
+data = load_wine()#
+X = data.data
+print('Original shape:', X.shape)
+
+# Step 1: standardize
+X_std = StandardScaler().fit_transform(X)
+
+# Step 2: covariance matrix
+cov = np.cov(X_std, rowvar=False)
+
+# Step 3: eigen decomposition
+eigvals, eigvecs = np.linalg.eigh(cov)   # eigh for symmetric matrices
+
+# Step 4: sort descending
+order = np.argsort(eigvals)[::-1]
+eigvals = eigvals[order]
+eigvecs = eigvecs[:, order]
+
+# Step 5: explained variance
+explained = eigvals / eigvals.sum()
+cum = np.cumsum(explained)
+print('PC | Variance | Cumulative')
+for i, (e, c) in enumerate(zip(explained, cum), 1):
+    print(f'{i:2d} | {e:.4f}  | {c:.4f}')
+
+k = int(np.searchsorted(cum, 0.95) + 1)#
+print(f'\n=> {k} principal components capture >= 95% variance')
+
+# Step 6: project
+W = eigvecs[:, :k]
+X_pca = X_std @ W
+print(f'Reduced shape: {X_pca.shape}  (from 13 features down to {k})')
+
+# Compute **PCA** on the following data:
+#
+# \[
+# \begin{array}{|c|c|c|}
+# \hline
+# Data Point & X1 & X2 \\
+# \hline
+# 1 & 2 & 4 \\
+# \hline
+# 2 & -3 & 5 \\
+# \hline
+# 3 & 5 & 4 \\
+# \hline
+# 4 & 6 & 7 \\
+# \hline
+# 5 & 7 & 6 \\
+# \hline
+# \end{array}
+# \]
+#
+# Steps:
+# 1. Centre the data
+# 2. Calculate Covariance Matrix
+# 3. Compute Eigenvalues and Eigenvectors
+# 4. Select principal components
+# 5. Transform the data
+
+import numpy as np
+
+X = np.array([
+    [2, 4],
+    [-3, 5],
+    [5, 4],
+    [6, 7],
+    [7, 6]
+])
+
+print("Original Data:\n", X)
+
+# Step 1: Center the data
+mean = np.mean(X, axis=0)
+X_centered = X - mean
+
+print("\nMean:", mean)
+print("\nCentered Data:\n", X_centered)
+
+# Step 2: Covariance Matrix
+cov_matrix = np.cov(X_centered, rowvar=False)
+
+print("\nCovariance Matrix:\n", cov_matrix)
+
+# Step 3: Eigenvalues and Eigenvectors
+eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
+
+print("\nEigenvalues:\n", eigenvalues)
+print("\nEigenvectors:\n", eigenvectors)
+
+# Step 4: Sort eigenvalues in descending order
+idx = np.argsort(eigenvalues)[::-1]
+eigenvalues = eigenvalues[idx]
+eigenvectors = eigenvectors[:, idx]
+
+print("\nSorted Eigenvalues:\n", eigenvalues)
+print("\nSorted Eigenvectors:\n", eigenvectors)
+
+# First Principal Component
+pc1 = eigenvectors[:, 0]
+print("\nFirst Principal Component:\n", pc1)
+
+# Step 5: Transform the data
+X_pca = X_centered @ eigenvectors
+
+print("\nTransformed Data:\n", X_pca)
+
+# Variance explained
+explained_variance_ratio = eigenvalues / np.sum(eigenvalues)
+
+print("\nExplained Variance Ratio:")
+for i, ratio in enumerate(explained_variance_ratio, start=1):
+    print(f"PC{i}: {ratio:.4f}")
+
+# Gradient descent.  => Linear Regression  + X and Y
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Input 
+
+# Dataset
+
+X = np.array([1,2,3,4,5,6], dtype=float)
+Y = np.array([10,14,18,22,25,33], dtype=float)
+
+# X = np.array([0.0, 0.3, 0.7, 1.0])
+# Y = np.array([1.0, 1.2, 0.8, 1.5])
+
+# Initial parameters
+a = 0.5      # slope
+b = 0.3      # intercept
+
+# Learning rate
+alpha = 0.05
+
+# Number of iterations / epochs
+iterations = 5
+
+# Loss Function
+# "MSE"  -> Mean Squared Error
+# "SSE"  -> Sum of Squared Errors
+loss_type = "MSE"
+
+# Optional stopping criterion
+tolerance = 0.01
+
+# Gradient descent code starts
+
+n = len(X)
+
+print("Initial Values")
+print(f"a = {a:.6f}, b = {b:.6f}")
+
+for epoch in range(1, iterations + 1):
+
+    # Predictions
+    Y_pred = a * X + b
+
+    # Errors
+    errors = Y - Y_pred
+
+    # Loss
+    if loss_type.upper() == "MSE":
+        loss = np.mean(errors**2)
+
+        grad_b = (-2 / n) * np.sum(errors)
+        grad_a = (-2 / n) * np.sum(X * errors)
+
+    else:   # SSE
+        loss = np.sum(errors**2)
+
+        grad_b = -2 * np.sum(errors)
+        grad_a = -2 * np.sum(X * errors)
+
+    # Store old values
+    a_old = a
+    b_old = b
+
+    # Update weights
+    a = a - alpha * grad_a
+    b = b - alpha * grad_b
 
-Together, COMMIT and ROLLBACK are the core of transaction management and support the Atomicity principle of ACID: a transaction is either fully committed or fully rolled back — there is no partial state.
+    # Print every iteration
+    print(
+        f"Epoch {epoch:3d}: "
+        f"a={a:.6f}, b={b:.6f}, Loss={loss:.6f}"
+    )
 
+    # Optional convergence check
+    if (abs(a - a_old) < tolerance and
+        abs(b - b_old) < tolerance):
+        print(f"\nConverged at Epoch {epoch}")
+        break
 
-What's wrong with this query? SELECT department_id, count(*) FROM department WHERE count(*) > 5 GROUP BY department_id;
+# Final Result
 
-The query is incorrect because COUNT(*), an aggregate function, is used inside the WHERE clause. SQL prohibits aggregate functions in the WHERE clause.
+print("\nOptimized Parameters")
+print(f"a = {a:.6f}")
+print(f"b = {b:.6f}")
 
-The reason is the order of clause evaluation. WHERE is executed before GROUP BY. At the time WHERE runs, rows have not yet been grouped and aggregate functions have not yet been computed. The value of COUNT(*) is therefore unknown when WHERE is evaluated, which causes a syntax error.
+Y_final = a * X + b
 
-The corrected query replaces WHERE with HAVING, which is evaluated after GROUP BY and after aggregation:
+# Plot
 
-SELECT department_id, COUNT(*) FROM department GROUP BY department_id HAVING COUNT(*) > 5;
+plt.figure(figsize=(7,5))
 
-HAVING is the correct clause for filtering on aggregate results. This corrected query first groups all rows by department_id, counts the rows in each group, and then HAVING filters out any group with five or fewer rows.
+plt.scatter(X, Y, label="Actual Data")
 
+plt.plot(
+    X,
+    Y_final,
+    marker='o',
+    label="Regression Line"
+)
 
-Explain different types of Normalization.
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.title("Gradient Descent Linear Regression")
+plt.legend()
+plt.grid(True)
 
-Normalization is the process of organizing a database schema to eliminate data redundancy and ensure data integrity. It involves decomposing tables based on dependency rules.
+plt.show()
 
-Functional Dependency is the foundation of normalization. A column B is functionally dependent on column A if knowing A determines the value of B. As an illustration, knowing an employee_id determines the employee_name.
+# Consider the function $f(x) = x^2 + 4x + 5$.
+#
+# 1. Derive the **gradient** (first derivative) of $f(x)$.
+# 2. Suppose the current point is $x = 2$. Calculate the gradient at this point.
+# 3. If we apply one step of gradient descent from $x = 2$ with learning rate $\alpha = 0.1$, calculate the updated value of $x$.
+# 4. Explain why gradient descent moves towards a minimum in this function.
 
-First Normal Form (1NF) requires that every column holds atomic (single, indivisible) values — no lists or sets in a cell. Each row must be unique. Each column must contain only one type of data. A table that stores multiple phone numbers in one cell like 9876543210, 9123456789 violates 1NF.
+import numpy as np
+import matplotlib.pyplot as plt
 
-Second Normal Form (2NF) requires the table to already satisfy 1NF and additionally every non-key column must depend on the complete primary key, not just part of it. Partial dependencies must be removed. This is relevant only when the primary key is composite (made up of several column).
+def f(x): return x**2 + 4*x + 5
+def df(x): return 2*x + 4
 
-Third Normal Form (3NF) requires the table to satisfy 2NF and additionally there must be no transitive dependencies. A transitive dependency is when a non-key column depends on another non-key column instead of directly on the primary key. As an illustration, if a table has employee_id, department_id, and department_name, and department_name depends on department_id rather than on employee_id, that is transitive and should be moved to a separate departments table.
+x0 = 2.0
+alpha = 0.1
 
-Boyce-Codd Normal Form (BCNF) is a stricter extension of 3NF. It requires that for every functional dependency X determines Y, X must be a superkey of the table. BCNF resolves certain anomalies involving overlapping candidate keys that 3NF leaves unresolved.
+grad = df(x0)
+x_new = x0 - alpha * grad
 
+print(f"f'(x) = 2x + 4")
+print(f"Gradient at x = {x0}: {grad}")
+print(f"Updated x after one GD step (alpha={alpha}): {x_new}")
+print(f"f({x0}) = {f(x0):.6f}, f({x_new}) = {f(x_new):.6f}")
 
-Mention the differences between UNION and UNION ALL.
+# Optional visualization
+xs = np.linspace(-5, 2.5, 400)
+plt.figure(figsize=(6,4))
+plt.plot(xs, f(xs), label='f(x)')
+plt.scatter([x0, x_new], [f(x0), f(x_new)], color=['C1','C2'], zorder=5)
+plt.arrow(x0, f(x0), x_new-x0, f(x_new)-f(x0), head_width=0.2, length_includes_head=True, color='gray')
+plt.legend(); plt.xlabel('x'); plt.ylabel('f(x)'); plt.title('Gradient step from x0 to x_new')
+plt.grid(alpha=0.3); plt.show()
 
-UNION merges the outputs of two or more SELECT statements into one result set and automatically removes any duplicate rows. The output contains only unique rows.
+# Gradient Descent  -- Single Variable  - only x and X,Y table data is not given
+import numpy as np
+import sympy as sp
+import matplotlib.pyplot as plt
 
-UNION ALL merges the outputs of two or more SELECT statements and keeps each individual row including duplicates. No deduplication step is performed.
+# Input
 
-Both require the same number of columns in each SELECT and matching data types for corresponding columns.
+x = sp.symbols('x')
 
-UNION is slower than UNION ALL because it must sort and deduplicate the combined result set. UNION ALL is faster because it simply concatenates the results without any extra processing.
+# Function
+f = x**2 + 4*x + 5
 
-Example: SELECT city FROM customers UNION SELECT city FROM suppliers; Returns a list of all unique cities mentioned in either table.
+# Starting point
+x_current = 2
 
-SELECT city FROM customers UNION ALL SELECT city FROM suppliers; Returns every city from both tables including duplicates.
+# Learning rate
+alpha = 0.1
 
-When to use which: use UNION when the two result sets may overlap and you want unique results. Use UNION ALL when you know there are no duplicates, or when you intentionally want all rows including duplicates, or when query performance is a priority.
+# Number of iterations
+iterations = 5
 
+# Derivatives
 
-Mention the difference between TRUNCATE and ROUND functions.
+gradient = sp.diff(f, x)
 
-TRUNCATE(number, decimal_places) removes decimal digits beyond the specified position without any rounding. It always cuts toward zero regardless of the following digits. Example: TRUNCATE(3.7896, 2) returns 3.78 — the third and fourth decimals are simply dropped. Example: TRUNCATE(3.999, 0) returns 3, not 4 — no rounding occurs.
+print("Function:")
+sp.pprint(f)
 
-ROUND(number, decimal_places) rounds the number to the specified number of decimal places using standard mathematical rounding. If the digit immediately after the cutoff position is 5 or greater, the last kept digit is rounded up; if it is less than 5, the value is rounded down. Example: ROUND(3.7896, 2) returns 3.79 — the third decimal 9 rounds the second decimal up. Example: ROUND(3.999, 0) returns 4 — the first decimal 9 causes rounding up to 4.
+print("\nGradient:")
+sp.pprint(gradient)
 
-The key distinction is that TRUNCATE always discards digits and never increases the value, while ROUND applies rounding rules and may increase the value. TRUNCATE(3.999, 0) gives 3 whereas ROUND(3.999, 0) gives 4.
+# Gradient Descent
 
+x_history = [x_current]
+y_history = [float(f.subs(x, x_current))]
 
-Mention the difference between ISNULL() and IFNULL().
+print("\nGradient Descent Iterations")
 
-ISNULL(expression) checks whether the given expression is NULL. It accepts exactly one argument and gives 1 (true) if the expression is NULL, or 0 (false) if it is not NULL. ISNULL is a test — it tells you whether something is NULL but does not replace or change the value. Example: SELECT ISNULL(NULL); returns 1. Example: SELECT ISNULL(5); gives 0.
+for i in range(iterations):
 
-IFNULL(expression, replacement) is a substitution function that accepts two arguments. If the first argument is not NULL, it returns the first argument unchanged. If the first argument is NULL, it returns the second argument as a fallback value. Example: SELECT IFNULL(NULL, 'Not Available'); returns Not Available. Example: SELECT IFNULL(salary, 0) FROM employees; replaces any NULL salary with 0.
+    grad_value = float(gradient.subs(x, x_current))
 
-The primary difference is in purpose and number of arguments. ISNULL takes one argument and answers the question is this NULL with a 0 or 1. IFNULL takes two arguments and answers what value should be shown when this is NULL by substituting a meaningful default. ISNULL is used for checking; IFNULL is used for handling null entries in output.
+    x_new = x_current - alpha * grad_value
 
+    y_new = float(f.subs(x, x_new))
 
-What is referential integrity?
+    print(
+        f"Iteration {i+1}: "
+        f"x = {x_new:.4f}, "
+        f"f(x) = {y_new:.4f}"
+    )
 
-Referential integrity is a database property that ensures the relationships between tables remain valid and consistent at all times. It guarantees that a foreign key value in a dependent table always corresponds to an existing primary key value in the parent table, or is NULL.
+    x_current = x_new
 
-Referential integrity prevents two categories of problems:
+    x_history.append(x_current)
+    y_history.append(y_new)
 
-Orphan records occur when a row in the dependent table references a primary key value that no longer exists in the parent table. As an illustration, an order record containing a customer_id that was deleted from the customers table would be an orphan.
+# Final Calculation
 
-Dangling references occur when you try to delete or update a primary key in the parent table that child rows still reference.
+print("\nFinal x =", x_current)
+print("Final f(x) =", float(f.subs(x, x_current)))
 
-In MySQL, referential integrity is enforced by defining FOREIGN KEY constraints. When a foreign key is declared, the database automatically validates every INSERT and UPDATE to the dependent table to confirm that the referenced value exists in the parent.
+# Plot
 
-The ON DELETE and ON UPDATE options control what happens to child records when the parent changes: CASCADE automatically propagates the change — deleting a parent deletes all related child rows, updating a parent key updates all matching child foreign key values. SET NULL sets the foreign key column in the child to NULL when the parent row is deleted. RESTRICT prevents the parent from being deleted or updated if child rows still reference it. NO ACTION behaves like RESTRICT with deferred checking.
+x_vals = np.linspace(
+    min(x_history) - 2,
+    max(x_history) + 2,
+    500
+)
 
+f_numpy = sp.lambdify(x, f, 'numpy')
+y_vals = f_numpy(x_vals)
 
-Mention the difference between WHERE and HAVING.
+plt.figure(figsize=(8,5))
 
-WHERE filters individual rows before any grouping takes place. It is evaluated early in the query pipeline, before GROUP BY. WHERE works on the raw, ungrouped rows of the table. You cannot use aggregate functions (COUNT, SUM, AVG, MIN, MAX) inside a WHERE clause because those values have not yet been calculated.
+# Function curve
+plt.plot(x_vals, y_vals, label='f(x)')
 
-Example: SELECT * FROM employees WHERE salary > 50000; filters out individual employee rows where the salary is 50000 or below before any grouping.
+# GD points
+plt.scatter(
+    x_history,
+    y_history,
+    marker='o',
+    label='Gradient Descent Steps'
+)
 
-HAVING filters groups of rows after GROUP BY has been applied and after aggregate functions have computed their results. HAVING is evaluated after aggregation. You can and should use aggregate functions inside HAVING.
+# Connect steps
+plt.plot(
+    x_history,
+    y_history,
+    linestyle='--'
+)
 
-Example: SELECT department_id, AVG(salary) AS avg_salary FROM employees WHERE salary > 20000 GROUP BY department_id HAVING AVG(salary) > 50000;
+plt.xlabel('x')
+plt.ylabel('f(x)')
+plt.title('Gradient Descent on f(x)')
+plt.legend()
+plt.grid(True)
 
-In this query, WHERE first removes employees earning 20000 or less from the individual rows. GROUP BY then groups the remaining employees by department. HAVING then removes any department where the average salary of the remaining employees is 50000 or below.
+plt.show()
 
-In summary: WHERE operates on rows before grouping; HAVING operates on groups after aggregation. WHERE comes before GROUP BY in the execution order; HAVING comes after.
+# Gradient descent. - Polynomial and no data given --> expression has x and y
 
+import numpy as np
+import matplotlib.pyplot as plt
 
-Count total number of 'a' appearing in the mentioned phrase 'Great Learning'.
+# Data
 
-To count the total occurrences of the letter a in the phrase Great Learning in MySQL, the standard approach uses LENGTH and REPLACE together. The logic is: measure the original length of the string, remove all occurrences of the letter a from the string, measure the new length, and subtract the new length from the original. The difference is the number of times a appeared.
+X = np.array([1,2,3,4])
 
-Query: SELECT LENGTH('Great Learning') - LENGTH(REPLACE(LOWER('Great Learning'), 'a', '')) AS count_of_a;
+Y = np.array([1,4,9,16])
+a = 0
+b = 0
 
-Step by step: LOWER('Great Learning') converts the string to great learning so the search is case-insensitive. REPLACE('great learning', 'a', '') removes every a, producing gret lerning. LENGTH('great learning') is 14 characters. LENGTH('gret lerning') is 12 characters. 14 minus 12 equals 2.
+c = 0
 
-The letter a appears 2 times in Great Learning — once in Great and once in Learning.
+alpha = 0.001
 
+iterations = 500
 
-After creating a table, how a unique constraint can be added to a column and how will you delete the same?
+# Gradient Descent
 
-To add a UNIQUE constraint to an existing column after the table has already been created, use the ALTER TABLE statement with ADD CONSTRAINT.
+n = len(X)
 
-Syntax to add: ALTER TABLE table_name ADD CONSTRAINT constraint_name UNIQUE (column_name);
+for epoch in range(iterations):
 
-Example: ALTER TABLE employees ADD CONSTRAINT uq_email UNIQUE (email); This adds a unique constraint named uq_email on the email column. From this point no two rows can share the same email value.
+    Y_pred = a*X**2 + b*X + c
 
-You can also add without specifying a name and let MySQL generate one: ALTER TABLE employees ADD UNIQUE (email);
+    errors = Y - Y_pred
 
-To drop (remove) a UNIQUE constraint, use ALTER TABLE with DROP INDEX. In MySQL, unique constraints are implemented as unique indexes, so they are dropped using the index name.
+    grad_a = (-2/n)*np.sum(X**2 * errors)
 
-Syntax to drop: ALTER TABLE table_name DROP INDEX constraint_name;
+    grad_b = (-2/n)*np.sum(X * errors)
 
-Example: ALTER TABLE employees DROP INDEX uq_email;
+    grad_c = (-2/n)*np.sum(errors)
 
-If no constraint name was specified when adding the unique key, MySQL typically uses the column name as the default index name: ALTER TABLE employees DROP INDEX email;
+    a = a - alpha*grad_a
 
-To see all indexes and constraint names on a table: SHOW INDEX FROM employees;
+    b = b - alpha*grad_b
 
+    c = c - alpha*grad_c
 
-How correlated sub-query can be applied in Having clause? Explain with an example.
+print(a,b,c)
 
-A correlated subquery in the HAVING clause is one where the inner query references a value from the parent query's current group. HAVING evaluates the subquery after GROUP BY has created the groups, so the correlated reference is to aggregate or group-level values.
+# Plot
 
-Example: Find all departments where the average salary of employees in that department is higher than the overall company average salary.
+x_curve = np.linspace(min(X),max(X),100)
 
-SELECT department_id, AVG(salary) AS avg_dept_salary FROM employees GROUP BY department_id HAVING AVG(salary) > (SELECT AVG(salary) FROM employees);
+y_curve = a*x_curve**2 + b*x_curve + c
 
-Here the inner subquery SELECT AVG(salary) FROM employees is not correlated to the outer group (it returns the global average), but it sits inside HAVING filtering groups.
+plt.scatter(X,Y)
 
-A fully correlated example: Find departments where the count of employees exceeds the average count per department.
+plt.plot(x_curve,y_curve)
 
-SELECT department_id, COUNT(*) AS emp_count FROM employees GROUP BY department_id HAVING COUNT(*) > ( SELECT AVG(dept_count) FROM (SELECT COUNT(*) AS dept_count FROM employees GROUP BY department_id) AS dept_sizes );
+plt.grid()
 
-For each group (department), HAVING evaluates the inner query using that group's aggregated context, keeping only departments whose employee count exceeds the average count across all departments. The subquery is re-evaluated for each group, which is the defining characteristic of a correlated usage.
+plt.show()
 
+# Find the points of local maxima, local minima of the function:
 
-Explain Unique Key with example and describe when to declare an attribute as UNIQUE key instead of PRIMARY KEY.
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
 
-A UNIQUE key is a constraint that ensures every value in the constrained column is distinct — no two rows can have an the same value. A column with a UNIQUE constraint can still hold null entries (typically one NULL is allowed per unique column).
+# Data
 
-Example: In a customers table, declare the email column as UNIQUE because no two customers should have the same email address. CREATE TABLE customers ( customer_id INT PRIMARY KEY, email VARCHAR(100) UNIQUE, name VARCHAR(50) );
+x = sp.symbols('x')
 
-When to declare UNIQUE instead of PRIMARY KEY:
+f = x**3 - 6*x**2 + 9*x + 5
 
-Use UNIQUE when the column must be distinct but is not the primary row identifier. email, phone_number, and national_id_number are examples where uniqueness is required but the table's official identifier is a surrogate key like customer_id.
+# Optional interval
+interval_start = -10
+interval_end = 10
 
-Use UNIQUE when the column may occasionally hold NULL. PRIMARY KEY never allows NULL, but UNIQUE does. If a value is optional but must be unique whenever it is provided, UNIQUE is the right choice.
+# First Derivative
 
-Use UNIQUE when there are multiple candidate keys. A table can have only one PRIMARY KEY but any number of UNIQUE constraints. All other candidate keys beyond the primary key should be enforced with UNIQUE.
+f1 = sp.diff(f, x)
 
-Use PRIMARY KEY for the main row identifier used in foreign key references. Choosing PRIMARY KEY makes the referencing relationships explicit and ensures the referenced column always has a value.
+print("f'(x) =")
+sp.pprint(f1)
 
+# Critical Points
 
-Write a SQL query to find all duplicate emails in a table named Person.
+critical_points = sp.solve(f1, x)
 
-To find duplicate emails in the Person table, group rows by the Email column and use HAVING to keep only those email values that appear more than once.
+print("\nCritical Points:")
+print(critical_points)
 
-SELECT Email FROM Person GROUP BY Email HAVING COUNT(*) > 1;
+# Second Derivative
 
-Explanation: GROUP BY Email collects all rows sharing the same email into one group. COUNT(*) counts how many rows are in each group. HAVING COUNT(*) > 1 keeps only groups where the same email appears in two or more rows.
+f2 = sp.diff(f1, x)
 
-For the table containing (1, a@b.com), (2, c@d.com), (3, a@b.com), the query returns a@b.com because it is present in rows 1 and 3.
+print("\nf''(x) =")
+sp.pprint(f2)
 
-An alternative using a self-join: SELECT DISTINCT p1.Email FROM Person p1 JOIN Person p2 ON p1.Email = p2.Email AND p1.Id <> p2.Id;
+# Critical Points
 
-This joins the table to itself to find pairs of different rows that share the same email.
+print("\nCritical Point Analysis")
 
+for cp in critical_points:
 
-How to add columns to a table in MySQL. Explain with proper example.
+    second_derivative = f2.subs(x, cp)
 
-To add a new column to an existing table, use ALTER TABLE with the ADD COLUMN clause.
+    function_value = f.subs(x, cp)
 
-Syntax: ALTER TABLE table_name ADD COLUMN column_name datatype [constraints];
+    print("\nPoint:", cp)
+    print("f(x) =", function_value)
 
-Example 1 — add a single column: ALTER TABLE employees ADD COLUMN phone_number VARCHAR(15); Adds a phone_number column of type VARCHAR(15) to the employees table. Existing rows get NULL in this new column.
+    if second_derivative > 0:
+        print(
+        f"Local Minimum at x={cp}, "
+        f"value={function_value}"
+    )
 
-Example 2 — add a column with a default and NOT NULL: ALTER TABLE employees ADD COLUMN status VARCHAR(10) NOT NULL DEFAULT 'Active'; The status column may not be NULL and defaults to Active for existing rows.
+    elif second_derivative < 0:
+        print(
+        f"Local Maximum at x={cp}, "
+        f"value={function_value}"
+    )
 
-Example 3 — control the position of the new column: ALTER TABLE employees ADD COLUMN middle_name VARCHAR(30) AFTER first_name; The AFTER keyword places the new column immediately after first_name. ALTER TABLE employees ADD COLUMN employee_code INT FIRST; FIRST places the column as the very first column within the table.
+    else:
+        print("Inconclusive")
 
-Example 4 — add multiple columns in one statement: ALTER TABLE employees ADD COLUMN city VARCHAR(50), ADD COLUMN country VARCHAR(50);
+# Inflection Point
 
-Use DESCRIBE employees; after the ALTER to verify the new column was added correctly.
+inflection_points = sp.solve(f2, x)
 
+print("\nInflection Points:")
 
-Given a scenario, an attribute named First Name consists of duplicate values and as well as NULL values. Is it possible to apply Group By clause on First Name?
+for ip in inflection_points:
 
-Yes, GROUP BY can be applied to the First Name column even when it contains duplicate values and null entries, and it handles both correctly.
+    print(
+        f"x = {ip}, "
+        f"f(x) = {f.subs(x, ip)}"
+    )
 
-Duplicate values: GROUP BY is designed exactly for this. It collects all rows that share the same First Name value into one group. Having many rows with the same first name is not a problem — it is the whole point of grouping. The result will have one row per unique First Name value with aggregate functions applied to each group.
+# Plot
 
-null entries: GROUP BY treats all missing entries as belonging to the same group. All rows where First Name is NULL are grouped together as one NULL group. This is a deliberate behavior in MySQL — even though NULL does not equal NULL in comparisons (NULL = NULL is UNKNOWN), GROUP BY treats NULLs as equal for grouping purposes.
+f_np = sp.lambdify(x, f, 'numpy')
 
-Example: SELECT first_name, COUNT(*) AS count FROM employees GROUP BY first_name;
+x_vals = np.linspace(interval_start,interval_end,500)
 
-If the table has first_name values John, John, Alice, NULL, NULL, the result contains three groups: John with count 2, Alice with count 1, and NULL with count 2.
+y_vals = f_np(x_vals)
 
-So yes, GROUP BY works correctly on a column with both duplicates and NULLs.
+plt.figure(figsize=(8,5))
 
+plt.plot(x_vals, y_vals)
 
-What is the difference between RANK() and DENSE_RANK()? Justify the answer with sample code.
+# Critical points
+for cp in critical_points:
 
-Both RANK() and DENSE_RANK() are window functions that assign a numerical rank to each record based on a specified ordering. They differ in how they handle ties.
+    cp_num = float(cp)
 
-RANK() assigns the same rank to tied rows but then skips ranks for the number of tied rows, creating gaps in the sequence. If two rows tie for rank 1, the next row receives rank 3 — rank 2 is skipped.
+    plt.scatter(
+        cp_num,
+        float(f.subs(x, cp))
+    )
 
-DENSE_RANK() assigns the same rank to tied rows but does not skip any ranks. The next distinct value always receives the next consecutive integer. If two rows tie for rank 1, the next distinct value receives rank 2 — no gap.
+# Inflection points
+for ip in inflection_points:
 
-Example: Salaries: 60000, 60000, 50000, 40000.
+    ip_num = float(ip)
 
-With RANK(): 60000 — rank 1 60000 — rank 1 50000 — rank 3 (rank 2 is skipped) 40000 — rank 4
+    plt.scatter(
+        ip_num,
+        float(f.subs(x, ip)),
+        marker='x'
+    )
 
-With DENSE_RANK(): 60000 — rank 1 60000 — rank 1 50000 — rank 2 (consecutive, no gap) 40000 — rank 3
+plt.grid()
 
-Sample SQL: SELECT employee_id, salary, RANK() OVER (ORDER BY salary DESC) AS rank_val, DENSE_RANK() OVER (ORDER BY salary DESC) AS dense_rank_val FROM employees;
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.title("Function Analysis")
 
-Use DENSE_RANK when you need consecutive ranking for finding the second or Nth highest value. Use RANK when gaps in ranking are meaningful, such as competition standings where two tied first-place winners mean no second place exists.
+plt.show()
 
+# Find out the derivative of the following function using the **chain rule**. Perform step-wise operation:
+#
+# $$f(x) = \cos\left(\frac{1}{\sqrt{1+x^2}}\right)$$
+#
+# Also, find the **Hessian Matrix** of the following function:
+#
+# $$f(x, y) = x^2y^2 + \frac{x}{y^2}$$
 
-How do you control the data in the child table when there is a change in the parent table? Explain with an example.
+import sympy as sp
 
-You control dependent table behavior using the ON DELETE and ON UPDATE options in the FOREIGN KEY constraint. These options specify what action the database should take on the child rows automatically when the referenced parent row is deleted or updated.
+# Chain Rule Derivative
 
-Available actions:
+x = sp.symbols('x')
 
-CASCADE: The change is automatically propagated to the dependent table. Deleting a parent row deletes all matching child rows. Updating the parent key updates all matching child foreign key values.
+f = sp.cos(1 / sp.sqrt(1 + x**2))
 
-SET NULL: The foreign key column in the child is set to NULL when the parent row is deleted or updated. The child rows are not removed.
+df_dx = sp.diff(f, x)
 
-RESTRICT: The operation on the parent is blocked if any child rows reference it. An error is returned.
+print("Derivative of f(x):")
+sp.pprint(sp.simplify(df_dx))
 
-NO ACTION: Similar to RESTRICT — the delete or update is rejected if it would create orphan records.
+# Hessian Matrix
 
-Example: CREATE TABLE departments (dept_id INT PRIMARY KEY, dept_name VARCHAR(50));
+x, y = sp.symbols('x y')
 
-CREATE TABLE employees ( emp_id INT PRIMARY KEY, name VARCHAR(50), dept_id INT, FOREIGN KEY (dept_id) REFERENCES departments(dept_id) ON DELETE CASCADE ON UPDATE CASCADE );
+g = x**2 * y**2 + x / y**2
 
-With this setup: if a department is deleted from the departments table, all employees in that department are automatically deleted from the employees table. If a dept_id is updated in departments, the corresponding dept_id values in all employee rows are automatically updated to match.
+# Hessian Matrix
+H = sp.hessian(g, (x, y))
 
+print("\nHessian Matrix:")
+sp.pprint(H)
 
-What is a foreign key? How to implement the same in MySQL?
+# Find the **Jacobian matrix** of $F(x)$:
+#
+# $$F(x) = \begin{pmatrix} f_1(x_1, x_2) \\ f_2(x_1, x_2) \end{pmatrix} = \begin{pmatrix} x_1^2 + 5x_2 - 5 \\ \sin\frac{x_1}{x_2} + x_2^2 x_1 \end{pmatrix}$$
 
-A foreign key is a column (or set of columns) in a single table whose values reference the primary key of another table. It creates a logical link between the two tables and enforces referential integrity by ensuring every foreign key value either matches an existing primary key value in the parent table or is NULL.
+import sympy as sp
 
-The table containing the foreign key is called the dependent table and the table containing the referenced primary key is called the parent table.
+# Define symbols
+x1, x2 = sp.symbols('x1 x2')
 
-Implementation in MySQL:
+# Define functions
+f1 = x1**2 + 5*x2 - 5
+f2 = sp.sin(x1/x2) + x2**2 * x1
 
-Method 1 — define the foreign key when creating the table: CREATE TABLE orders ( order_id INT PRIMARY KEY, customer_id INT NOT NULL, order_date DATE, FOREIGN KEY (customer_id) REFERENCES customers(customer_id) );
+# Jacobian matrix
+J = sp.Matrix([
+    [sp.diff(f1, x1), sp.diff(f1, x2)],
+    [sp.diff(f2, x1), sp.diff(f2, x2)]
+])
 
-Method 2 — add a foreign key to an existing table using ALTER TABLE: ALTER TABLE orders ADD CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id);
+print("Jacobian Matrix:")
+sp.pprint(J)
 
-Method 3 — add with cascade options: ALTER TABLE orders ADD CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE ON UPDATE CASCADE;
+# If $f(x_1, x_2) = (w_0 - w_1 x_1 - w_2 x_2)^2$, find $\frac{\partial f}{\partial x_1}$ and $\frac{\partial f}{\partial x_1}$.
+#
+# Also calculate $[3\ 4] - \eta \times \nabla f|_{(1,1)}$ if $w_0 = 1$, $w_1 = -1$, $w_2 = -2$ and $\eta = 1.2$.
 
-Prerequisites: the child and parent columns must have compatible data types. The parent column must have a PRIMARY KEY or UNIQUE constraint. For foreign keys to be enforced in MySQL, the tables must use the InnoDB storage engine.
+import sympy as sp
 
+w0, w1, w2, x1, x2, eta = sp.symbols('w0 w1 w2 x1 x2 eta')
+f = (w0 - w1*x1 - w2*x2)**2
 
-Write a SQL query to get the second highest salary from the Employee table. If there is no second highest salary, then the query should return null.
+df_dx1 = sp.diff(f, x1)
+df_dx2 = sp.diff(f, x2)
 
-Approach 1 — nested MAX subquery (most straightforward): SELECT MAX(Salary) AS SecondHighestSalary FROM Employee WHERE Salary < (SELECT MAX(Salary) FROM Employee);
+values = {w0: 1, w1: -1, w2: -2, x1: 1, x2: 1, eta: 1.2}
 
-The inner subquery finds the highest salary. The outer query finds the highest salary among all salaries strictly below that maximum. If only one distinct salary exists, the outer MAX returns NULL automatically.
+grad = [df_dx1.subs(values), df_dx2.subs(values)]
+updated = sp.Matrix([3, 4]) - values[eta] * sp.Matrix(grad)
 
-Approach 2 — LIMIT with OFFSET: SELECT IFNULL( (SELECT DISTINCT Salary FROM Employee ORDER BY Salary DESC LIMIT 1 OFFSET 1), NULL ) AS SecondHighestSalary;
+print("df/dx1 =", df_dx1)
+print("df/dx2 =", df_dx2)
+print("gradient at (1,1) =", grad)
+print("updated vector =", updated)
 
-DISTINCT removes duplicate salary values. ORDER BY DESC sorts from highest to lowest. OFFSET 1 skips the first row (the highest) and LIMIT 1 takes the next one. IFNULL handles the case where no second-highest exists.
+# A stone is dropped into a quiet lake and waves move in circles at a speed of **5 cm per second**. At the instant when the radius of the circular wave is **8 cm**, how fast is the enclosed area increasing?
 
-Approach 3 — DENSE_RANK window function: SELECT salary AS SecondHighestSalary FROM ( SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk FROM Employee ) ranked WHERE rnk = 2 LIMIT 1;
+import sympy as sp
 
-For the given table with salaries 100, 200, 300, all three approaches return 200.
+# symbols
+r, dr_dt = sp.symbols('r dr_dt')
 
+# area
+A = sp.pi * r**2
 
-If we drop a table, does it also drop related objects like constraints, indexes, columns, defaults, Views and Stored Procedures? State different types of constraints.
+# derivative dA/dt
+dA_dt = sp.diff(A, r) * dr_dt
 
-When you execute DROP TABLE, MySQL permanently removes the table and everything that is stored as part of the table itself. This includes all columns, all indexes (primary key, unique, and regular indexes), all constraints defined on the table (NOT NULL, DEFAULT, CHECK, PRIMARY KEY, UNIQUE, FOREIGN KEY constraints declared on the table), and all triggers on the table.
+# substitute values
+value = dA_dt.subs({r: 8, dr_dt: 5})
 
-Objects outside the table are handled differently: Views that reference the dropped table are NOT automatically dropped. The view definition remains in the database, but querying it will produce an error because the source table no longer exists. Stored procedures and functions that reference the dropped table are NOT dropped. They remain but will fail when executed. Foreign key constraints in other tables that point to the dropped table will cause an error if FOREIGN_KEY_CHECKS is enabled. You must drop or alter the dependent tables first.
+print("dA/dt =", value, "cm^2/s")
+import math as _math
+print(f"\ndA/dt = 80π ≈ {80*_math.pi:.4f} cm²/s")
+print("INFERENCE: At r = 8cm, the enclosed area is increasing at ≈ 251.33 cm²/s.")
 
-Types of constraints in SQL: NOT NULL ensures a column may not hold a missing entry — each individual row must supply a value. UNIQUE ensures all values in a column are distinct — no duplicates allowed, but one NULL is typically permitted. PRIMARY KEY uniquely identifies each record — combines NOT NULL and UNIQUE; only one primary key per table. FOREIGN KEY links a column to the primary key of another table and enforces referential integrity. CHECK validates column values against a Boolean condition — values violating the condition are rejected. DEFAULT sets an automatic value for a column when no value is explicitly provided during INSERT.
+# **Statement:** For any orthogonal matrix, the inverse is the same as the transpose. 
+#
+# Check whether the following matrix is orthogonal. Verify the statement:
+#
+# $$A = \begin{bmatrix} \frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}} \end{bmatrix}$$
 
+import numpy as np
 
-Explain multi-row operators for subqueries with an example.
+A = np.array([
+    [1/np.sqrt(2),  1/np.sqrt(2)],
+    [1/np.sqrt(2), -1/np.sqrt(2)]
+])
 
-Multi-row operators are used when a subquery returns several row. Standard single-value comparison operators like equals or greater-than cannot handle multi-row results. Multi-row operators are designed to evaluate a value against a set of values.
+AT = A.T
 
-IN checks whether a value matches any value in the set returned by the inner query. Example: SELECT employee_id, name FROM employees WHERE department_id IN (SELECT department_id FROM departments WHERE location = 'Mumbai'); Returns all employees who belong to any department located in Mumbai.
+print("A^T A =")
+print(np.round(AT @ A, 5))
 
-NOT IN returns rows where the value does not match any value in the inner query result. Example: SELECT customer_id FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders); Returns customers who have never placed an order.
+print("\nA^-1 =")
+print(np.round(np.linalg.inv(A), 5))
 
-ANY (equivalently SOME) evaluates to TRUE if the comparison is true for at least one value in the inner query result. Example: SELECT salary FROM employees WHERE salary > ANY (SELECT salary FROM employees WHERE department_id = 5); Returns employees whose salary is greater than at least one salary in department 5.
+print("\nA^T =")
+print(np.round(AT, 5))
 
-ALL evaluates to TRUE only if the comparison is true for every value in the inner query result. Example: SELECT salary FROM employees WHERE salary > ALL (SELECT salary FROM employees WHERE department_id = 5); Returns employees whose salary is greater than every salary in department 5 — effectively employees earning more than the department 5 maximum.
+# **Mr. Johns** sells Mango, Apple, and Peach.
+#
+# - The price of **1 kg Mango, 3 kgs Apple, and 1 kg Peach** is Rs 145.
+# - The price of **3 kgs Mango, 4 kgs Apple, and 1 kg Peach** is Rs 280.
+# - The price of **2 kgs Apple and 1 kg Peach** is Rs 65.
+#
+# Find the price of **1 kg of each fruit**.
 
+import numpy as np
 
-Explain difference between WHERE Clause and GROUP BY Clause?
+# Coefficient matrix
+A = np.array([
+    [1, 3, 1],
+    [3, 4, 1],
+    [0, 2, 1]
+])
 
-The WHERE clause and the GROUP BY clause serve entirely different purposes in SQL.
+# Constants
+B = np.array([145, 280, 65])
 
-WHERE filters individual rows from the table based on a condition. It runs before any grouping takes place. WHERE works on every raw row of the table one at a time. Rows that do not satisfy the WHERE condition are excluded from all further processing. Aggregate functions may not be used in WHERE.
+# Solve
+prices = np.linalg.solve(A, B)
 
-Example: SELECT * FROM employees WHERE salary > 50000; returns only individual employee rows where the salary exceeds 50000.
+print("Mango =", prices[0])
+print("Apple =", prices[1])
+print("Peach =", prices[2])
 
-GROUP BY organizes the remaining rows (after WHERE) into groups based on matching values in at least a single columns. Each group collapses into one summary row when combined with aggregate functions like COUNT(), SUM(), AVG(). GROUP BY is executed after WHERE.
+# **Mr. Murgan** sells 3 different products X, Y & Z.
+#
+# - If he sells 1 unit of X, 5 units of Y, and 1 unit of Z he makes a profit of Rs 1080.
+# - If he sells 1 unit of Y and 1 unit of Z he makes a profit of Rs 540.
+# - If he sells 2 units of X and **buys** 2 units of Y and 1 unit of Z from another seller at the same selling price, he incurs a **loss of Rs 180**.
+#
+# Find the price of each product X, Y, and Z.
 
-Example: SELECT department_id, COUNT(*) FROM employees GROUP BY department_id; groups employees by department and counts how many are in each department.
+import numpy as np
 
-Order of execution: WHERE → GROUP BY → HAVING → SELECT → ORDER BY. This means WHERE filters individual rows first, then GROUP BY groups the filtered rows, then HAVING filters the resulting groups using aggregate conditions.
+A = np.array([
+    [1, 5, 1],
+    [0, 1, 1],
+    [2, -2, -1]
+])
 
-They can work together in one query: SELECT department_id, AVG(salary) FROM employees WHERE salary > 20000 GROUP BY department_id; first removes employees earning 20000 or less, then groups the remaining employees by department and calculates the average salary per group.
+B = np.array([1080, 540, -180])
 
+X, Y, Z = np.linalg.solve(A, B)
 
-What is the result of the following command? DROP VIEW view_name. Is it possible to update the views? If yes, How, If not Why?
+print("X =", X)
+print("Y =", Y)
+print("Z =", Z)
 
-DROP VIEW view_name removes the view definition named view_name from the database. The view itself — which is just a stored SELECT query — is deleted from the database catalog. The underlying source tables and all data in them are completely unaffected.
+# **Mr. X** is an investor. His portfolio primarily tracks the performance of the Nifty index and he wants to add the stock of company 'A'.
+# Before adding the stock, he wants to assess if there exists a relationship between Nifty and Stock A.
+#
+# \[
+# \begin{array}{|c|c|c|}
+# \hline
+# Year & Nifty & Stock A \\
+# \hline
+# 2015 & 1692 & 68 \\
+# \hline
+# 2016 & 1978 & 102 \\
+# \hline
+# 2017 & 1884 & 110 \\
+# \hline
+# 2018 & 2151 & 112 \\
+# \hline
+# 2019 & 2519 & 154 \\
+# \hline
+# \end{array}
+# \]
+#
+# **Help Mr. X to assess the relationship** between Nifty and Stock A.
 
-Regarding updating views — it depends on the type of view:
+import numpy as np
 
-Simple views can be updated. A simple view is created from a single table using a basic SELECT without GROUP BY, DISTINCT, aggregate functions, UNION, or subqueries. You can perform INSERT, UPDATE, and DELETE on a simple view and the changes are applied directly to the underlying source table.
+nifty = np.array([1692, 1978, 1884, 2151, 2519])
+stockA = np.array([68, 102, 110, 112, 154])
 
-Example of updating through a simple view: UPDATE employee_names_view SET first_name = 'Alice' WHERE employee_id = 101; This updates the first_name in the underlying employees table.
+r = np.corrcoef(nifty, stockA)[0, 1]
 
-Complex views may not be updated. A view is not updatable if it uses: GROUP BY or HAVING. Aggregate functions such as SUM, COUNT, AVG. The DISTINCT keyword. UNION or UNION ALL. Subqueries in the SELECT list. Joins in most circumstances.
+print("Correlation Coefficient =", round(r, 4))
+print(f"\n INFERENCE: r = {round(r,4)} indicates very strong positive linear relationship.")
+print("Nifty and Stock A move closely together — adding Stock A mirrors Nifty performance.")
 
-The reason complex views may not be updated is that MySQL is not always able to determine which source table rows to modify when the view is built from multiple tables or derived computations.
+# **Headphone manufacturer** problem:
+#
+# In order to sell $x$ units, the price per unit must be $p(x) = 1000 - x$.
+# The total cost of producing $x$ units is $C(x) = 3000 + 20x$.
+#
+# (i) Find the total revenue $R(x)$.
+# (ii) Find the total profit $P(x)$.
+# (iii) How many units must be produced and sold to **maximize profit**?
+# (iv) What is the **maximum profit**?
+# (v) What **price per unit** must be charged to make this maximum profit?
 
-The WITH CHECK OPTION clause can be added to a simple view to make sure that any INSERT or UPDATE done through the view must still satisfy the view's WHERE condition. If an updated row would no longer appear in the view, the operation is rejected.
+import numpy as np
 
+# Price and Cost functions
+def p(x):
+    return 1000 - x
 
-List the conditions when joins should be used instead of nested sub queries.
+def C(x):
+    return 3000 + 20 * x
 
-Joins are generally preferred over nested subqueries in the following situations:
+# Revenue function
+def R(x):
+    return x * p(x)
 
-When you need columns from multiple tables in the result set. A JOIN naturally combines columns from all joined tables in one output row. A subquery in the WHERE clause cannot return columns from the inner query table alongside the parent query columns.
+# Profit function
+def P(x):
+    return R(x) - C(x)
 
-When performance matters with large tables. The database query optimizer can use indexes across joined tables very effectively. Correlated subqueries can be slow because they re-execute once per outer row.
+# Maximum profit occurs at vertex of parabola
+# P(x) = -x^2 + 980x - 3000
+a = -1
+b = 980
+x_max = -b / (2 * a)
+max_profit = P(x_max)
+price_at_max = p(x_max)
 
-When joining more than two tables. Chaining three or more JOINs is cleaner and more readable than nesting multiple subqueries inside each other.
+print("Revenue Function: R(x) = 1000x - x^2")
+print("Profit Function : P(x) = -x^2 + 980x - 3000")
+print("\nUnits for Maximum Profit =", x_max)
+print("Maximum Profit = Rs.", max_profit)
+print("Price per Unit for Maximum Profit = Rs.", price_at_max)
 
-When using aggregate functions across multiple tables. A single query with GROUP BY and JOIN across tables is more efficient than computing aggregates in nested subqueries.
+# Find out whether the function is **increasing or decreasing**:
+#
+# $$f(x) = -8x^2 + 15$$
 
-When the relationship is a simple foreign key match. Linking a dependent table to its parent through a JOIN on the foreign key is the natural and intended way to retrieve related data.
+import sympy as sp
+x = sp.symbols('x')
+f = -8*x**2 + 15
+# Derivative
+f_prime = sp.diff(f, x)
+print("f(x) =", f)
+print("f'(x) =", f_prime)
 
-When the optimizer can eliminate joins or push predicates down. Explicit JOINs give the optimizer more information to work with than hidden subquery logic.
+print("\nIncreasing on (-∞, 0)")
+print("Decreasing on (0, ∞)")
 
-Subqueries remain appropriate when: the logic is a filter based on a calculated value (salary greater than the average), when using NOT IN or NOT EXISTS to find non-matching records, when the result needed is a scalar value for comparison, or when the inner query is logically independent of the parent query and the intent is clearer as a subquery.
+# Find out whether the function is **concave or convex**:
+#
+# $$f(x) = -8x^2 + 15$$
 
+import sympy as sp
+x = sp.symbols('x')
+f = -8*x**2 + 15
+# Second derivative
+f_double_prime = sp.diff(f, x, 2)
+print("f''(x) =", f_double_prime)
+if f_double_prime < 0:
+    print("The function is Concave.")
+else:
+    print("The function is Convex.")
 
-What are the levels at which check constraints can be created? Justify your answer, on what all data types the constraints can be applied.
+# For the interval $(-1, 1)$ determine if:
+#
+# $$f(x) = x^4 - 6x^2$$
+#
+# is **convex or concave**.
 
-CHECK constraints can be created at two levels:
+import sympy as sp
+x = sp.symbols('x')
+f = x**4 - 6*x**2
+# Second derivative
+f2 = sp.diff(f, x, 2)
+print("f''(x) =", f2)
 
-Column-level constraint is defined inline with the column definition. It applies only to the single column it is attached to and can reference only that column in its condition. Example: CREATE TABLE employees ( age INT CHECK (age >= 18), salary DECIMAL(10,2) CHECK (salary > 0) );
+# Check sign in (-1,1), e.g., x = 0
+print("f''(0) =", f2.subs(x, 0))
 
-Table-level constraint is defined after all column definitions at the end of the CREATE TABLE block. It can reference multiple columns in the same table, making it suitable for cross-column validation. Example: CREATE TABLE bookings ( start_date DATE, end_date DATE, CONSTRAINT chk_dates CHECK (end_date > start_date) );
+if f2.subs(x, 0) < 0:
+    print("The function is Concave on (-1,1)")
+else:
+    print("The function is Convex on (-1,1)")
 
-Both levels can also be added to existing tables: ALTER TABLE employees ADD CONSTRAINT chk_age CHECK (age >= 18 AND age <= 65);
+# ADDED: Rigorous proof for the full interval
+# f''(x) = 12x^2 - 12 = 12(x^2 - 1)
+# For ALL x in (-1, 1): x^2 < 1 → x^2 - 1 < 0 → 12(x^2-1) < 0
+print("\n Rigorous Proof: f''(x) = 12x² - 12 = 12(x²-1)")
+print("   For ALL x in (-1,1): x²<1, so f''(x)<0 → CONCAVE on the entire interval.")
 
-Data types on which CHECK constraints can be applied:
+#  ADDED: Rigorous proof for the entire interval
+# f''(x) = 12x^2 - 12 = 12(x^2 - 1). For ALL x in (-1,1): x^2 < 1 => f''(x) < 0.
+print("\n Rigorous: f''(x) = 12(x²-1) < 0 for ALL x in (-1,1) since x²<1 in that interval.")
+print("   The function is CONCAVE on the ENTIRE interval (-1, 1), not just at x=0.")
 
-Numeric types (INT, DECIMAL, FLOAT, DOUBLE) — useful for range checks such as price > 0 or quantity BETWEEN 0 AND 10000. Character types (VARCHAR, CHAR) — useful for value list checks such as status IN ('Active', 'Inactive') or format constraints. Date and Time types (DATE, DATETIME, TIMESTAMP) — useful for date range checks such as hire_date >= '2000-01-01' or ensuring end_date is after start_date. Boolean equivalents (TINYINT used as 0 or 1) — CHECK (active IN (0, 1)).
+# Find $X$ if:
+#
+# $$\det\begin{pmatrix} 2 & 4 \\ 5 & 1 \end{pmatrix} = \det\begin{pmatrix} 2X & 4 \\ 6 & X \end{pmatrix}$$
 
-CHECK constraints can be applied to any data type that supports Boolean comparison expressions. From MySQL 8.0.16 onwards they are fully enforced.
+import math
 
+# Given matrices
+A = [[2, 4],
+     [5, 1]]
 
-How to add foreign keys in MySQL?
+# Left determinant
+detA = A[0][0]*A[1][1] - A[0][1]*A[1][0]  # 2*1 - 4*5 = -18
 
-A foreign key can be added in MySQL in two ways:
+# Right determinant for unknown X:
+# det([[2X, 4],
+#      [6,  X]]) = (2X)*X - 4*6 = 2*X**2 - 24
+# Solve 2*X**2 - 24 = detA  =>  2*X**2 = detA + 24
 
-Method 1 — during table creation: CREATE TABLE orders ( order_id INT PRIMARY KEY, customer_id INT NOT NULL, FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ); The FOREIGN KEY clause names the child column and REFERENCES specifies the parent table and column.
+rhs = (detA + 24) / 2  # ( -18 + 24 ) / 2 = 3
 
-Method 2 — to an existing table using ALTER TABLE: ALTER TABLE orders ADD CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id); The CONSTRAINT keyword names the foreign key so it can be referenced later if you need to drop it.
+if rhs < 0:
+    print("No real solutions")
+else:
+    x1 = math.sqrt(rhs)
+    x2 = -math.sqrt(rhs)
+    print(f"det(A) = {detA}")
+    print(f"X^2 = {rhs}  =>  X = ±{math.sqrt(rhs):.6f}")
+    print("Solutions:", x1, x2)
 
-Adding with CASCADE options: ALTER TABLE orders ADD CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE ON UPDATE CASCADE; ON DELETE CASCADE automatically deletes child rows when the parent is deleted. ON UPDATE CASCADE automatically updates child foreign key values when the parent key changes.
+    # Optional verification
+    def det_2x2(m):
+        return m[0][0]*m[1][1] - m[0][1]*m[1][0]
 
-Prerequisites: the child and parent columns must have compatible data types. The parent column must be a PRIMARY KEY or have a UNIQUE constraint. Both tables must use the InnoDB storage engine for foreign keys to be enforced.
+    for x in (x1, x2):
+        B = [[2*x, 4],
+             [6,   x]]
+        print(f"det(B) for X={x:.6f} ->", det_2x2(B))
 
+# What is the **effect of higher learning rate** in the Gradient Descent algorithm? Explain briefly.
 
-Is it possible to have two primary keys in a table? Explain what is meant by alternate keys in RDBMS with an example.
+# Effect of a Higher Learning Rate in Gradient Descent
+#
+# The learning rate (α) determines the size of the steps taken toward the minimum of the loss function during each iteration of Gradient Descent.
+#
+# Advantages of a Higher Learning Rate
+# Faster movement toward the minimum.
+# Reduces the number of iterations required for convergence.
+# Training may complete more quickly.
+# Disadvantages of a Higher Learning Rate
+# May overshoot the minimum point.
+# Can cause the algorithm to oscillate around the minimum.
+# May fail to converge and even diverge if the learning rate is too large.
+# Results in unstable training and inaccurate model parameters.
+# Conclusion
+#
+# A higher learning rate speeds up learning but increases the risk of instability and non-convergence. Therefore, the learning rate should be chosen carefully to balance speed and accuracy.
+#
+# Answer: A higher learning rate makes Gradient Descent take larger steps toward the minimum, which can speed up convergence, but if it is too high, it may overshoot the optimum, oscillate, or fail to converge.
 
-No. A table can have only one primary key. This is a fundamental rule of relational database design. However, a primary key can be a composite key — made up of two or more columns together — but it still counts as one primary key.
+# A point $P(2, 3)$ is transformed using the affine transformation matrix $A$ given below. Compute the new coordinates $P'(x', y')$ after the transformation. The transformation follows the equation: $P' = A \times P$.
+# $$A = \begin{bmatrix} 1 & 2 & 1 \\ 0 & 1 & 3 \end{bmatrix}, \quad P = \begin{bmatrix} 2 \\ 3 \\ 1 \end{bmatrix}$$
 
-Alternate Key: An alternate key is a candidate key that was not selected as the primary key.
+import numpy as np
+A = np.array([[1, 2, 1],
+              [0, 1, 3]])
+P = np.array([2, 3, 1])
+P_prime = A @ P
+print("P' =", P_prime)
 
-To understand this, a candidate key is any column or combination of columns that can uniquely identify each individual row within the table and may not be NULL. A table can have multiple candidate keys.
+# For what value of $x$ does the function:
+# $$y = x^2 - 4x$$
+# have the **maximum or minimum value**? Find that value.
 
-When the database designer selects one candidate key to serve as the primary key, all the remaining candidate keys that were not chosen become alternate keys.
+import sympy as sp
 
-Example: Consider a students table with columns student_id, email, and phone_number, all of which uniquely identify a student.
+x = sp.symbols('x')
+y = x**2 - 4*x
+dy_dx = sp.diff(y, x)
+critical_points = sp.solve(dy_dx, x)
 
-All three are candidate keys: student_id, email, and phone_number. If student_id is chosen as the primary key, then email and phone_number become alternate keys.
+for cp in critical_points:
+    value = y.subs(x, cp)
+    print("x =", cp, "y =", value)
 
-Alternate keys are enforced using UNIQUE constraints: CREATE TABLE students ( student_id INT PRIMARY KEY, email VARCHAR(100) UNIQUE, phone_number VARCHAR(15) UNIQUE, name VARCHAR(50) );
+#  ADDED: Second derivative test
+d2y_dx2 = sp.diff(dy_dx, x)
+print("f''(x) =", d2y_dx2)
+for cp in critical_points:
+    val = y.subs(x, cp)
+    sec = d2y_dx2.subs(x, cp)
+    nature = "LOCAL MINIMUM" if sec > 0 else ("LOCAL MAXIMUM" if sec < 0 else "SADDLE")
+    print(f"x={cp}, y={val}, f''={sec} → {nature}")
+print("\n INFERENCE: x=2 gives a LOCAL MINIMUM at y=-4 (parabola opens upward).")
 
-Here, email and phone_number are alternate keys. They remain unique identifiers of a student but are not the designated primary key.
+# Find the **Jacobian** $J(u, v)$ for the system:
+#
+# $$u = x + 2y, \quad v = 3x - y$$
 
+import sympy as sp
 
-What is a view? Mention differences between Simple and Complex view.
+# Define symbols
+x, y = sp.symbols('x y')
 
-A view is a virtual table whose content is defined by a stored SQL SELECT query. It holds no actual any data. When you query a view, MySQL executes the underlying SELECT and provides the results as if they came from a real table.
+# Define functions
+u = x + 2*y
+v = 3*x - y
 
-Views simplify complex queries, restrict access to sensitive columns, and allow the same query logic to be reused without rewriting it.
+# Jacobian matrix
+J = sp.Matrix([
+    [sp.diff(u, x), sp.diff(u, y)],
+    [sp.diff(v, x), sp.diff(v, y)]
+])
 
-A Simple View is created from one source table using a basic SELECT statement. It contains no GROUP BY, no aggregate functions, no DISTINCT, no UNION, no subqueries, and typically no joins. Simple views are updatable — you can perform INSERT, UPDATE, and DELETE through a simple view and the changes are applied directly to the underlying base table.
+# Jacobian determinant
+jacobian = J.det()
 
-Example of a simple view: CREATE VIEW employee_names AS SELECT employee_id, first_name, last_name FROM employees; You can update through this: UPDATE employee_names SET first_name = 'Ravi' WHERE employee_id = 10;
+print("Jacobian Matrix:")
+print(J)
 
-A Complex View is created using multiple tables, or involves GROUP BY, aggregate functions, DISTINCT, UNION, or subqueries. Complex views are generally not updatable because MySQL is not always able to determine how to map the change back to the correct rows in the source tables.
+print("\nJacobian J(u,v):")
+print(jacobian)
 
-Example of a complex view: CREATE VIEW dept_headcount AS SELECT d.department_name, COUNT(e.employee_id) AS headcount FROM employees e JOIN departments d ON e.department_id = d.department_id GROUP BY d.department_name;
+# In simple linear regression for a single data point $(x_i, y_i)$, we define loss as:
+#
+# $$L(w_0, w_1) = \left(\hat{y}_i - (w_0 + w_1 x_i)\right)^2$$
+#
+# where $\hat{y}_i$ is the predicted value for $y_i$.
+#
+# Find:
+#
+# $$\frac{\partial L}{\partial w_0} \quad \text{and} \quad \frac{\partial L}{\partial w_1}$$
 
-Main differences: simple views use a single table; complex views can use many. Simple views support DML; complex views generally do not. Simple views have no aggregation; complex views can. Simple views are easy to maintain; complex views encapsulate sophisticated business logic.
+import sympy as sp
 
+# Define symbols
+w0, w1, xi, y_hat = sp.symbols('w0 w1 xi y_hat')
 
-What is the difference between nested and correlated subqueries?
+# Loss function
+L = (y_hat - (w0 + w1 * xi))**2
 
-A nested subquery (non-correlated subquery) is an inner query that is completely independent of the parent query. It does not reference any column from the outer query. It can be executed automatically and produces a fixed result. The nested subquery runs once, its result is used by the outer query for all rows.
+# Partial derivatives
+dL_dw0 = sp.diff(L, w0)
+dL_dw1 = sp.diff(L, w1)
 
-Example of a nested subquery: SELECT employee_id, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees); The inner query SELECT AVG(salary) FROM employees runs once and gives back one value. The outer query uses that fixed value to filter all employees.
+print("∂L/∂w0 =")
+print(sp.simplify(dL_dw0))
 
-A correlated subquery references at least a single column from the parent query. Because it depends on the outer query's current row, it cannot run independently. It is re-executed once for each individual row processed by the outer query, each time using the current row's values.
+print("\n∂L/∂w1 =")
+print(sp.simplify(dL_dw1))
 
-Example of a correlated subquery: SELECT employee_id, salary, department_id FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE department_id = e.department_id); For each employee in the parent query, the inner query runs with that employee's department_id, calculating the average salary for that specific department.
+# Consider the **cost function**:
+#
+# $$C(x, y) = x^2 + xy + y^2 - 6x - 9y + 14$$
+#
+# (i) **Find the stationary points** using partial derivatives. **(4 marks)**
+#
+# $$\frac{\partial C}{\partial x} = 0 \quad \text{and} \quad \frac{\partial C}{\partial y} = 0$$
+#
+# (ii) **Verify that the stationary point is indeed an extremum** by checking the sign of partial derivatives around the point. **(4 marks)**
+#
+# (iii) **Calculate the minimum cost value** at the stationary point. **(2 marks)**
 
-Main differences: A nested subquery runs once; a correlated subquery runs once per outer row. Nested subqueries are independent and can be tested alone; correlated subqueries depend on the parent query. Nested subqueries are generally faster; correlated subqueries can be slow on large tables because of repeated execution. Nested subqueries are simpler to read; correlated subqueries are more powerful for per-row comparisons.
+import sympy as sp
 
+# Variables
+x, y = sp.symbols('x y')
 
-Name the operator which is used in the query for pattern matching?
+# Cost function
+C = x**2 + x*y + y**2 - 6*x - 9*y + 14
 
-The LIKE operator is used in SQL for pattern matching. It is placed in the WHERE clause to search for a specified pattern in a character column.
+# Partial derivatives
+Cx = sp.diff(C, x)
+Cy = sp.diff(C, y)
 
-LIKE uses two wildcard characters:
+print("∂C/∂x =", Cx)
+print("∂C/∂y =", Cy)
 
-The percent sign % matches any sequence of zero or more characters. Example: SELECT * FROM customers WHERE name LIKE 'A%'; returns all customers whose name starts with the letter A. Example: SELECT * FROM products WHERE code LIKE '%SQL%'; returns all products whose code contains the string SQL anywhere.
+# Solve for stationary point
+stationary_point = sp.solve([Cx, Cy], (x, y))
+print("\nStationary Point:", stationary_point)
 
-The underscore _ matches exactly one character. Example: SELECT * FROM products WHERE code LIKE 'A_C'; matches any three-character code starting with A and ending with C, such as ABC or AXC.
+# Minimum cost
+x0 = stationary_point[x]
+y0 = stationary_point[y]
 
-NOT LIKE is the negation — it returns rows where the column does not match the pattern.
-
-The ESCAPE clause is used when you need to search for a literal percent or underscore character: SELECT * FROM products WHERE description LIKE '50\%' ESCAPE ''; finds descriptions containing the literal text 50%.
-
-For more powerful regular expression matching, MySQL also provides REGEXP (or RLIKE): SELECT * FROM employees WHERE name REGEXP '^[A-C]'; returns names starting with A, B, or C.
-
-
-What are character manipulation functions? Give some examples.
-
-Character manipulation functions are built-in SQL functions that operate on string (text) data. They transform, extract, search, or format character values.
-
-UPPER(string) converts all characters to uppercase. Example: SELECT UPPER('hello'); returns HELLO.
-
-LOWER(string) converts all characters to lowercase. Example: SELECT LOWER('WORLD'); returns world.
-
-LENGTH(string) returns the number of characters in a string. Example: SELECT LENGTH('Database'); returns 8.
-
-SUBSTRING(string, start, length) extracts a portion of a string starting at the given position for the specified number of characters. Example: SELECT SUBSTRING('Database', 1, 4); returns Data.
-
-CONCAT(str1, str2, ...) joins two or more strings into one. Example: SELECT CONCAT('Data', 'base'); returns Database.
-
-TRIM(string) removes leading and trailing spaces. Example: SELECT TRIM('  hello  '); returns hello.
-
-REPLACE(string, from_str, to_str) replaces all occurrences of a substring with another string. Example: SELECT REPLACE('Hello World', 'World', 'SQL'); returns Hello SQL.
-
-INSTR(string, substring) returns the position of the first occurrence of a substring within a string. Example: SELECT INSTR('Database', 'base'); returns 5.
-
-LPAD(string, length, pad) and RPAD() pad a string to a specified length by prepending or appending a pad string. Example: SELECT LPAD('5', 4, '0'); gives 0005.
-
-
-Explain Check Constraint in-detail with an example.
-
-A CHECK constraint is a rule defined on a column or table that restricts which values can be stored. Any INSERT or UPDATE that would result in a value violating the CHECK condition is rejected by the database with a constraint error.
-
-CHECK constraints ensure domain integrity by enforcing business rules at the database level, preventing invalid data regardless of where the data entry originates.
-
-Column-level CHECK (applies to a single column): CREATE TABLE employees ( employee_id INT PRIMARY KEY, age INT CHECK (age >= 18 AND age <= 65), salary DECIMAL(10,2) CHECK (salary > 0) ); The age column only accepts values between 18 and 65. The salary column only accepts positive values.
-
-Table-level CHECK (can reference multiple columns): CREATE TABLE products ( product_id INT PRIMARY KEY, price DECIMAL(10,2), discounted_price DECIMAL(10,2), CONSTRAINT chk_discount CHECK (discounted_price < price) ); This guarantees the discounted price is always lower than the original price.
-
-Enum-style validation: CREATE TABLE orders ( order_id INT PRIMARY KEY, status VARCHAR(20) CHECK (status IN ('Pending', 'Shipped', 'Delivered', 'Cancelled')) ); Only the four listed values are accepted in the status column.
-
-Adding a CHECK constraint to an existing table: ALTER TABLE employees ADD CONSTRAINT chk_age CHECK (age >= 18);
-
-Important: MySQL fully enforces CHECK constraints from version 8.0.16 onwards. In earlier versions they were accepted syntactically but not actually enforced.
-
-
-Compare sub-query and joins.
-
-Subqueries and JOINs are both used to work with data from multiple tables, but they operate differently and are suited to different problems.
-
-A subquery is a SELECT statement embedded inside another SQL statement. It is evaluated first and its result is used by the parent query. Subqueries can appear in the WHERE clause to filter rows, in the FROM clause as a derived table, or in the SELECT list as a scalar value. They are best used when the logic is a filter based on a calculated or looked-up value, or when checking for the presence or absence of related records with EXISTS or NOT EXISTS.
-
-A JOIN combines columns from two or more tables into one result set based on a related column. JOINs return data from all joined tables in one row and are evaluated as part of the FROM clause. They are best used when you need columns from multiple tables in the output, when linking tables through foreign keys, or when aggregate operations span multiple tables.
-
-Performance: JOINs are generally faster because query optimizers handle them well with indexed keys. Correlated subqueries can be slow as they re-execute for every outer row. Non-correlated subqueries execute once and are comparable to JOINs.
-
-Readability: Subqueries can be easier to read for filtering logic like salary greater than average. JOINs are clearer when retrieving columns from multiple related tables.
-
-Result shape: A JOIN expands the row width by adding columns from the joined table. A subquery in WHERE only filters rows — it does not add columns from the inner query.
-
-Both can often produce identical results and the choice depends on readability, performance, and whether column output from the related table is needed.
-
-
-What are the advantages of using Analytical functions?
-
-Analytical functions (window functions) offer several important advantages over traditional aggregate functions and subquery-based approaches.
-
-Row-level detail is preserved. Unlike GROUP BY which collapses multiple rows into one summary row, analytical functions return a value for each individual row while also computing group-level statistics. You can see both individual data and summary values in the same result without a second query.
-
-Complex self-joins are eliminated. Before window functions, getting a running total or accessing a value from a previous row required joining a table to itself, which was verbose and hard to debug. Window functions achieve this in one, readable expression.
-
-Cumulative and rolling calculations become simple. Running totals, cumulative revenue, and moving averages that previously required multiple subqueries can be expressed with one OVER clause and a ROWS BETWEEN frame specification.
-
-Flexible partitioning without collapsing rows. PARTITION BY applies the function independently within each group (like GROUP BY), but every individual row still appears in the output.
-
-Powerful ranking within groups. RANK(), DENSE_RANK(), and ROW_NUMBER() assign ranks within a partition without any complex self-join. Identifying the top three products per category is one query.
-
-Time-series and sequential analysis is straightforward. LAG() and LEAD() directly access the previous or next row's value, enabling month-over-month comparisons and gap detection in one query.
-
-Better performance in many cases. A single query with window functions often replaces several nested subqueries or self-joins, reducing the number of full table scans and improving execution time.
-
-
-What is a view, and why use it? Can we create a view based on another view?
-
-A view is a virtual table defined by a stored SQL SELECT query. It holds no actual data. When you query a view, MySQL executes its underlying SELECT at that moment and provides the result as if it came from a real table.
-
-Why use views:
-
-Simplification: complex multi-table joins and calculations can be hidden behind a simple view name. Users query the view with a basic SELECT without needing to understand the underlying complexity.
-
-Security: views can expose only selected columns while keeping sensitive columns hidden. Access can be granted to a view without granting access to the source tables.
-
-Reusability: common query patterns are defined once and reused across many queries and applications without repeating the logic.
-
-Abstraction: if source table structures change, only the view definition needs updating, not every query that uses the view.
-
-Consistency: a view guarantees that every user querying it gets results from the same verified logic.
-
-Can a view be created based on another view? Yes. A view can reference another view instead of a source table. This is called a nested view or chained view.
-
-Example: CREATE VIEW high_earners AS SELECT employee_id, salary FROM employees WHERE salary > 50000;
-
-CREATE VIEW very_high_earners AS SELECT employee_id, salary FROM high_earners WHERE salary > 100000;
-
-The second view references the first. When very_high_earners is queried, MySQL resolves the full chain of views back to the source table and executes the combined logic.
-
-Nested views work but should be used carefully, as deep chains can make debugging, performance tuning, and understanding the data lineage more difficult.
-
-
-What is normalization in SQL, and why use it?
-
-Normalization is the systematic process of structuring a relational database schema to reduce data redundancy and ensure data integrity. It works by decomposing tables into smaller, well-focused tables and defining clear relationships among them based on dependency rules.
-
-Why use normalization:
-
-Eliminates data redundancy. Without normalization, the same piece of information might be stored in many rows. If a department name changes, it would need to be updated in every employee row. Normalization stores the department name once in a departments table and references it via a foreign key.
-
-Prevents update anomalies. An update anomaly occurs when changing one occurrence of duplicated data but missing others, leaving the database in an inconsistent state.
-
-Prevents insert anomalies. An insert anomaly occurs when you cannot add new data without also inserting unrelated or incomplete data.
-
-Prevents delete anomalies. A delete anomaly occurs when removing a row accidentally destroys important related information that was stored in the same row.
-
-Improves data integrity. Clear dependencies between tables and enforced foreign key relationships make sure that data remains accurate and consistent.
-
-Makes the schema easier to understand and extend. Smaller, focused tables are easier to read, modify, and scale.
-
-Normalization levels: 1NF — atomic values, no repeating groups, unique rows. 2NF — removes partial dependencies on composite primary keys. 3NF — removes transitive dependencies (non-key columns depending on other non-key columns). BCNF — a stricter version of 3NF, requiring every determinant to be a superkey.
-
-
-What is the difference between INNER JOIN and LEFT JOIN in SQL? Provide an example of each.
-
-An INNER JOIN returns only the rows where there is a matching record in both tables. Rows from either table that have no match in the other table are excluded entirely from the result.
-
-Example of INNER JOIN: SELECT customers.customer_id, customers.name, orders.order_id FROM customers INNER JOIN orders ON customers.customer_id = orders.customer_id; This returns only customers who have at least one order. Customers with no orders and orders with no matching customer are both excluded.
-
-A LEFT JOIN (LEFT OUTER JOIN) outputs all rows from the left (first) table and the matching rows from the right table. Where no match exists in the right table, the columns from the right table appear as NULL in the result. The left table rows are never excluded.
-
-Example of LEFT JOIN: SELECT customers.customer_id, customers.name, orders.order_id FROM customers LEFT JOIN orders ON customers.customer_id = orders.customer_id; This returns every customer including those who have never placed an order. For customers with no orders, the order_id column shows NULL.
-
-The key practical difference: INNER JOIN keeps only matched rows from both sides. LEFT JOIN always keeps all rows from the left table and fills in NULL where the right side has no match. LEFT JOIN is especially useful for finding records in a single table that have no corresponding records in another, by filtering for WHERE right_table.id IS NULL after the join.
-
-
-Explain the concept of normalization in database design. Why is it important?
-
-Normalization is the process of organizing a relational database to minimize redundancy and ensure logical data storage. It is achieved by applying a series of rules called normal forms, each building on the previous.
-
-Why it is important:
-
-Reduces data redundancy. The same fact is stored only once. When customer information is stored in a dedicated customers table rather than repeated across every order row, one update to the customer changes the data everywhere instantly.
-
-Prevents data anomalies: Update anomaly: when the same data is stored in multiple places, updating one copy while missing another creates inconsistency. Insert anomaly: being unable to record one fact without also recording an unrelated fact. Delete anomaly: accidentally losing important data when an unrelated row is deleted.
-
-Improves data integrity. Normalized schemas use foreign keys and clear dependencies to enforce that data is always valid and consistent.
-
-Simplifies maintenance. Smaller, single-purpose tables are easier to understand, modify, query, and extend as the application grows.
-
-Supports better query design. Well-normalized schemas join cleanly along defined relationships rather than requiring complex WHERE conditions to resolve stored redundancies.
-
-Normal forms and what they address: First Normal Form (1NF) eliminates repeating groups and non-atomic values. Second Normal Form (2NF) removes partial dependencies from composite primary keys. Third Normal Form (3NF) removes transitive dependencies between non-key columns. Boyce-Codd Normal Form (BCNF) resolves complex dependency cases left by 3NF.
-
-
-Define what a primary key is in a database. How does it differ from a foreign key?
-
-A primary key is a column or combination of columns in a table that uniquely identifies each record. Every value in the primary key must be unique across all rows and may not be NULL. A table can have only one primary key. The primary key serves as the authoritative row identifier and is the main target for foreign key references from other tables.
-
-Example: In an employees table, employee_id INT PRIMARY KEY uniquely identifies each employee.
-
-A foreign key is a column in a single table whose values reference the primary key of another table. It establishes a relationship between the two tables and enforces referential integrity by ensuring every foreign key value either matches an existing primary key value in the parent table or is NULL.
-
-Example: In an orders table, customer_id is a foreign key referencing customer_id in the customers table.
-
-Differences:
-
-Purpose: the primary key identifies rows within its own table. The foreign key creates a relationship between two tables by pointing to the primary key of the parent table.
-
-Uniqueness: primary key values must be unique per table. Foreign key values can repeat — many rows in the dependent table can reference the same parent row (for example, many orders can belong to the same customer).
-
-null entries: the primary key never allows NULL. The foreign key can be NULL, meaning the row is not linked to any parent.
-
-Count: one primary key per table. A table can have multiple foreign keys, each pointing to a different parent table.
-
-Location: the primary key resides in the parent table. The foreign key resides in the dependent table and points to the parent.
-
-
-What are SQL aggregate functions? List at least three aggregate functions and describe their purposes.
-
-Aggregate functions are built-in SQL functions that perform a calculation on a set of rows and return one summary value. They operate on groups of rows, ignoring null entries in most cases, and are commonly used with GROUP BY.
-
-COUNT() counts the number of rows or non-null entries. COUNT(*) counts all rows including those with missing entries. COUNT(column) counts only rows where the specified column is not NULL. Example: SELECT COUNT(*) FROM employees; returns the total number of employees. Example: SELECT department_id, COUNT(*) FROM employees GROUP BY department_id; counts employees per department.
-
-SUM() returns the total of all non-NULL numeric values in a column. Example: SELECT SUM(salary) FROM employees; returns the total payroll. Example: SELECT department_id, SUM(salary) FROM employees GROUP BY department_id; returns total salary per department.
-
-AVG() returns the arithmetic mean of all non-NULL numeric values in a column. Example: SELECT AVG(salary) FROM employees; returns the average salary across all employees.
-
-MIN() returns the smallest non-missing entry in a column. Works on numbers, text (alphabetically), and dates. Example: SELECT MIN(hire_date) FROM employees; returns the earliest hiring date.
-
-MAX() returns the largest non-missing entry in a column. Example: SELECT MAX(salary) FROM employees; returns the highest salary.
-
-All aggregate functions except COUNT(*) ignore null entries in their computation.
-
-
-How does the GROUP BY clause work in SQL? In which situations would you use it?
-
-The GROUP BY clause organizes rows that share an the same value in at least one specified columns into groups. Once rows are grouped, aggregate functions like COUNT(), SUM(), AVG(), MIN(), MAX() are applied to each group separately, and one summary row is produced per group.
-
-How it works: SQL first filters rows with WHERE, then GROUP BY collects rows sharing an the same value in the grouping columns, then aggregate functions compute results within each group, then HAVING optionally filters those groups, and finally the result is returned.
-
-Syntax: SELECT column, aggregate_function(column) FROM table WHERE condition GROUP BY column HAVING aggregate_condition;
-
-Example: Count employees per department: SELECT department_id, COUNT(*) AS employee_count FROM employees GROUP BY department_id; Each unique department_id becomes one row in the output, with a count of employees in that department.
-
-Important rule: every column in the SELECT list that is not wrapped in an aggregate function must appear in the GROUP BY clause.
-
-Situations to use GROUP BY:
-
-When generating per-category summaries: total sales per region, average salary per department, count of orders per customer.
-
-When finding groups that meet a threshold using HAVING: departments with more than 10 employees, products with total sales above 100000.
-
-When creating reports that require subtotals: monthly revenue breakdown, product-line profitability by year.
-
-When ranking or comparing groups: which department has the highest average salary, which month had the most orders.
-
-
-Describe the purpose of the ORDER BY clause in an SQL query. How is it different when sorting in ascending versus descending order?
-
-The ORDER BY clause sorts the rows in the result set of a SELECT query by at least one specified columns. Without ORDER BY, SQL does not guarantee any particular order for the rows returned — the database can return them in any order.
-
-Ascending order (ASC) sorts rows from the smallest value to the largest. For numbers, this is lowest to highest. For text, this is alphabetical from A to Z. For dates, this is earliest date first. ASC is the default and requires no to be written explicitly. Example: SELECT * FROM employees ORDER BY salary; or SELECT * FROM employees ORDER BY salary ASC; — both list employees from lowest to highest salary.
-
-Descending order (DESC) sorts rows from the largest value to the smallest. For numbers, highest to lowest. For text, reverse alphabetical Z to A. For dates, most recent date first. DESC must be written explicitly. Example: SELECT * FROM employees ORDER BY salary DESC; — lists the highest earners first.
-
-You can sort by multiple columns: SELECT * FROM employees ORDER BY department_id ASC, salary DESC; This sorts first by department in alphabetical order, and within each department sorts by salary from highest to lowest.
-
-NULL handling: in MySQL, null entries are treated as lower than any non-missing entry in ascending order (they appear first) and as higher in descending order (they appear last).
-
-ORDER BY is the final clause evaluated in a SELECT query — it runs after WHERE, GROUP BY, HAVING, and SELECT.
-
-
-What is a subquery in SQL? Provide an example situation where a subquery might be useful.
-
-A subquery is a SELECT statement nested inside another SQL statement, called the parent query. The subquery executes first and its result is passed to the outer query. Subqueries can appear in the WHERE clause, FROM clause, SELECT list, or HAVING clause.
-
-Types of subqueries: Single-row subquery outputs one row and a single column, used with = or comparison operators. Multi-row subquery returns multiple rows, used with IN, ANY, ALL, or EXISTS. Correlated subquery references a column from the parent query and re-executes for each outer row. Scalar subquery gives back a single value and can appear in the SELECT list.
-
-Example situation 1 — Filtering based on an aggregate value: Find all employees earning more than the company average salary. SELECT employee_id, first_name, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees); The subquery computes the average once; the parent query uses it to filter employees. This cannot easily be done without a subquery.
-
-Example situation 2 — Finding non-matching records: Find customers who have never placed an order. SELECT customer_id, name FROM customers WHERE customer_id NOT IN (SELECT DISTINCT customer_id FROM orders);
-
-Example situation 3 — Row-by-row comparison using a correlated subquery: Find employees who earn more than the average salary in their own department. SELECT employee_id, salary FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE department_id = e.department_id);
-
-Each of these situations involves a value that must first be calculated from another table or from the same table before it can be used for filtering.
-
-
-Describe the role of the HAVING clause in SQL. How is it different from the WHERE clause?
-
-The HAVING clause filters groups of rows that result from a GROUP BY operation. It applies conditions to aggregated results after grouping has been performed. HAVING allows questions such as: show only departments with more than 5 employees, or show only product categories with an average price above 100.
-
-Syntax: SELECT column, aggregate_function(column) FROM table GROUP BY column HAVING aggregate_condition;
-
-Example: SELECT department_id, COUNT(*) AS emp_count FROM employees GROUP BY department_id HAVING COUNT(*) > 5; This groups employees by department, counts them per group, and returns only departments with more than 5 employees.
-
-Difference from WHERE:
-
-WHERE filters individual rows before grouping. It is evaluated before GROUP BY. WHERE may not contain aggregate functions because aggregation has not yet happened. WHERE removes specific rows from the table before any groups are formed.
-
-HAVING filters groups after GROUP BY and after aggregate functions have been computed. HAVING can and is intended to contain aggregate functions. HAVING removes groups whose aggregate condition fails.
-
-They can work together: SELECT department_id, AVG(salary) FROM employees WHERE salary > 20000 GROUP BY department_id HAVING AVG(salary) > 50000; WHERE first removes employees earning 20000 or less, GROUP BY then groups the remaining rows by department, and HAVING then removes departments where the average of the remaining salaries is 50000 or below.
-
-HAVING without GROUP BY is permitted and treats the entire table as one group.
-
-
-What is the purpose of the DISTINCT keyword in SQL? How does it affect the results of a query?
-
-The DISTINCT keyword eliminates duplicate rows from the result set of a SELECT query. When included, only unique combinations of the selected columns are returned — if two or more rows would produce the same values in all selected columns, only one of them appears in the output.
-
-Syntax: SELECT DISTINCT column1, column2 FROM table;
-
-Effect on results: Without DISTINCT: SELECT department_id FROM employees; outputs one row per employee. If 50 employees are spread across 5 departments, 50 rows are returned with many repeated department IDs. With DISTINCT: SELECT DISTINCT department_id FROM employees; returns 5 rows — one for each unique department ID.
-
-When multiple columns are selected, DISTINCT applies to the combination of all selected columns together, not to each column independently. Example: SELECT DISTINCT city, country FROM customers; This returns each unique city-country pair, not just unique cities.
-
-DISTINCT with COUNT: SELECT COUNT(DISTINCT department_id) FROM employees; counts how many unique departments exist, not how many employees.
-
-Common use cases: Listing all unique values in a column such as all distinct countries or product categories. Counting unique values with COUNT(DISTINCT column). Removing accidental or intentional duplicate rows from a result set. Displaying available options without repetition in dropdown lists or reports.
-
-DISTINCT adds a sort or deduplication step internally, which can slow down queries on large result sets.
-
-
-Explain the significance of ACID properties in SQL.
-
-ACID properties are the four fundamental guarantees that define what a reliable database transaction must provide. They ensure correctness, consistency, and fault tolerance in multi-user database systems.
-
-Atomicity: A transaction is treated as one indivisible unit of work. Either every operation in the transaction is executed and committed, or none of them take effect. If a transaction fails midway, all completed operations within it are automatically rolled back. This prevents partial updates that would leave the database in a corrupted state. As an illustration, if a bank transfer debits one account but fails before crediting another, Atomicity ensures the debit is also reversed.
-
-Consistency: A transaction always moves the database from one valid state to another valid state. Every integrity constraint, rule, trigger, and cascade must be satisfied both before and after the transaction completes. The database can never be left in a logically inconsistent or rule-violating state by any transaction.
-
-Isolation: Concurrent transactions execute as if they were running one at a time. The intermediate state of one transaction is not visible to other transactions until it is committed. This prevents problems like dirty reads (reading uncommitted changes), non-repeatable reads, and phantom reads. Isolation levels such as READ COMMITTED, REPEATABLE READ, and SERIALIZABLE control the degree of isolation applied.
-
-Durability: Once a transaction is committed, its changes are permanent. The data is written to persistent storage and will survive system failures, crashes, or power losses. A committed transaction may not be undone by any subsequent failure.
-
-Together, ACID properties guarantee that the database behaves reliably and predictably even when errors occur or many transactions run at the same time.
-
-
-What is a foreign key constraint, and why is it used?
-
-A foreign key constraint is a rule that links a column (or set of columns) in a dependent table to the primary key of a parent table. It ensures referential integrity by guaranteeing that every value in the foreign key column either matches an existing primary key value in the parent table or is NULL.
-
-Example: CREATE TABLE orders ( order_id INT PRIMARY KEY, customer_id INT, FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ); The customer_id column in orders is a foreign key. Every order must belong to a customer that exists in the customers table.
-
-Why foreign key constraints are used:
-
-Enforcing referential integrity: they prevent orphan records. You cannot insert an order with a customer_id that does not exist in the customers table, and you cannot delete a customer who still has orders (unless CASCADE is configured).
-
-Cascading operations: with ON DELETE CASCADE or ON UPDATE CASCADE, the database automatically propagates changes from the parent to child rows. Deleting a customer can automatically delete all their orders, keeping the database consistent without manual intervention.
-
-Documenting relationships: foreign keys make the logical relationships between tables explicit in the schema, improving clarity and making JOIN conditions obvious.
-
-Preventing data inconsistency: without foreign keys, application bugs could insert invalid references that corrupt the logical structure of the data without the database detecting it.
-
-Improving query reliability: foreign keys indicate exactly how tables should be joined, reducing the risk of incorrect join conditions in queries.
-
-
-Describe 1NF, 2NF, and 3NF in database normalization.
-
-First Normal Form (1NF) requires that a table satisfies these conditions: every column holds only atomic (single, indivisible) values with no lists or sets stored in one cell. Each column contains only one value per row. Each column has a unique name. All values in a column are of the same data type. Every row is unique (there is a primary key). A table that stores multiple phone numbers in one cell such as 9876543210, 9123456789 violates 1NF because the value is not atomic. The fix is to create a separate row for each phone number or move them to a related table.
-
-Second Normal Form (2NF) requires the table to already be in 1NF and additionally every non-key column must be fully functionally dependent on the entire primary key — no partial dependencies. Partial dependency means a non-key column depends on only part of a composite (multi-column) primary key rather than on the whole key. This is relevant only when the primary key consists of two or more columns. Example: if a table has a composite primary key of (student_id, course_id) and a column student_name, student_name depends only on student_id not on the full key. This partial dependency must be resolved by moving student_name to a separate students table.
-
-Third Normal Form (3NF) requires the table to already be in 2NF and additionally there must be no transitive dependencies. A transitive dependency exists when a non-key column A depends on another non-key column B, which itself depends on the primary key. Example: in a table with columns employee_id (primary key), department_id, and department_name, department_name depends on department_id and department_id depends on employee_id. Department_name is transitively dependent on the primary key through department_id. The fix is to move department_id and department_name to a separate departments table and reference it via a foreign key.
-
-
-What is a correlated subquery?
-
-A correlated subquery is a subquery that references at least a single columns from the outer (enclosing) query. Because it uses a value from the parent query's current row, the inner query may not be executed independently independently — it must be re-evaluated once for each individual row the outer query processes.
-
-However, a regular (non-correlated) subquery is fully independent of the parent query and runs only once.
-
-Example: SELECT employee_id, first_name, salary FROM employees e_outer WHERE salary > ( SELECT AVG(salary) FROM employees WHERE department_id = e_outer.department_id );
-
-In this query, the inner subquery references e_outer.department_id from the parent query. For each employee row processed by the outer query, the inner query runs with that employee's department_id and calculates the average salary for that specific department. The outer query then checks whether the current employee's salary exceeds their department's average.
-
-Correlated subqueries are used with EXISTS and NOT EXISTS to check whether related records exist, with comparison operators for per-row calculations, and inside HAVING for group-level correlated filtering.
-
-The main trade-off is performance: because the inner query runs once per outer row, correlated subqueries can be slow on large tables. They can often be rewritten as JOINs with GROUP BY for better performance, but correlated subqueries are sometimes clearer to read and write.
-
-
-Explain the WITH clause and provide an example.
-
-The WITH clause defines a Common Table Expression (CTE), which is a temporary named result set that exists only for the duration of the query. The CTE is defined at the beginning of the query and can be referenced at least one times within the main SELECT, UPDATE, INSERT, or DELETE that follows.
-
-Syntax: WITH cte_name AS ( SELECT columns FROM table WHERE condition ) SELECT * FROM cte_name WHERE further_condition;
-
-Benefits of the WITH clause: Improves readability by breaking a complex query into named, understandable steps. Avoids repeating the same subquery multiple times in one statement. Allows multiple CTEs to be chained, with each CTE able to reference previously defined CTEs. Supports recursive queries for hierarchical data (WITH RECURSIVE).
-
-Example 1 — Finding employees with above-average salary: WITH company_avg AS ( SELECT AVG(salary) AS avg_sal FROM employees ) SELECT employee_id, first_name, salary FROM employees CROSS JOIN company_avg WHERE salary > avg_sal;
-
-The CTE company_avg computes the average salary once and gives it a name that can be used cleanly in the WHERE clause.
-
-Example 2 — Chaining two CTEs: WITH dept_totals AS ( SELECT department_id, SUM(salary) AS total_salary FROM employees GROUP BY department_id ), top_departments AS ( SELECT department_id FROM dept_totals WHERE total_salary > 500000 ) SELECT * FROM employees WHERE department_id IN (SELECT department_id FROM top_departments);
-
-The first CTE computes department salary totals. The second CTE filters to high-spending departments. The main query retrieves employees from those departments.
-
-
-What are views in MySQL and why are they used?
-
-A view in MySQL is a virtual table defined by a stored SQL SELECT query. It holds no actual any data. When you query a view, MySQL executes the underlying SELECT statement at that moment and provides the results as if they came from a regular table.
-
-Why views are used:
-
-Simplification: complex multi-table joins, subqueries, and business logic can be encapsulated in a view. Users can query the view with a simple SELECT * without needing to know the underlying complexity.
-
-Security and access control: a view can expose only selected columns of a table, hiding sensitive data like passwords, salaries, or personal identifiers. Database administrators can grant users access to the view without granting access to the source tables.
-
-Reusability: frequently used queries are written once as a view and referenced in multiple places, avoiding code duplication and ensuring consistent logic across applications.
-
-Data abstraction: if the source table structure changes — columns renamed, tables split — only the view definition needs updating. Applications using the view continue to work without modification.
-
-Consistency: every user who queries the same view gets results produced by the same verified query logic.
-
-Creating a view: CREATE VIEW active_employees AS SELECT employee_id, first_name, department_id FROM employees WHERE status = 'Active';
-
-Querying the view: SELECT * FROM active_employees;
-
-Dropping a view: DROP VIEW active_employees; This removes only the view definition. The underlying employees table is unaffected.
-
-
-State the difference between Primary key and candidate key.
-
-A Candidate Key is any column or combination of columns that can uniquely identify each record within the table. A table can have multiple candidate keys. Each one qualifies to become the primary key.
-
-A Primary Key is the candidate key officially chosen as the main row identifier. A table can have only one primary key. The primary key column prohibits null entries and does not allow duplicate values.
-
-A table can have only one primary key but multiple candidate keys. The primary key may not hold NULL whereas a candidate key not chosen as primary may allow NULLs. All primary keys are candidate keys but not all candidate keys are primary keys. The primary key is automatically enforced by the RDBMS through a unique index and is used as the target for foreign key references from other tables.
-
-
-What is a cross join?
-
-A cross join produces the Cartesian product of two tables. It combines each individual row from the first table with every row from the second table. If the first table has M rows and the second has N rows, the result contains M multiplied by N rows.
-
-A cross join requires no any join condition — there is no ON clause. Every possible combination of rows from both tables is returned.
-
-Syntax: SELECT * FROM table1 CROSS JOIN table2;
-
-Example: If an employees table has 10 rows and a departments table has 5 rows, the cross join produces 50 rows.
-
-Cross joins are rarely used in production because they generate very large result sets. They are mainly used for generating all possible combinations, building test data, or constructing calendar or matrix structures.
-
-
-What are LEAD and LAG functions? Explain.
-
-LAG() and LEAD() are window functions that let you access values from other rows relative to the current row without needing a self-join.
-
-LAG(column, offset, default) returns the value from a row that is a given number of positions before the current row in the ordered partition. The default offset is 1. If no prior row exists at that offset the default value is returned instead.
-
-Example: SELECT employee_id, hire_date, LAG(hire_date, 1) OVER (ORDER BY hire_date) AS prev_hire_date FROM employees; — shows each employee's hire date alongside the hire date of the employee hired just before them.
-
-LEAD(column, offset, default) is the opposite — it returns the value from a row that is a given number of positions after the current row.
-
-Example: SELECT invoice_id, invoice_date, LEAD(invoice_date, 1) OVER (PARTITION BY customer_id ORDER BY invoice_date) AS next_invoice_date FROM invoices; — shows each invoice date alongside that customer's next invoice date.
-
-Both functions are used with OVER() and ORDER BY. PARTITION BY can be added to reset the window per group. Common uses include month-over-month comparisons, calculating time gaps between consecutive events, and detecting changes from one row to the next.
-
-
-Explain EXISTS operator with an example.
-
-The EXISTS operator tests whether a subquery returns at least one row. It evaluates to TRUE if the inner query produces one or more rows and FALSE if the inner query gives back no rows. EXISTS is purely a membership check — it does not return values from the subquery.
-
-Syntax: SELECT columns FROM table WHERE EXISTS (subquery);
-
-Example: Find all customers who have placed at least one order. SELECT customer_id, customer_name FROM customers WHERE EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id);
-
-The convention SELECT 1 inside EXISTS is used because EXISTS only cares whether any row is returned, not what value is returned. You could write SELECT *, SELECT id, or SELECT 1 and the result is identical.
-
-NOT EXISTS is the negation — it evaluates to TRUE when the inner query gives back no rows. This serves to find records that have no match in another table. Example: SELECT customer_id FROM customers WHERE NOT EXISTS (SELECT 1 FROM orders WHERE orders.customer_id = customers.customer_id); — returns customers who have never placed an order.
-
-EXISTS is typically faster than IN for large datasets because it short-circuits: it stops the moment the first matching row is found rather than evaluating the entire subquery result set.
-
-
-What is the difference between isnull operator() and ifnull() function?
-
-ISNULL(expression) takes exactly one argument and checks whether that expression is NULL. It gives 1 if the value is NULL or 0 if it is not NULL. ISNULL is a test — it does not replace the NULL with anything, it simply tells you whether the value is NULL.
-
-Example: SELECT ISNULL(NULL); gives 1. SELECT ISNULL(5); gives 0.
-
-IFNULL(expression, replacement) takes two arguments. If the first argument is not NULL it returns the first argument unchanged. If the first argument is NULL it returns the second argument as a substitute value.
-
-Example: SELECT IFNULL(NULL, 'Not Available'); returns Not Available. SELECT IFNULL(salary, 0) FROM employees; replaces any NULL salary with 0 in the result.
-
-The fundamental distinction is purpose and behaviour. ISNULL answers the question of whether a value is NULL by returning 0 or 1. IFNULL answers the question of what to display when a value is NULL by returning a fallback. ISNULL is used in conditional logic; IFNULL serves to substitute meaningful defaults for null entries in output.
-
-
-What is the ACID property in a database?
-
-ACID stands for Atomicity, Consistency, Isolation, and Durability. These four properties define the guarantees that every reliable database transaction must provide.
-
-Atomicity means a transaction is all or nothing. Either every operation in the transaction executes and is committed successfully, or none of the operations are applied. If any step fails the entire transaction is automatically rolled back to the state before it began.
-
-Consistency means a transaction always moves the database from one valid state to another valid state. All integrity constraints, rules, and cascades must be satisfied after the transaction completes. The database can never be left in a logically invalid or corrupted state.
-
-Isolation means concurrent transactions execute independently of each other. The intermediate state of one transaction is not visible to other transactions. Each transaction behaves as though it is the only transaction running, even when hundreds of transactions execute at the same time.
-
-Durability means that the same time a transaction is committed, its changes are permanent. The committed data is written to persistent storage and will survive system failures including crashes, power outages, and server restarts.
-
-
-What is the difference between the RANK() and DENSE_RANK() functions?
-
-Both RANK() and DENSE_RANK() are window functions that assign a numerical rank to rows based on a specified ordering. They differ only in how they handle tied values.
-
-RANK() gives tied rows the same rank and then skips the subsequent rank numbers equal to the count of tied rows, creating gaps in the sequence. If two rows tie for rank 1, the next row receives rank 3 and rank 2 is skipped entirely.
-
-DENSE_RANK() also gives tied rows the same rank but never skips any rank numbers. The next distinct value always receives the immediately following integer. If two rows tie for rank 1, the next distinct value receives rank 2 with no gap.
-
-Example with salaries 60000, 60000, 50000, 40000: RANK():       60000 → 1, 60000 → 1, 50000 → 3, 40000 → 4 DENSE_RANK(): 60000 → 1, 60000 → 1, 50000 → 2, 40000 → 3
-
-Sample SQL: SELECT employee_id, salary, RANK() OVER (ORDER BY salary DESC) AS rnk, DENSE_RANK() OVER (ORDER BY salary DESC) AS dense_rnk FROM employees;
-
-Use DENSE_RANK when you need consecutive numbering with no gaps — for example, finding the second highest salary using WHERE dense_rnk = 2. Use RANK when gaps are meaningful, such as competition standings where two joint winners in first place means no second place exists.
-'''
+min_cost = C.subs({x: x0, y: y0})
+print("Minimum Cost =", min_cost)

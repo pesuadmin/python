@@ -717,3 +717,46 @@ Linear regression	Predict numeric y from x	statsmodels.formula.api.ols('y ~ x', 
 Decision rule everywhere: if p < α → Reject  H0 . Otherwise fail to reject.
 
 
+Calculate 95% confidence intervals for mean Selling_Price across different Fuel_Type categories. Interpret and discuss whether the intervals overlap.
+
+Concept
+
+Confidence Interval estimates the range in which the true population mean is likely to lie with 95% confidence.
+
+Formula:
+
+CI = x̄ ± t(α/2) × (s/√n)
+
+Where:
+•⁠  ⁠x̄ = Sample Mean
+•⁠  ⁠s = Sample Standard Deviation
+•⁠  ⁠n = Sample Size
+•⁠  ⁠t(α/2) = Critical t-value
+
+Python Code
+
+import pandas as pd
+import numpy as np
+import scipy.stats as stats
+
+df = pd.read_csv('car_data.csv')
+
+for fuel in df['Fuel_Type'].unique():
+
+    group = df[df['Fuel_Type'] == fuel]['Selling_Price']
+
+    n = len(group)
+    mean = group.mean()
+    se = group.std(ddof=1) / np.sqrt(n)
+
+    ci = stats.t.interval(
+        confidence=0.95,
+        df=n-1,
+        loc=mean,
+        scale=se
+    )
+
+    print(f"{fuel}: Mean={mean:.2f}, 95% CI=({ci[0]:.2f}, {ci[1]:.2f}), n={n}")
+
+
+

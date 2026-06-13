@@ -431,3 +431,289 @@ f_stat, p_val = stats.f_oneway(fert_A, fert_B, fert_C)
 print(f'Means: A={fert_A.mean():.2f}, B={fert_B.mean():.2f}, C={fert_C.mean():.2f}')
 print(f'F = {f_stat:.4f},  p = {p_val:.6f}')
 print('Decision:', 'Reject H0 — at least one fertilizer differs' if p_val < 0.05 else 'No significant difference')
+
+
+ 1.⁠ ⁠Bayes Theorem
+(theory only — no code, as requested)
+
+Formula
+P(A∣B)=P(B∣A)P(A)P(B),P(B)=∑iP(B∣Ai)P(Ai) 
+
+Words: Bayes' theorem updates the probability of a hypothesis  A  given new evidence  B . It flips a known conditional probability  P(B|A)  into the desired direction  P(A|B) .
+
+Terminology
+
+P(A)  — prior (belief before seeing evidence)
+P(B∣A)  — likelihood (how probable the evidence is if A is true)
+P(B)  — marginal / evidence (overall probability of the evidence)
+P(A∣B)  — posterior (updated belief)
+Classic exam example — disease testing
+
+A disease affects 1% of a population. A test is 99% sensitive (true positive) and 95% specific (true negative). If a person tests positive, what is  P(Disease∣+) ?
+
+P(D∣+)=P(+∣D)P(D)P(+∣D)P(D)+P(+∣D¯)P(D¯)=0.99×0.010.99×0.01+0.05×0.99=0.00990.0594≈0.1667
+
+Key insight: Even with a 99% accurate test, only ~17% of positives are truly diseased — because the disease itself is rare (low prior). This is why doctors confirm with a second test.
+
+Where it appears in DS/AI: Naive Bayes classifier, Bayesian inference, A/B testing, spam filters.
+
+ 2.⁠ ⁠Normal Distribution
+Definition. A continuous distribution symmetric about its mean  μ , with spread controlled by standard deviation  σ :
+f(x)=1σ2π−−√exp(−(x−μ)22σ2) 
+
+Key properties (memorize for exam):
+
+Mean = Median = Mode =  μ 
+Symmetric, bell-shaped
+68-95-99.7 rule: ~68% of values lie within  μ±σ , ~95% within  μ±2σ , ~99.7% within  μ±3σ 
+Standard normal  Z∼N(0,1) : obtained by  Z=(X−μ)/σ 
+The Central Limit Theorem (CLT) says sample means are approximately normal for large  n  — this is why the normal shows up everywhere
+When you'll use it: to compute probabilities, percentiles, critical values for Z/t-tests.
+
+ 3.⁠ ⁠Confidence Interval (CI)
+Definition. A range that has a specified probability (e.g. 95%) of containing the true population parameter if we repeated the sampling many times.
+
+Formula for a population mean (σ unknown — use t):
+x¯±tα/2,n−1⋅sn−−√ 
+where  x¯  = sample mean,  s  = sample SD,  n  = sample size,  tα/2,n−1  = critical t-value.
+
+Steps
+
+Compute  x¯  and  s  from data.
+Compute standard error  SE=s/n−−√ .
+Look up  tα/2  for confidence level  (1−α)  at  n−1  degrees of freedom.
+CI =  (x¯−t⋅SE,x¯+t⋅SE) .
+Interpretation: "We are 95% confident the true mean lies in this interval." It does not mean a single interval has 95% probability of containing  μ  —  μ  is fixed; the interval is random.
+
+Part B — Hypothesis Testing
+General hypothesis-testing recipe (use for every test below)
+State  H0  (null) and  H1  (alternative).
+Choose significance level  α  (usually 0.05).
+Compute the test statistic from data.
+Find the p-value (or compare statistic to critical value).
+Decide: if p-value < α → Reject  H0 ; else → Fail to reject  H0 .
+Conclude in plain English (about the population).
+
+ 4.⁠ ⁠Z-test
+Use when: comparing a sample mean to a known population mean and the population standard deviation σ is known (or the sample is very large so  s≈σ ).
+
+Test statistic:
+Z=x¯−μ0σ/n−−√ 
+
+Decision: for two-sided test at α=0.05, reject  H0  if  |Z|>1.96 .
+
+Difference from t-test: the Z-test uses the known σ and the standard normal distribution; the t-test uses the sample SD  s  and the t-distribution.
+
+ 5.⁠ ⁠Type I & Type II Errors
+H0  True	 H0  False
+Reject  H0 	Type I error (probability = α)	Correct decision (Power = 1−β)
+Fail to reject  H0 	Correct decision (1−α)	Type II error (probability = β)
+Type I (α): false alarm — concluding an effect exists when it doesn't.
+Type II (β): missed detection — failing to detect a real effect.
+Power = 1 − β: probability of correctly detecting a true effect. Increased by larger  n , larger effect size, larger α.
+Trade-off: Lowering α (e.g. 0.01) makes Type I rarer but Type II more likely (β rises). The only way to reduce both simultaneously is to collect more data.
+
+ 6.⁠ ⁠One-sample t-test
+Use when: comparing a sample mean to a hypothesized value, with σ unknown (use sample SD  s ).
+
+Hypotheses:  H0:μ=μ0  vs  H1:μ≠μ0  (two-sided).
+
+Test statistic:
+t=x¯−μ0s/n−−√,df=n−1 
+
+Assumptions: data approximately normal (or  n  large by CLT), random sample.
+
+ 7.⁠ ⁠Two-sample (independent) t-test
+Use when: comparing means of two independent groups (e.g. drug vs placebo, men vs women).
+
+Hypotheses:  H0:μ1=μ2  vs  H1:μ1≠μ2 .
+
+Test statistic (equal variance assumed — pooled):
+t=x¯1−x¯2sp1n1+1n2−−−−−−√,s2p=(n1−1)s21+(n2−1)s22n1+n2−2,df=n1+n2−2 
+
+Welch's t-test (use if variances clearly unequal): same formula but  s21/n1+s22/n2  in the denominator (no pooling) and a different df formula. Set equal_var=False in scipy.
+
+ 8.⁠ ⁠Paired t-test
+Use when: the same subjects are measured twice (e.g. before vs after, left vs right hand, weight before/after diet). The samples are paired/matched, not independent.
+
+Idea: compute differences  di=x(after)i−x(before)i , then run a one-sample t-test on the differences with  H0:μd=0 .
+
+Test statistic:
+t=d¯−0sd/n−−√,df=n−1 
+
+Why "paired" is more powerful: subject-level variation (which is large) cancels out, so smaller effects become detectable.
+
+ 9.⁠ ⁠Chi-square Tests
+The chi-square statistic compares observed counts to expected counts. There are two flavours you must know:
+
+Variant	Question it answers	scipy call
+9a. Test of Independence	Are two categorical variables related? (uses a contingency table)	stats.chi2_contingency(table)
+9b. Goodness of Fit (GoF)	Does my single observed distribution match a hypothesized one?	stats.chisquare(obs, exp)
+Common formula (both):
+χ2=∑(O−E)2E 
+where  O  = observed count,  E  = expected count. Reject  H0  when  χ2  is large (p < α).
+
+Assumption (both): every expected count  E≥5  (otherwise use Fisher's exact test or pool categories).
+
+9a) Chi-square Test of Independence
+Use when: testing whether two categorical variables are independent. Data is presented in a contingency table (rows = categories of variable 1, columns = categories of variable 2).
+
+Hypotheses:
+
+H0 : the two variables are independent
+H1 : the two variables are associated
+Expected counts under independence:
+Eij=(row totali)×(column totalj)grand total 
+
+Degrees of freedom:  df=(r−1)(c−1)  where  r  = #rows,  c  = #cols.
+
+9b) Chi-square Goodness of Fit (GoF) test
+Use when: comparing one observed frequency distribution to a hypothesized / theoretical distribution (no second variable involved). Examples:
+
+Is a die fair? (expected = 1/6 in each face)
+Do customer arrivals follow a Poisson distribution?
+Do M&M colour proportions match the manufacturer's claim?
+Hypotheses:
+
+H0 : observed frequencies match the expected distribution
+H1 : observed frequencies differ from the expected distribution
+Test statistic:
+χ2=∑i=1k(Oi−Ei)2Ei,df=k−1−p 
+where  k  = number of categories and  p  = number of distribution parameters estimated from the data ( p=0  if the expected proportions are fully specified in advance).
+
+Important:  ∑Oi=∑Ei  (both must equal the total sample size). If you specify expected proportions, multiply them by  n  first.
+
+Decision: large  χ2  ⇒ small p ⇒ reject  H0  ⇒ data does not fit the claimed distribution.
+
+10.⁠ ⁠One-way ANOVA
+Use when: comparing the means of 3 or more groups simultaneously.
+
+Hypotheses:
+
+H0:μ1=μ2=⋯=μk  (all means equal)
+H1 : at least one mean differs
+Test statistic:
+F=MS betweenMS within=SSB/(k−1)SSW/(N−k) 
+
+SSB  = variability between group means
+SSW  = variability within groups (residual)
+If significant, follow up with a post-hoc test (e.g. Tukey HSD) to find which groups differ. Assumptions: normality within each group, equal variances, independent samples.
+
+Part C — Linear Algebra
+11.⁠ ⁠Linear Dependence & Independence
+Definitions:
+
+A set of vectors  {v1,v2,…,vk}  is linearly independent if the only solution to  c1v1+c2v2+⋯+ckvk=0  is  c1=c2=⋯=ck=0 .
+Otherwise they are linearly dependent (one vector can be written as a combination of the others — it carries no new information).
+How to check (for  k  vectors in  Rn ,  k=n ):
+
+Stack the vectors as columns into a square matrix  M .
+Compute  det(M) .
+If  det(M)=0  → linearly dependent. Otherwise → independent.
+Rank of  M  = number of linearly independent columns (or rows). Rank < dimension → vectors are dependent.
+
+12.⁠ ⁠Eigenvalues & Eigenvectors
+Definition. For a square matrix  A , a non-zero vector  v  is an eigenvector with eigenvalue  λ  if:
+Av=λv 
+Geometrically:  A  stretches/shrinks  v  by factor  λ  without changing its direction.
+
+How to find them:
+
+Solve the characteristic equation:  det(A−λI)=0  → gives eigenvalues  λi .
+For each  λi , solve  (A−λiI)v=0  → gives the eigenvector.
+Key properties (memorize):
+
+det(A)=∏iλi  (product of eigenvalues)
+trace(A)=∑iλi  (sum of eigenvalues = sum of diagonal)
+Eigenvalues of  Ak  are  λki 
+Eigenvalues of  A−1  are  1/λi
+
+13.⁠ ⁠PCA from Scratch
+Goal: reduce the dimensionality of data by projecting it onto the directions of maximum variance (the principal components).
+
+Step-by-step algorithm:
+
+Standardize the data (mean=0, std=1 for each feature) — required when features have different scales.
+Compute the covariance matrix  Σ=1n−1X⊤stdXstd .
+Compute its eigenvalues  λi  and eigenvectors  vi .
+Sort eigenvalues in descending order; eigenvectors give the principal-component directions.
+Explained variance ratio =  λi/∑jλj . Choose the top  k  PCs whose cumulative ratio ≥ desired threshold (e.g. 0.95).
+Project:  Xpca=Xstd⋅Wk  where  Wk  is the matrix of top- k  eigenvectors.
+Why it works: the eigenvectors of the covariance matrix are the orthogonal axes along which the data has the most variance — losing the small-variance axes loses the least information.
+
+Part D — Calculus & Optimization
+14.⁠ ⁠Derivatives
+Definition. The derivative  f′(x)  measures the instantaneous rate of change of  f  at  x :
+f′(x)=limh→0f(x+h)−f(x)h 
+
+Common rules (memorize):
+
+ddx(xn)=nxn−1 
+ddx(ex)=ex ,  ddx(lnx)=1/x 
+Product:  (uv)′=u′v+uv′ 
+Quotient:  (u/v)′=(u′v−uv′)/v2 
+Chain:  ddxf(g(x))=f′(g(x))⋅g′(x) 
+Second derivative  f′′(x)  measures curvature:  >0  concave up (cup),  <0  concave down (cap).
+
+15.⁠ ⁠Optimization — Single Variable
+Goal: find values of  x  where  f(x)  is maximum or minimum.
+
+Procedure (second-derivative test):
+
+Compute  f′(x)  and solve  f′(x)=0  → these are critical points.
+Compute  f′′(x)  at each critical point:
+f′′(x∗)>0  → local minimum
+f′′(x∗)<0  → local maximum
+f′′(x∗)=0  → inconclusive (check sign change of  f′′  → could be point of inflection).
+Evaluate  f  at each critical point to get the actual min/max value.
+
+16.⁠ ⁠Optimization — Two Variables
+Goal: find  (x,y)  that maximize/minimize  f(x,y) .
+
+Procedure (Hessian / second-derivative test):
+
+Compute partial derivatives  fx=∂f/∂x ,  fy=∂f/∂y .
+Solve the system  fx=0, fy=0  → stationary points.
+Compute the Hessian determinant:  D=fxxfyy−(fxy)2 .
+Classify:
+Condition	Conclusion
+D>0, fxx>0 	Local minimum
+D>0, fxx<0 	Local maximum
+D<0 	Saddle point
+D=0 	Inconclusive
+Plug the stationary point back into  f  to get the optimal value.
+
+17.⁠ ⁠Jacobian Matrix
+Definition. For a vector-valued function  f:Rn→Rm , the Jacobian  J  is the  m×n  matrix of all first-order partial derivatives:
+Jij=∂fi∂xj 
+
+Special cases:
+
+If  f  is scalar-valued ( m=1 ), the Jacobian is just the gradient row vector  ∇f .
+If  m=n ,  det(J)  is used in change-of-variables for integrals (e.g. polar/spherical coords).
+Where it appears in DS/AI: backpropagation in neural networks, sensitivity analysis, Newton's method for systems of equations.
+18.⁠ ⁠Hessian Matrix
+Definition. For a scalar function  f(x1,…,xn) , the Hessian  H  is the  n×n  matrix of all second-order partial derivatives:
+Hij=∂2f∂xi∂xj 
+
+For  f(x,y) :
+H=[fxxfyxfxyfyy] 
+
+Uses:
+
+Optimization classification: sign of  det(H)  and  fxx  tells min/max/saddle 
+Newton's method: update step  xt+1=xt−H−1∇f .
+A symmetric matrix (Schwarz's theorem:  fxy=fyx  for smooth  f ).
+Positive-definite  H  (all eigenvalues > 0) ⇔ local minimum at that point.
+
+Z-test	One mean, σ known, large n	(xbar-mu0)/(sigma/sqrt(n)) then stats.norm.cdf
+One-sample t	One mean, σ unknown	stats.ttest_1samp(data, mu0)
+Two-sample t (independent)	Compare 2 group means	stats.ttest_ind(g1, g2, equal_var=True)
+Paired t	Same subjects, before vs after	stats.ttest_rel(before, after)
+Chi-square independence	2 categorical vars, contingency table	stats.chi2_contingency(table)
+Chi-square goodness of fit	1 observed dist vs hypothesized dist	stats.chisquare(obs, exp)
+One-way ANOVA	3+ group means	stats.f_oneway(g1, g2, g3, ...)
+Linear regression	Predict numeric y from x	statsmodels.formula.api.ols('y ~ x', df).fit()
+Decision rule everywhere: if p < α → Reject  H0 . Otherwise fail to reject.
+
+

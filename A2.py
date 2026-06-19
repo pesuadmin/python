@@ -1,7 +1,9 @@
+
+# Q: What role does regularization play in improving Linear Regression models?
+
 """
 WHAT IS REGULARIZATION?
-Regularization is a technique that adds a penalty term to the loss function of a
-regression model to prevent overfitting.  Without regularization, a model may fit
+Regularization is a technique that adds a penalty term to the loss function of a regression model to prevent overfitting.  Without regularization, a model may fit
 training data perfectly but perform poorly on new data (high variance / overfitting).
 
 FORMULAS:
@@ -11,11 +13,6 @@ FORMULAS:
 
   λ (lambda) = regularization strength
   Higher λ → stronger penalty → smaller coefficients
-
-# LaTeX equivalents:
-#   OLS:   J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2
-#   Ridge: J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2 + \\lambda\\sum_{j=1}^{k}\\beta_j^2
-#   Lasso: J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2 + \\lambda\\sum_{j=1}^{k}|\\beta_j|
 
 5 KEY ROLES OF REGULARIZATION:
   1. Prevents Overfitting      → penalizes large coefficients; model generalizes better
@@ -31,12 +28,7 @@ EXAM TIP — 4 points for full marks:
   (4) role of λ hyperparameter
 """
 
-
-# ─── Q1b (Feb 2025) ──────────────────────────────────────────────────────────
-# Q: What is the difference between R² and Adjusted R², and when should each
-#    be used?
-# Marks: 5
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: What is the difference between R² and Adjusted R², and when should each be used?
 
 """
 FORMULAS:
@@ -46,10 +38,6 @@ FORMULAS:
 
   Adjusted R² = 1 - [ (1 - R²) · (n - 1) / (n - k - 1) ]
   n = number of observations | k = number of predictors
-
-# LaTeX equivalents:
-#   R^2 = 1 - \\frac{SS_{res}}{SS_{tot}}
-#   \\bar{R}^2 = 1 - \\frac{(1 - R^2)(n-1)}{n - k - 1}
 
 COMPARISON TABLE:
   Aspect                  R²                          Adjusted R²
@@ -71,12 +59,7 @@ WHEN TO USE WHICH:
   Use Adjusted R² → whenever comparing models with different numbers of predictors
 """
 
-
-# ─── Q1c (Feb 2025) ──────────────────────────────────────────────────────────
-# Q: What are Wrapper Methods in feature selection, and how are they applied
-#    in Linear Regression?
-# Marks: 5
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: What are Wrapper Methods in feature selection, and how are they applied in Linear Regression?
 
 """
 THREE CATEGORIES OF FEATURE SELECTION:
@@ -113,12 +96,7 @@ DISADVANTAGE:
   That is why RFE (fixed step size) is preferred over exhaustive search.
 """
 
-
-# ─── Q1d (Feb 2025) ──────────────────────────────────────────────────────────
-# Q: How does Bayesian Optimization work, and how can it be used to tune
-#    hyperparameters of a Linear Regression model?
-# Marks: 5
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: How does Bayesian Optimization work, and how can it be used to tune hyperparameters of a Linear Regression model?
 
 """
 WHY NOT GRID SEARCH OR RANDOM SEARCH?
@@ -149,9 +127,6 @@ FOR RIDGE REGRESSION — TUNING α (FORMULA):
   Objective:    α* = argmin  RMSE( Ridge(α) )
   Search space: α ∈ [0.001, 100]  (log scale)
 
-# LaTeX:
-#   \\alpha^* = \\arg\\min_{\\alpha} \\; \\text{RMSE}(\\text{Ridge}(\\alpha))
-
 PYTHON EXAMPLE — scikit-optimize:
   from skopt import gp_minimize
   from skopt.space import Real
@@ -174,18 +149,7 @@ KEY ADVANTAGE:
 """
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# PAPER 2 — MAY 2025  |  Section A Theory (20 Marks)
-# 4 questions × 5 marks each
-# Note: May 2025 uses a Laptop dataset (vs Fish in Feb 2025).
-#       Questions 1b and 1c overlap with Feb 2025 — see cross-references below.
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ─── Q1a (May 2025) ──────────────────────────────────────────────────────────
-# Q: Describe the key assumptions of linear regression.  For each, explain the
-#    verification technique and impact of violation.
-# Marks: 5  |  MAY 2025 UNIQUE
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: Describe the key assumptions of linear regression.  For each, explain the verification technique and impact of violation.
 
 """
 MNEMONIC: L-I-N-E-R  (Linearity · Independence · Normality · Equal Variance · Reduced Collinearity)
@@ -212,17 +176,9 @@ VIF FORMULA:
   VIF = 1    → no multicollinearity
   VIF > 5    → moderate multicollinearity
   VIF > 10   → severe multicollinearity
-
-# LaTeX:
-#   \\text{VIF}_j = \\frac{1}{1 - R^2_j}
 """
 
-
-# ─── Q1b (May 2025) ──────────────────────────────────────────────────────────
-# Q: What is regularization?  Compare Lasso and Ridge — formulation,
-#    coefficient impact, use cases.
-# Marks: 5  |  SIMILAR TO FEB 2025 Q1a — see answer above
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: What is regularization?  Compare Lasso and Ridge — formulation, coefficient impact, use cases.
 
 """
 → Refer to Feb 2025 Q1a for the full answer.
@@ -235,10 +191,6 @@ ADDITIONAL DETAIL — RIDGE VS LASSO DEEP COMPARISON:
     Lasso (L1):  min  Σ(yᵢ - ŷᵢ)² + λ·Σ|βⱼ|     # absolute value penalty
     ElasticNet:  min  Σ(yᵢ - ŷᵢ)² + λ₁·Σ|βⱼ| + λ₂·Σβⱼ²  # mix of both
 
-  # LaTeX:
-  #   \\text{Ridge}: \\min_\\beta \\sum(y_i-\\hat{y}_i)^2 + \\lambda\\sum_j \\beta_j^2
-  #   \\text{Lasso}: \\min_\\beta \\sum(y_i-\\hat{y}_i)^2 + \\lambda\\sum_j |\\beta_j|
-
   Aspect                  Ridge (L2)                     Lasso (L1)
   ─────────────────────── ───────────────────────────── ─────────────────────────
   Penalty Term            λ·Σβⱼ²                         λ·Σ|βⱼ|
@@ -250,21 +202,13 @@ ADDITIONAL DETAIL — RIDGE VS LASSO DEEP COMPARISON:
   Correlated features     Distributes weight equally      Picks one, ignores others
   When λ→∞               All βⱼ → 0 (never exactly 0)   All βⱼ = 0 exactly
 
-  # LaTeX (Ridge closed form):
-  #   \\hat{\\beta}_{ridge} = (X^\\top X + \\lambda I)^{-1} X^\\top y
-
 KEY INSIGHT (Geometry):
   Lasso produces exactly-zero coefficients because the L1 constraint region
   (diamond shape) has corners at the axes.  When the OLS error ellipse meets the
   diamond, it most often hits a corner → βⱼ = 0.
 """
 
-
-# ─── Q1c (May 2025) ──────────────────────────────────────────────────────────
-# Q: What is Recursive Feature Elimination (RFE)?  How it works, advantages,
-#    limitations, and use in linear regression.
-# Marks: 5  |  MAY 2025 UNIQUE
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: What is Recursive Feature Elimination (RFE)?  How it works, advantages, limitations, and use in linear regression.
 
 """
 RFE ALGORITHM — STEP BY STEP:
@@ -297,12 +241,7 @@ PYTHON EXAMPLE — RFECV:
   print(f"Selected:         {X.columns[rfecv.support_]}")
 """
 
-
-# ─── Q1d (May 2025) ──────────────────────────────────────────────────────────
-# Q: Describe key steps in building a supervised ML pipeline from data
-#    ingestion to model deployment.
-# Marks: 5  |  MAY 2025 UNIQUE
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: Describe key steps in building a supervised ML pipeline from data ingestion to model deployment.
 
 """
 END-TO-END ML PIPELINE:
@@ -334,24 +273,12 @@ SKLEARN PIPELINE (BEST PRACTICE):
   predictions = pipe.predict(X_test)  # scaler + model applied automatically
 """
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# PAPER 3 — NOVEMBER 2021  |  Section A Theory (20 Marks)
-# 5 questions × 4 marks each
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ─── Q1a (Nov 2021) ──────────────────────────────────────────────────────────
 # Q: Write the cost function for Linear Regression with RIDGE regularization
-# Marks: 4
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 OLS COST FUNCTION (no regularization):
   J(β) = Σᵢ₌₁ⁿ (yᵢ − ŷᵢ)²
        = Σᵢ₌₁ⁿ (yᵢ − β₀ − β₁x₁ᵢ − ... − βₖxₖᵢ)²
-
-# LaTeX:
-#   J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2
 
 RIDGE (L2) COST FUNCTION:
   J_Ridge(β) = Σᵢ₌₁ⁿ (yᵢ − ŷᵢ)² + λ · Σⱼ₌₁ᵏ βⱼ²
@@ -361,10 +288,6 @@ RIDGE (L2) COST FUNCTION:
 
   Closed-form solution:
   β̂_ridge = (XᵀX + λI)⁻¹ Xᵀy
-
-# LaTeX:
-#   J_{ridge}(\\beta) = (y - X\\beta)^\\top(y - X\\beta) + \\lambda\\beta^\\top\\beta
-#   \\hat{\\beta}_{ridge} = (X^\\top X + \\lambda I)^{-1} X^\\top y
 
 KEY NOTES FOR 4 MARKS:
   (1) Full formula showing RSS + λ·Σβⱼ²
@@ -377,12 +300,7 @@ KEY NOTES FOR 4 MARKS:
   λ → ∞   → all βⱼ → 0  (but never exactly zero — that is Lasso's property)
 """
 
-
-# ─── Q1b (Nov 2021) ──────────────────────────────────────────────────────────
-# Q: How does Adjusted R² differ from R²? Role of Adjusted R² in feature
-#    selection.
-# Marks: 4  |  SIMILAR TO FEB 2025 Q1b — see above for full answer
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: How does Adjusted R² differ from R²? Role of Adjusted R² in feature selection.
 
 """
 → Refer to Feb 2025 Q1b for the full answer.
@@ -401,11 +319,7 @@ ROLE IN FEATURE SELECTION:
   The model with the highest Adj R² among competing models is preferred.
 """
 
-
-# ─── Q1c (Nov 2021) ──────────────────────────────────────────────────────────
 # Q: p-value for 'advertisement cost' t-test = 0.02.  What is your inference?
-# Marks: 4  |  APPLIED / INTERPRETATION QUESTION
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 MODEL CONTEXT:
@@ -434,19 +348,11 @@ NOTE: At the 1% level (p < 0.01) it would NOT be significant.
       Result is significant at 5%, not at 1%.
 """
 
-
-# ─── Q1d (Nov 2021) ──────────────────────────────────────────────────────────
-# Q: RMSE(salary model) = 12,324 and RMSE(age model) = 55.
-#    Comment on performance.
-# Marks: 4  |  TRAP QUESTION — DIFFERENT SCALES
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: RMSE(salary model) = 12,324 and RMSE(age model) = 55. Comment on performance.
 
 """
 FORMULA:
   RMSE = sqrt[ (1/n) · Σ(yᵢ − ŷᵢ)² ]
-
-# LaTeX:
-#   \\text{RMSE} = \\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2}
 
 THE TRAP — YOU CANNOT COMPARE RMSE ACROSS DIFFERENT SCALES:
   Salary model RMSE = 12,324 → units are RUPEES (same as salary target)
@@ -472,18 +378,11 @@ KEY TAKEAWAY:
   for fair comparison across models with different scales.
 """
 
-
-# ─── Q1e (Nov 2021) ──────────────────────────────────────────────────────────
 # Q: If we increase λ, what happens to Ridge coefficients?
-# Marks: 4
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 RIDGE CLOSED-FORM:
   β̂_ridge = (XᵀX + λI)⁻¹ Xᵀy
-
-# LaTeX:
-#   \\hat{\\beta}_{ridge} = (X^\\top X + \\lambda I)^{-1} X^\\top y
 
 AS λ INCREASES:
   (XᵀX + λI)⁻¹ becomes smaller in magnitude → β̂_ridge shrinks toward 0
@@ -505,24 +404,7 @@ RIDGE vs LASSO KEY DISTINCTION:
 """
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# PAPER 4 — AUGUST 2023  |  Section A Theory (20 Marks)
-# 5 questions × 4 marks each
-# NOTE: Aug 2023 Section A ≈ near-identical to March 2024 Section A.
-#       Unique question is Q1c (Assumptions) — below.
-#       All others: see March 2024 answers.
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ─── Q1a/b/d/e (Aug 2023) ────────────────────────────────────────────────────
-# Q1a: Multicollinearity       → see March 2024 Q1a
-# Q1b: k-fold Cross Validation → see March 2024 Q1b
-# Q1d: Forward Feature Selection → see June 2024 Q1d
-# Q1e: Overfitting / Bias-Variance → see June 2024 Q1e / March 2024 Q1e
-
-# ─── Q1c (Aug 2023) ──────────────────────────────────────────────────────────
 # Q: Explain the assumptions of Linear Regression.
-# Marks: 4  |  ALSO ASKED IN JUN 2024 Q1a — SAME TOPIC
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 L-I-N-E-R MNEMONIC — FULL TABLE:
@@ -536,20 +418,9 @@ L-I-N-E-R MNEMONIC — FULL TABLE:
   Equal Variance    Var(εᵢ) = σ²  (homoscedasticity)  Scale-Location flat    Breusch-Pagan p>0.05  Incorrect SE; not BLUE
   Reduced Collin.   No perfect linear dependence       Correlation heatmap    VIF < 5–10             Unstable coefficients
                     among predictors
-
-# LaTeX (Independence):
-#   \\text{Cov}(\\varepsilon_i, \\varepsilon_j) = 0 \\quad \\forall i \\neq j
-
-# LaTeX (Normality):
-#   \\varepsilon \\sim \\mathcal{N}(0, \\sigma^2)
 """
 
-
-# ─── Q1e (Aug 2023) ──────────────────────────────────────────────────────────
-# Q: How to reduce overfitting in Linear Regression? What is bias-variance
-#    tradeoff?
-# Marks: 4
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: How to reduce overfitting in Linear Regression? What is bias-variance tradeoff?
 
 """
 BIAS-VARIANCE DECOMPOSITION:
@@ -558,11 +429,6 @@ BIAS-VARIANCE DECOMPOSITION:
   Bias(ŷ)    = E[ŷ] − y         # systematic error — how wrong on average
   Variance   = E[(ŷ − E[ŷ])²]  # how much predictions vary across datasets
   σ²         = inherent data noise (cannot be reduced)
-
-# LaTeX:
-#   E[(y - \\hat{y})^2] = \\text{Bias}(\\hat{y})^2 + \\text{Var}(\\hat{y}) + \\sigma^2
-#   \\text{Bias}(\\hat{y}) = E[\\hat{y}] - y
-#   \\text{Var}(\\hat{y})  = E[(\\hat{y} - E[\\hat{y}])^2]
 
   Underfitting: High Bias + Low Variance  (too simple model)
   Overfitting:  Low Bias  + High Variance  (too complex model)
@@ -578,16 +444,9 @@ METHODS TO REDUCE OVERFITTING:
   More training data       More examples → ↓variance (model can't memorize)
 """
 
-
-# ─────────────────────────────────────────────────────────────────────────────
 # PAPER 5 — MARCH 2024  |  Section A Theory (20 Marks)
-# 5 questions × 4 marks each
-# ─────────────────────────────────────────────────────────────────────────────
 
-# ─── Q1a (Mar 2024) ──────────────────────────────────────────────────────────
 # Q: What is Multicollinearity? How to detect it and which variables are involved?
-# Marks: 4
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 DEFINITION:
@@ -600,10 +459,6 @@ FORMAL STATEMENT:
   then:
     Var(β̂_j) = σ² / (Σxᵢⱼ² · (1 − R²_j))  → becomes very large
     VIF_j    = 1 / (1 − R²_j)
-
-# LaTeX:
-#   \\text{VIF}_j = \\frac{1}{1-R^2_j}
-#   \\text{where } R^2_j \\text{ = } R^2 \\text{ from regressing } X_j \\text{ on all other predictors}
 
 DETECTION METHODS:
   Method                  How                                        Threshold
@@ -628,11 +483,7 @@ REMEDIES:
   4. Collect more data → increases statistical power
 """
 
-
-# ─── Q1b (Mar 2024) ──────────────────────────────────────────────────────────
 # Q: Explain the procedure involved in k-fold Cross Validation.
-# Marks: 4  |  ALSO ASKED JUN 2024 (implicit)
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 PURPOSE:
@@ -652,9 +503,6 @@ FORMULAS:
   Bias_error     = 1 − mean(R²_folds)   # systematic underfitting
   Variance_error = std(R²_folds)         # inconsistency across folds
 
-# LaTeX:
-#   CV_{score} = \\frac{1}{k}\\sum_{i=1}^{k} \\text{Score}(\\text{fold}_i)
-
 k-VALUE TRADEOFFS:
   k value         Bias      Variance    Computation
   ────────────── ───────── ─────────── ────────────
@@ -664,11 +512,7 @@ k-VALUE TRADEOFFS:
   k = n (LOOCV)   Very Low  High        Very slow
 """
 
-
-# ─── Q1c (Mar 2024) ──────────────────────────────────────────────────────────
 # Q: Discuss the need for data transformations in linear regression + techniques
-# Marks: 4  |  UNIQUE TO MARCH 2024
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 WHY TRANSFORM DATA?
@@ -687,26 +531,13 @@ WHY TRANSFORM DATA?
   Multiplicative relation  Log-Log           log(y) = β·log(x)          Elasticity models, economics
   Binary categorical       Dummy Encoding    n−1 binary columns         All categorical features
 
-# LaTeX (StandardScaler):
-#   x^* = \\frac{x - \\mu}{\\sigma}
-# LaTeX (MinMaxScaler):
-#   x^* = \\frac{x - x_{min}}{x_{max} - x_{min}}
-# LaTeX (BoxCox):
-#   y^* = \\frac{y^\\lambda - 1}{\\lambda}
-
 KEY INTERPRETATION CHANGE AFTER LOG TRANSFORM:
   If y* = log(y):  β means "a 1-unit increase in X changes log(y) by β"
   Percentage interpretation: %ΔY ≈ β × ΔX × 100  (for small ΔX)
   Always back-transform: ŷ = exp(ŷ*)  when reporting results
 """
 
-
-# ─── Q1d (Mar 2024) ──────────────────────────────────────────────────────────
 # Q: Explain the procedure involved in Forward Feature Selection.
-# Marks: 4  |  SAME AS JUN 2024 Q1d — see below
-# ─────────────────────────────────────────────────────────────────────────────
-
-# → See June 2024 Q1d for the full detailed answer.
 
 """
 COMPACT VERSION:
@@ -721,11 +552,7 @@ Backward Elimination (reverse):
   SFS from mlxtend: SequentialFeatureSelector(lr, k_features='best', forward=False)
 """
 
-
-# ─── Q1e (Mar 2024) ──────────────────────────────────────────────────────────
 # Q: Strategies to mitigate overfitting + forms of Linear Regression addressing it
-# Marks: 4  |  ALSO JUN 2024 Q1e — see below
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
   Strategy                     How it Reduces Overfitting
@@ -738,16 +565,7 @@ Backward Elimination (reverse):
   More training data           ↓variance (model can't memorize with more examples)
 """
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# PAPER 6 — JUNE 2024  |  Section A Theory (20 Marks)
-# 5 questions × 4 marks each
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ─── Q1a (Jun 2024) ──────────────────────────────────────────────────────────
 # Q: Explain the relation between Bias and Variance in a linear regression model
-# Marks: 4
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 MATHEMATICAL DECOMPOSITION:
@@ -757,10 +575,6 @@ MATHEMATICAL DECOMPOSITION:
   Bias(ŷ)    = E[ŷ] − y              # systematic error
   Variance   = E[(ŷ − E[ŷ])²]        # variability across datasets
   σ²         = inherent data noise    (cannot be reduced)
-
-# LaTeX:
-#   E[(y-\\hat{y})^2] = \\left(E[\\hat{y}] - y\\right)^2 +
-#                       E\\left[(\\hat{y} - E[\\hat{y}])^2\\right] + \\sigma^2
 
 TRADEOFF:
   Model Complexity    Bias    Variance    Result
@@ -779,11 +593,7 @@ MEASURING WITH CV:
   Variance ≈ std(R²_folds)         (how much performance fluctuates across folds)
 """
 
-
-# ─── Q1b (Jun 2024) ──────────────────────────────────────────────────────────
 # Q: How can regularization help in tackling overfitting?
-# Marks: 4  |  ALSO FEB 2025 Q1a, MAY 2025 Q1b — see above
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 → Refer to Feb 2025 Q1a for the full answer.
@@ -804,11 +614,7 @@ FOUR MARKS REQUIRE:
   (4) Role of λ — larger λ = more regularization = simpler model
 """
 
-
-# ─── Q1c (Jun 2024) ──────────────────────────────────────────────────────────
 # Q: n=21, 5 predictors, SS(Total)=1500, SS(Residual)=375 — Calculate R²
-# Marks: 4  |  NUMERICAL
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 GIVEN:
@@ -836,11 +642,6 @@ STEP 3: Adjusted R²
          = 1 − 0.3333
          = 0.6667
 
-# LaTeX:
-#   R^2 = 1 - \\frac{SS_{res}}{SS_{tot}} = 1 - \\frac{375}{1500} = 0.75
-#   \\bar{R}^2 = 1 - \\frac{(1-R^2)(n-1)}{n-k-1}
-#             = 1 - \\frac{0.25 \\times 20}{15} = 0.6667
-
 CONCLUSION:
   R² = 0.75 → model explains 75% of total variance.
   Adj R² = 0.667 → after penalizing for 5 predictors on 21 observations.
@@ -848,11 +649,7 @@ CONCLUSION:
   With n=21 and k=5, the model uses many degrees of freedom → always report Adj R².
 """
 
-
-# ─── Q1d (Jun 2024) ──────────────────────────────────────────────────────────
 # Q: Explain the procedure involved in Forward Feature Selection.
-# Marks: 4  |  UNIQUE TO JUN 2024 (full version)
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 ALGORITHM:
@@ -883,12 +680,7 @@ FORWARD SELECTION vs BACKWARD ELIMINATION:
   Limitation      Can't remove once added  Can't re-add once removed
 """
 
-
-# ─── Q1e (Jun 2024) ──────────────────────────────────────────────────────────
-# Q: Strategies to mitigate overfitting in Linear Regression + forms that
-#    address it.
-# Marks: 4
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: Strategies to mitigate overfitting in Linear Regression + forms that address it.
 
 """
 5 STRATEGIES:
@@ -910,20 +702,11 @@ FORMS OF LINEAR REGRESSION ADDRESSING OVERFITTING:
   Ridge (L2)      λΣβⱼ²           Shrinks all; never zeros out        β̂=(XᵀX+λI)⁻¹Xᵀy
   Lasso (L1)      λΣ|βⱼ|          Zeros out irrelevant → sparse model  (no closed form; coord descent)
   ElasticNet      λ₁Σ|βⱼ|+λ₂Σβⱼ²  Combines both; handles correlated groups
-
-# LaTeX (ElasticNet):
-#   J(\\beta) = \\sum(y_i-\\hat{y}_i)^2 + \\lambda_1\\sum|\\beta_j| + \\lambda_2\\sum\\beta_j^2
 """
 
-
-# ─────────────────────────────────────────────────────────────────────────────
 # PAPER 7 — MARCH 2021  |  Theory Questions (Q1 + Q2 = 20 Marks)
-# ─────────────────────────────────────────────────────────────────────────────
 
-# ─── Q1a (Mar 2021) ──────────────────────────────────────────────────────────
 # Q: Explain Heteroscedasticity and Multicollinearity in Linear Regression
-# Marks: 2
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 HETEROSCEDASTICITY:
@@ -959,14 +742,7 @@ KEY EXAM DISTINCTION:
   Multicollinearity  → about the PREDICTORS (X) — they correlate with each other
 """
 
-
-# ─── Q1b (Mar 2021) ──────────────────────────────────────────────────────────
-# Q: Birth Weight Prediction:
-#    pred_bwght = 119.77 − 0.514 × cigs
-#    (i) Predicted birth weight when cigs = 0
-#    (ii) Predicted birth weight when cigs = 20
-# Marks: 2  |  NUMERICAL
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: Birth Weight Prediction: pred_bwght = 119.77 − 0.514 × cigs (i) Predicted birth weight when cigs = 0 (ii) Predicted birth weight when cigs = 20
 
 """
 MODEL:
@@ -993,15 +769,7 @@ COMMENT:
   Caveat: simple regression — confounders (nutrition, maternal age) not controlled.
 """
 
-
-# ─── Q1c (Mar 2021) ──────────────────────────────────────────────────────────
-# Q: College GPA:
-#    colgpa = 1.392 − 0.0135 × hsperc + 0.00148 × sat
-#    (i) Why is the coefficient on hsperc negative?
-#    (ii) SAT 140 points higher → predicted GPA difference?
-#    (iii) SAT points needed for colgpa difference of 0.50?
-# Marks: 3  |  NUMERICAL + INTERPRETATION
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: College GPA: colgpa = 1.392 − 0.0135 × hsperc + 0.00148 × sat (i) Why is the coefficient on hsperc negative? (ii) SAT 140 points higher → predicted GPA difference? (iii) SAT points needed for colgpa difference of 0.50?
 
 """
 MODEL:
@@ -1033,11 +801,7 @@ PART 3 — What ΔSAT gives Δcolgpa = 0.50?
   SAT's individual effect is relatively modest.
 """
 
-
-# ─── Q1d (Mar 2021) ──────────────────────────────────────────────────────────
 # Q: How can you deal with autocorrelation of errors?
-# Marks: 2
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 WHAT IS AUTOCORRELATION?
@@ -1068,11 +832,7 @@ WHAT IS AUTOCORRELATION?
        Replace Yᵢ with ΔYᵢ = Yᵢ − Yᵢ₋₁.  Common in time-series econometrics.
 """
 
-
-# ─── Q1e (Mar 2021) ──────────────────────────────────────────────────────────
 # Q: Difference between Classification and Regression
-# Marks: 1
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
   Aspect          Regression                          Classification
@@ -1084,16 +844,7 @@ WHAT IS AUTOCORRELATION?
   Output Range    −∞ to +∞  (any real number)          Finite set of classes {0,1} or {A,B,C}
 """
 
-
-# ─── Q2a (Mar 2021) ──────────────────────────────────────────────────────────
-# Q: CEO Salary: log(Salary) = 4.32 + 0.280·log(sales) + 0.0174·roe + 0.00024·ros
-#    SE(intercept) = 0.32 | SE(log sales) = 0.035 | SE(roe) = 0.0041 | SE(ros) = 0.00054
-#    n = 209 | R² = 0.283 | t-critical (10%, one-tail) = 1.282
-#    (i) % increase in Salary when ros increases by 50 points
-#    (ii) H₀: β_ros = 0 — test and conclude
-#    (iii) Would you include ros in the final model?
-# Marks: 6  |  NUMERICAL
-# ─────────────────────────────────────────────────────────────────────────────
+# Q: CEO Salary: log(Salary) = 4.32 + 0.280·log(sales) + 0.0174·roe + 0.00024·ros SE(intercept) = 0.32 | SE(log sales) = 0.035 | SE(roe) = 0.0041 | SE(ros) = 0.00054 n = 209 | R² = 0.283 | t-critical (10%, one-tail) = 1.282 (i) % increase in Salary when ros increases by 50 points (ii) H₀: β_ros = 0 — test and conclude (iii) Would you include ros in the final model?
 
 """
 MODEL (log-level):
@@ -1131,11 +882,7 @@ PART 3 — Include ros in final model?
   However, theoretically ros should matter → could retain with caveat about weakness.
 """
 
-
-# ─── Q2b (Mar 2021) ──────────────────────────────────────────────────────────
 # Q: y = 2x₁ + 12x₂ + 3x₃ + 5 — How do coefficients of x₂ and x₃ affect y?
-# Marks: 2  |  SAME AS SAMPLE PAPER Q1d (x₁ and x₂)
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 MODEL:
@@ -1161,11 +908,7 @@ COMPARISON:
   Use standardized (beta) coefficients for fair comparison when units differ.
 """
 
-
-# ─── Q2c (Mar 2021) ──────────────────────────────────────────────────────────
 # Q: Explain Gradient Descent in brief
-# Marks: 2
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 CORE IDEA:
@@ -1179,11 +922,6 @@ MATHEMATICAL FOUNDATION:
   Update Rule:    βⱼ := βⱼ − α · ∂J/∂βⱼ
 
   α = learning rate (step size)  |  := means "update"
-
-# LaTeX:
-#   J(\\beta) = \\frac{1}{2n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2
-#   \\frac{\\partial J}{\\partial \\beta_j} = \\frac{1}{n}\\sum_{i=1}^{n}(\\hat{y}_i - y_i)x_{ij}
-#   \\beta_j := \\beta_j - \\alpha \\cdot \\frac{\\partial J}{\\partial \\beta_j}
 
 ALGORITHM STEPS:
   1. Initialize: set all β = 0 (or small random values)
@@ -1206,26 +944,16 @@ LEARNING RATE α:
   Fix: learning rate schedules or Adam optimizer
 """
 
-
-# ─────────────────────────────────────────────────────────────────────────────
 # PAPER 8 — ML-1 SAMPLE PAPER  |  Section A Theory (20 Marks)
-# 5 questions × 4 marks each
-# ─────────────────────────────────────────────────────────────────────────────
 
-# ─── Q1a (Sample) ────────────────────────────────────────────────────────────
 # Q: What is Machine Learning? State any two types.
-# Marks: 4  |  UNIQUE TO SAMPLE PAPER
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 DEFINITION:
-  Machine Learning (ML) is a subfield of Artificial Intelligence (AI) that enables
-  systems to LEARN PATTERNS FROM DATA and improve performance WITHOUT being explicitly
-  programmed for each task.
+  Machine Learning (ML) is a subfield of Artificial Intelligence (AI) that enables  systems to LEARN PATTERNS FROM DATA and improve performance WITHOUT being explicitly  programmed for each task.
 
   Formal Definition (Tom Mitchell, 1997):
-  "A computer program is said to learn from Experience E with respect to some class of  Tasks T and Performance Measure P, if its performance at T, as measured by P,
-   improves with experience E."
+  "A computer program is said to learn from Experience E with respect to some class of Tasks T and Performance Measure P, if its performance at T, as measured by P, improves with experience E."
 
 TWO TYPES OF MACHINE LEARNING:
   Type                  Description                               Examples
@@ -1238,11 +966,7 @@ TWO TYPES OF MACHINE LEARNING:
   (Also: Reinforcement Learning — agent learns via rewards/penalties, e.g., game playing)
 """
 
-
-# ─── Q1b (Sample) ────────────────────────────────────────────────────────────
 # Q: How can you handle overfitting and underfitting?
-# Marks: 4
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 DEFINITIONS:
@@ -1263,11 +987,7 @@ DEFINITIONS:
                                                          5. Simpler model
 """
 
-
-# ─── Q1c (Sample) ────────────────────────────────────────────────────────────
 # Q: State the assumptions of linear regression.
-# Marks: 4  |  ALSO AUG 2023, JUN 2024 — see Q1c Aug 2023 above
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 L-I-N-E-R (5 Assumptions):
@@ -1280,11 +1000,7 @@ L-I-N-E-R (5 Assumptions):
 → See Aug 2023 Q1c for the full detailed table with statistical tests and violation impacts.
 """
 
-
-# ─── Q1d (Sample) ────────────────────────────────────────────────────────────
 # Q: y = 2x₁ + 12x₂ + 3x₃ + 5 — Effect of x₁ and x₂ coefficients
-# Marks: 4  |  SAME AS MAR 2021 Q2b
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 → See March 2021 Q2b for the full answer.
@@ -1303,11 +1019,7 @@ EFFECT OF x₂ (β₂ = 12):
 CAVEAT: comparison valid only if x₁ and x₂ are on the SAME SCALE.
 """
 
-
-# ─── Q1e (Sample) ────────────────────────────────────────────────────────────
 # Q: Explain any two data preprocessing steps.
-# Marks: 4
-# ─────────────────────────────────────────────────────────────────────────────
 
 """
 PREPROCESSING STEP 1 — MISSING VALUE TREATMENT:
@@ -1332,6 +1044,75 @@ PREPROCESSING STEP 2 — FEATURE SCALING:
   MinMaxScaler:    z = (x − min) / (max − min)
     Result: all values in range [0, 1]
     Use when bounded range is needed
+"""
+
+
+# =============================================================================
+# FORMULAS MASTER REFERENCE
+# =============================================================================
 
 """
+ALL KEY FORMULAS IN READABLE FORMAT:
+
+OLS:
+  β̂       = (XᵀX)⁻¹ Xᵀy
+  J(β)    = Σ(yᵢ − ŷᵢ)²
+
+Ridge:
+  J_Ridge = Σ(yᵢ − ŷᵢ)² + λ·Σβⱼ²
+  β̂_Ridge = (XᵀX + λI)⁻¹ Xᵀy
+
+Lasso:
+  J_Lasso = Σ(yᵢ − ŷᵢ)² + λ·Σ|βⱼ|
+  (no closed form — coordinate descent)
+
+ElasticNet:
+  J_EN    = Σ(yᵢ − ŷᵢ)² + λ₁·Σ|βⱼ| + λ₂·Σβⱼ²
+
+R²:
+  R²      = 1 − SS_res / SS_tot
+  SS_res  = Σ(yᵢ − ŷᵢ)²
+  SS_tot  = Σ(yᵢ − ȳ)²
+
+Adjusted R²:
+  Adj R²  = 1 − (1 − R²) · (n−1) / (n−k−1)
+
+VIF:
+  VIF_j   = 1 / (1 − R²_j)   where R²_j = R² regressing X_j on all other X
+
+Bias-Variance Decomposition:
+  E[(y − ŷ)²] = Bias(ŷ)² + Var(ŷ) + σ²
+  Bias(ŷ)     = E[ŷ] − y
+  Var(ŷ)      = E[(ŷ − E[ŷ])²]
+
+k-Fold CV:
+  CV_score    = (1/k) · Σᵢ₌₁ᵏ Score(fold_i)
+  Bias        ≈ 1 − mean(R²_folds)
+  Variance    ≈ std(R²_folds)
+
+Gradient Descent:
+  J(β)        = (1/2n) · Σ(yᵢ − ŷᵢ)²
+  ∂J/∂βⱼ     = (1/n) · Σ(ŷᵢ − yᵢ)·xᵢⱼ
+  βⱼ := βⱼ − α · ∂J/∂βⱼ
+
+StandardScaler:
+  z           = (x − μ) / σ
+
+MinMaxScaler:
+  z           = (x − min) / (max − min)
+
+Log-Level Interpretation:
+  %ΔY         ≈ β · ΔX · 100   (for small ΔX)
+
+t-Statistic:
+  t           = β̂ⱼ / SE(β̂ⱼ)   (reject H₀ if |t| > t_critical)
+
+RMSE:
+  RMSE        = sqrt[ (1/n) · Σ(yᵢ − ŷᵢ)² ]
+
+MAPE:
+  MAPE        = (100/n) · Σ |yᵢ − ŷᵢ| / |yᵢ|
+
+"""
+
 

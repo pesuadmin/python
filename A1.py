@@ -1,30 +1,3 @@
-# =============================================================================
-#   UE20CS905 · SUPERVISED MACHINE LEARNING – REGRESSION (SMLR)
-#   COMPLETE STUDY GUIDE: SESSIONS 1 through 6
-#   PES University · M.Tech Data Science & AI
-# =============================================================================
-#
-#  HOW TO READ THIS FILE
-#  ---------------------
-#  Each SESSION is a clearly marked block.
-#  Formulas appear in two styles:
-#    • Plain text  — when the formula is readable as-is  (e.g.  R² = SSR/SST)
-#    • LaTeX block — when a symbol-heavy formula needs it (delimited by  $$ ... $$)
-#
-#  Navigate with: Ctrl+G → line number, or search for  "SESSION N"  or  "##"
-#
-#  QUICK-JUMP TABLE
-#  ----------------
-#  SESSION 1  – Data Preprocessing & SLR Foundations .............. line ~60
-#  SESSION 2  – Linear Regression (SLR + OLS + MLR) ............... line ~420
-#  SESSION 3  – Assumptions & Model Evaluation ..................... line ~780
-#  SESSION 4  – Feature Engineering & Selection ................... line ~1330
-#  SESSION 5  – Model Optimization ................................ line ~1750
-#  SESSION 6  – Model Deployment (Pickle + Flask) ................. line ~2170
-#  MASTER FORMULA SHEET ............................................ line ~2530
-# =============================================================================
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # SESSION 1  ·  DATA PREPROCESSING & SIMPLE LINEAR REGRESSION FOUNDATIONS
 # Dataset   : BigMart Sales (preprocessing) · Car Premium (SLR)

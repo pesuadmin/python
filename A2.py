@@ -1,1702 +1,1337 @@
-# Assume level of significance = 0.05 unless stated otherwise.
-# Find the determinant of the matrix $A$:
-import sympy as sp
-
-# Define matrix
-A = sp.Matrix([
-    [2, 4, 5],
-    [6, 1, 3],
-    [4, 0, 7]
-])
-# Determinant
-det_A = A.det()
-
-print("Determinant =", det_A)
-if det_A != 0:
-    print("Matrix is non-singular (invertible).")
-else:
-    print("Matrix is singular (not invertible).")
-
-# Calculate the following for the matrices $A$, $B$, $C$, and $D$ where $I$ is a 3×3 Identity matrix:
-#
-# - $|A + I|$
-# - $BC$
-# - $AB$
-# - $A^2$
-# - Value of $D^2 - 5D - 2I$
-#
-# $$A = \begin{bmatrix} 5 & 6 & 2 \\ 4 & 7 & 19 \\ 0 & 3 & 12 \end{bmatrix}, \quad B = \begin{bmatrix} 14 \\ 4 \\ 5 \end{bmatrix}, \quad C = \begin{bmatrix} 1 & 2 & 3 \end{bmatrix}, \quad D = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}$$
-
-import numpy as np
-
-# Define matrices A, B, C, D and 3x3 Identity matrix I
-A = np.array([[5, 6, 2], [4, 7, 19], [0, 3, 12]], dtype=float)
-
-B = np.array([[14], [4], [5]], dtype=float)
-
-C = np.array([[1, 2, 3]], dtype=float)
-
-D = np.array([[1, 2], [3, 4]], dtype=float)
-
-I3 = np.eye(3)
-I2 = np.eye(2)
-
-# 1. |A + I|
-det_A_plus_I = np.linalg.det(A + I3)
-
-# 2. BC
-BC = B @ C
+"""
+WHAT IS REGULARIZATION?
+Regularization is a technique that adds a penalty term to the loss function of a
+regression model to prevent overfitting.  Without regularization, a model may fit
+training data perfectly but perform poorly on new data (high variance / overfitting).
+
+FORMULAS:
+  OLS Loss        = Σ(yᵢ - ŷᵢ)²
+  Ridge Loss (L2) = Σ(yᵢ - ŷᵢ)² + λ·Σβⱼ²
+  Lasso Loss (L1) = Σ(yᵢ - ŷᵢ)² + λ·Σ|βⱼ|
+
+  λ (lambda) = regularization strength
+  Higher λ → stronger penalty → smaller coefficients
+
+# LaTeX equivalents:
+#   OLS:   J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2
+#   Ridge: J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2 + \\lambda\\sum_{j=1}^{k}\\beta_j^2
+#   Lasso: J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2 + \\lambda\\sum_{j=1}^{k}|\\beta_j|
+
+5 KEY ROLES OF REGULARIZATION:
+  1. Prevents Overfitting      → penalizes large coefficients; model generalizes better
+  2. Handles Multicollinearity → Ridge stabilizes coefficients when predictors are correlated
+  3. Feature Selection (Lasso) → L1 penalty can drive some coefficients exactly to ZERO
+  4. Bias-Variance Tradeoff    → introduces small bias, dramatically reduces variance
+  5. Controls Model Complexity → acts as a constraint on the hypothesis space
+
+EXAM TIP — 4 points for full marks:
+  (1) overfitting problem it solves
+  (2) penalty term formula (Ridge vs Lasso)
+  (3) Ridge vs Lasso key difference
+  (4) role of λ hyperparameter
+"""
+
+
+# ─── Q1b (Feb 2025) ──────────────────────────────────────────────────────────
+# Q: What is the difference between R² and Adjusted R², and when should each
+#    be used?
+# Marks: 5
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+FORMULAS:
+  R²        = 1 - (SS_res / SS_tot)
+  SS_res    = Σ(yᵢ - ŷᵢ)²        # Sum of Squared Residuals (model error)
+  SS_tot    = Σ(yᵢ - ȳ)²         # Total Sum of Squares   (total variance)
+
+  Adjusted R² = 1 - [ (1 - R²) · (n - 1) / (n - k - 1) ]
+  n = number of observations | k = number of predictors
+
+# LaTeX equivalents:
+#   R^2 = 1 - \\frac{SS_{res}}{SS_{tot}}
+#   \\bar{R}^2 = 1 - \\frac{(1 - R^2)(n-1)}{n - k - 1}
+
+COMPARISON TABLE:
+  Aspect                  R²                          Adjusted R²
+  ─────────────────────── ─────────────────────────── ────────────────────────────
+  Full Name               Coefficient of Determination  Adjusted Coeff. of Det.
+  Range                   0 to 1 (rarely negative)      Can be lower than R²
+  Adding a predictor      Always increases or stays same  Increases ONLY if useful
+  Penalizes extra features  No                          Yes
+  Use when                Single predictor / SLR        Multiple predictors / MLR
+  Formula uses n, k?      No                            Yes
+
+INTUITION EXAMPLE:
+  Suppose R² = 0.80. You add a random noise variable (useless predictor).
+  → R²         becomes 0.81  (increased, because it always does)
+  → Adjusted R² drops to 0.78 (correctly flags the feature as unhelpful)
+
+WHEN TO USE WHICH:
+  Use R²          → only when models have the exact same number of predictors
+  Use Adjusted R² → whenever comparing models with different numbers of predictors
+"""
+
+
+# ─── Q1c (Feb 2025) ──────────────────────────────────────────────────────────
+# Q: What are Wrapper Methods in feature selection, and how are they applied
+#    in Linear Regression?
+# Marks: 5
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+THREE CATEGORIES OF FEATURE SELECTION:
+  Category          How it Works                           Examples
+  ──────────────── ────────────────────────────────────── ─────────────────────
+  Filter Methods    Statistical tests; no model involved    Correlation, Chi², VIF
+  Wrapper Methods   Uses a model to evaluate feature subsets  RFE, Forward/Backward
+  Embedded Methods  Feature selection built into training   Lasso, Ridge, Trees
+
+WRAPPER METHODS — DEFINITION:
+  Treat feature selection as a search problem.  Evaluate subsets of features by
+  training a model on each subset and measuring cross-validation performance.
+  The subset giving the best model performance is selected.
+
+THREE TYPES OF WRAPPER METHODS:
+  1. Forward Selection   → Start with 0 features; add best one each step
+  2. Backward Elimination → Start with ALL features; remove weakest one each step
+  3. RFE (Recursive Feature Elimination):
+       Train model → rank features by |βⱼ| → remove weakest → retrain → repeat
+       until desired number of features remains
+
+PYTHON EXAMPLE — RFE:
+  from sklearn.feature_selection import RFE
+  from sklearn.linear_model import LinearRegression
+
+  model = LinearRegression()
+  rfe   = RFE(estimator=model, n_features_to_select=3)   # keep top 3
+  rfe.fit(X_train, y_train)
+  print(rfe.support_)   # True/False for each feature
+  print(rfe.ranking_)   # rank 1 = selected; higher = eliminated earlier
+
+DISADVANTAGE:
+  Computationally expensive — up to 2^p model fits needed for p features.
+  That is why RFE (fixed step size) is preferred over exhaustive search.
+"""
+
+
+# ─── Q1d (Feb 2025) ──────────────────────────────────────────────────────────
+# Q: How does Bayesian Optimization work, and how can it be used to tune
+#    hyperparameters of a Linear Regression model?
+# Marks: 5
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+WHY NOT GRID SEARCH OR RANDOM SEARCH?
+  Grid Search   → Exhaustive; tries every combination; very slow
+  Random Search → Faster but does NOT learn from past trials
+  Bayesian Opt  → Learns from past evaluations; intelligently picks next hyperparameter
+
+HOW BAYESIAN OPTIMIZATION WORKS (step-by-step):
+  1. Define Objective Function:
+       f(λ) = validation RMSE when training with hyperparameter λ
+       Goal: minimize f
+
+  2. Build a Surrogate Model:
+       Use a Gaussian Process (GP) to model f(λ).
+       GP gives a prediction AND uncertainty estimate for any untried λ.
+
+  3. Acquisition Function:
+       Decides where to sample next.
+       Common choices: Expected Improvement (EI), Upper Confidence Bound (UCB)
+       Balances EXPLORATION (uncertain regions) vs EXPLOITATION (promising regions)
+
+  4. Evaluate and Update:
+       Train model with chosen λ → get actual f(λ) → update GP with new point
+
+  5. Repeat until budget exhausted; return best λ found.
+
+FOR RIDGE REGRESSION — TUNING α (FORMULA):
+  Objective:    α* = argmin  RMSE( Ridge(α) )
+  Search space: α ∈ [0.001, 100]  (log scale)
+
+# LaTeX:
+#   \\alpha^* = \\arg\\min_{\\alpha} \\; \\text{RMSE}(\\text{Ridge}(\\alpha))
+
+PYTHON EXAMPLE — scikit-optimize:
+  from skopt import gp_minimize
+  from skopt.space import Real
+  from sklearn.linear_model import Ridge
+  from sklearn.model_selection import cross_val_score
+
+  def objective(params):
+      alpha = params[0]
+      model = Ridge(alpha=alpha)
+      score = cross_val_score(model, X_train, y_train, cv=5, scoring='neg_rmse')
+      return -score.mean()
+
+  result = gp_minimize(objective,
+                       [Real(0.001, 100.0, prior='log-uniform')],
+                       n_calls=20)
+  print(f"Best alpha: {result.x[0]:.4f}")
+
+KEY ADVANTAGE:
+  Finds near-optimal hyperparameters in 10–50 iterations vs hundreds for Grid/Random Search.
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAPER 2 — MAY 2025  |  Section A Theory (20 Marks)
+# 4 questions × 5 marks each
+# Note: May 2025 uses a Laptop dataset (vs Fish in Feb 2025).
+#       Questions 1b and 1c overlap with Feb 2025 — see cross-references below.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Q1a (May 2025) ──────────────────────────────────────────────────────────
+# Q: Describe the key assumptions of linear regression.  For each, explain the
+#    verification technique and impact of violation.
+# Marks: 5  |  MAY 2025 UNIQUE
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+MNEMONIC: L-I-N-E-R  (Linearity · Independence · Normality · Equal Variance · Reduced Collinearity)
+
+  Assumption         What it Means                  How to Verify               Impact if Violated
+  ──────────────── ──────────────────────────────── ─────────────────────────── ────────────────────────
+  1. Linearity      Y has a linear relationship      Scatter plots Y vs each X;  Biased coefficients;
+                    with each Xᵢ                     Residual vs Fitted plot      systematic under/over-predict
+  2. Independence   Residuals are independent        Durbin-Watson stat ≈ 2       SE underestimated;
+                    (no autocorrelation)              (residual sequence plot)     t-tests unreliable
+  3. Normality      Residuals are normally           Q-Q plot (diagonal line);    Prediction intervals invalid;
+                    distributed                      Shapiro-Wilk test p > 0.05   hypothesis tests unreliable
+  4. Homoscedasticity Residuals have constant        Residual vs Fitted plot      SE incorrect; OLS no longer
+                    variance (equal variance)        (no funnel shape);           BLUE (Best Linear Unbiased)
+                                                     Breusch-Pagan test           Estimator
+  5. No Multicollinearity Predictors not strongly    VIF (Variance Inflation      Unstable, unreliable
+                    correlated with each other       Factor) — VIF > 5 or 10     coefficients; large SE
+                                                     is problematic
+
+VIF FORMULA:
+  VIF_j = 1 / (1 - R²_j)
+  R²_j  = R² from regressing feature j on all other features
+
+  VIF = 1    → no multicollinearity
+  VIF > 5    → moderate multicollinearity
+  VIF > 10   → severe multicollinearity
+
+# LaTeX:
+#   \\text{VIF}_j = \\frac{1}{1 - R^2_j}
+"""
+
+
+# ─── Q1b (May 2025) ──────────────────────────────────────────────────────────
+# Q: What is regularization?  Compare Lasso and Ridge — formulation,
+#    coefficient impact, use cases.
+# Marks: 5  |  SIMILAR TO FEB 2025 Q1a — see answer above
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+→ Refer to Feb 2025 Q1a for the full answer.
+
+ADDITIONAL DETAIL — RIDGE VS LASSO DEEP COMPARISON:
+
+  FORMULAS:
+    OLS:         min  Σ(yᵢ - ŷᵢ)²
+    Ridge (L2):  min  Σ(yᵢ - ŷᵢ)² + λ·Σβⱼ²      # squared penalty
+    Lasso (L1):  min  Σ(yᵢ - ŷᵢ)² + λ·Σ|βⱼ|     # absolute value penalty
+    ElasticNet:  min  Σ(yᵢ - ŷᵢ)² + λ₁·Σ|βⱼ| + λ₂·Σβⱼ²  # mix of both
+
+  # LaTeX:
+  #   \\text{Ridge}: \\min_\\beta \\sum(y_i-\\hat{y}_i)^2 + \\lambda\\sum_j \\beta_j^2
+  #   \\text{Lasso}: \\min_\\beta \\sum(y_i-\\hat{y}_i)^2 + \\lambda\\sum_j |\\beta_j|
+
+  Aspect                  Ridge (L2)                     Lasso (L1)
+  ─────────────────────── ───────────────────────────── ─────────────────────────
+  Penalty Term            λ·Σβⱼ²                         λ·Σ|βⱼ|
+  Coefficient Behavior    Shrinks toward 0, never = 0    Can set exactly to 0
+  Geometry                Circular (L2 ball)             Diamond (L1 ball; corners→zeros)
+  Closed-form solution?   Yes: β̂ = (XᵀX + λI)⁻¹Xᵀy    No (coordinate descent)
+  Best for                Multicollinearity; many small   Sparse models; auto feature
+                          predictors                      selection
+  Correlated features     Distributes weight equally      Picks one, ignores others
+  When λ→∞               All βⱼ → 0 (never exactly 0)   All βⱼ = 0 exactly
+
+  # LaTeX (Ridge closed form):
+  #   \\hat{\\beta}_{ridge} = (X^\\top X + \\lambda I)^{-1} X^\\top y
+
+KEY INSIGHT (Geometry):
+  Lasso produces exactly-zero coefficients because the L1 constraint region
+  (diamond shape) has corners at the axes.  When the OLS error ellipse meets the
+  diamond, it most often hits a corner → βⱼ = 0.
+"""
+
+
+# ─── Q1c (May 2025) ──────────────────────────────────────────────────────────
+# Q: What is Recursive Feature Elimination (RFE)?  How it works, advantages,
+#    limitations, and use in linear regression.
+# Marks: 5  |  MAY 2025 UNIQUE
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+RFE ALGORITHM — STEP BY STEP:
+  1. Start:     Train a Linear Regression model using ALL features
+  2. Rank:      Rank features by coefficient magnitude |βⱼ| (larger = more important)
+  3. Eliminate: Remove the feature(s) with the smallest coefficient magnitude
+  4. Retrain:   Train a new model on the remaining features
+  5. Repeat:    Steps 2–4 until only k features remain (k = target number)
+  6. Evaluate:  Use cross-validation to determine optimal k
+
+ADVANTAGES vs LIMITATIONS:
+  Advantages                                   Limitations
+  ─────────────────────────────────────────── ─────────────────────────────────
+  Considers feature interactions via training  Computationally expensive (many fits)
+  Works with any model that has importances    Results depend on base estimator
+  Provides feature ranking, not just selection Sensitive to correlated features
+  RFECV for automatic optimal k selection      Not ideal for very high-d data
+
+PYTHON EXAMPLE — RFECV:
+  from sklearn.feature_selection import RFECV
+  from sklearn.linear_model import LinearRegression
+
+  model = LinearRegression()
+  rfecv = RFECV(estimator=model,
+                step=1,           # remove 1 feature per iteration
+                cv=5,             # 5-fold cross-validation
+                scoring='r2')     # metric to optimize
+  rfecv.fit(X_train, y_train)
+  print(f"Optimal features: {rfecv.n_features_}")
+  print(f"Selected:         {X.columns[rfecv.support_]}")
+"""
+
+
+# ─── Q1d (May 2025) ──────────────────────────────────────────────────────────
+# Q: Describe key steps in building a supervised ML pipeline from data
+#    ingestion to model deployment.
+# Marks: 5  |  MAY 2025 UNIQUE
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+END-TO-END ML PIPELINE:
+  Stage               What Happens                          Tools / Techniques
+  ─────────────────── ───────────────────────────────────── ─────────────────────────
+  1  Data Ingestion   Load raw data from source             pandas, SQL, APIs, CSV, S3
+  2  EDA              Understand distributions, outliers    matplotlib, seaborn, describe()
+  3  Preprocessing    Missing values, encoding, scaling     SimpleImputer, LabelEncoder,
+                                                            StandardScaler
+  4  Feature Eng.     Create / remove features              VIF, RFE, domain knowledge
+  5  Model Selection  Choose algorithm(s)                   Linear, Lasso, Ridge, ElasticNet
+  6  Training         Fit model on training data            sklearn fit(), statsmodels OLS
+  7  Evaluation       Assess on test data                   RMSE, MAPE, R², cross-validation
+  8  Hyperparameter   Optimize model parameters             GridSearchCV, Bayesian Opt.
+     Tuning
+  9  Deployment       Serve model via API                   Flask, FastAPI, Docker, joblib
+  10 Monitoring       Track production performance          MLflow, data drift detection
+
+SKLEARN PIPELINE (BEST PRACTICE):
+  from sklearn.pipeline import Pipeline
+  from sklearn.preprocessing import StandardScaler
+  from sklearn.linear_model import Ridge
+
+  pipe = Pipeline([
+      ('scaler', StandardScaler()),    # step 1: scale features
+      ('model',  Ridge(alpha=1.0))     # step 2: train ridge model
+  ])
+  pipe.fit(X_train, y_train)
+  predictions = pipe.predict(X_test)  # scaler + model applied automatically
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAPER 3 — NOVEMBER 2021  |  Section A Theory (20 Marks)
+# 5 questions × 4 marks each
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Q1a (Nov 2021) ──────────────────────────────────────────────────────────
+# Q: Write the cost function for Linear Regression with RIDGE regularization
+# Marks: 4
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+OLS COST FUNCTION (no regularization):
+  J(β) = Σᵢ₌₁ⁿ (yᵢ − ŷᵢ)²
+       = Σᵢ₌₁ⁿ (yᵢ − β₀ − β₁x₁ᵢ − ... − βₖxₖᵢ)²
+
+# LaTeX:
+#   J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2
+
+RIDGE (L2) COST FUNCTION:
+  J_Ridge(β) = Σᵢ₌₁ⁿ (yᵢ − ŷᵢ)² + λ · Σⱼ₌₁ᵏ βⱼ²
+
+  Matrix form:
+  J_Ridge(β) = (y − Xβ)ᵀ(y − Xβ) + λ · βᵀβ
+
+  Closed-form solution:
+  β̂_ridge = (XᵀX + λI)⁻¹ Xᵀy
+
+# LaTeX:
+#   J_{ridge}(\\beta) = (y - X\\beta)^\\top(y - X\\beta) + \\lambda\\beta^\\top\\beta
+#   \\hat{\\beta}_{ridge} = (X^\\top X + \\lambda I)^{-1} X^\\top y
+
+KEY NOTES FOR 4 MARKS:
+  (1) Full formula showing RSS + λ·Σβⱼ²
+  (2) λ is the hyperparameter controlling penalty strength (λ ≥ 0)
+  (3) β₀ (intercept) is typically NOT penalized
+  (4) Closed-form solution — the λI term makes (XᵀX + λI) always invertible,
+      solving the multicollinearity problem
+
+  λ = 0    → reduces to OLS
+  λ → ∞   → all βⱼ → 0  (but never exactly zero — that is Lasso's property)
+"""
+
+
+# ─── Q1b (Nov 2021) ──────────────────────────────────────────────────────────
+# Q: How does Adjusted R² differ from R²? Role of Adjusted R² in feature
+#    selection.
+# Marks: 4  |  SIMILAR TO FEB 2025 Q1b — see above for full answer
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+→ Refer to Feb 2025 Q1b for the full answer.
+
+COMPACT VERSION:
+  R²      = 1 − SS_res / SS_tot  =  1 − Σ(y−ŷ)² / Σ(y−ȳ)²
+  Adj R²  = 1 − (1 − R²) · (n−1) / (n−k−1)
+  n = observations | k = predictors
+
+ROLE IN FEATURE SELECTION:
+  When adding feature X_new:
+    Adj R² increases → feature is genuinely useful → keep it
+    Adj R² decreases → feature adds no value       → remove it
+
+  Used as selection criterion in forward selection and backward elimination.
+  The model with the highest Adj R² among competing models is preferred.
+"""
+
+
+# ─── Q1c (Nov 2021) ──────────────────────────────────────────────────────────
+# Q: p-value for 'advertisement cost' t-test = 0.02.  What is your inference?
+# Marks: 4  |  APPLIED / INTERPRETATION QUESTION
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+MODEL CONTEXT:
+  Sales = β₀ + β₁·price + β₂·adv_cost + β₃·promo_cost
+
+HYPOTHESIS TEST FOR β₂ (advertisement cost):
+  H₀: β₂ = 0   (advertisement cost has NO effect on sales)
+  H₁: β₂ ≠ 0   (advertisement cost has a significant effect)
+
+  t-statistic  = β̂₂ / SE(β̂₂)
+  p-value      = P(|t| > |t_observed| | H₀ is true) = 0.02
+
+INFERENCE:
+  The p-value (0.02) < α = 0.05 (standard significance level)
+  → REJECT H₀
+
+  Conclusion: 'advertisement cost' is STATISTICALLY SIGNIFICANT at the 5% level.
+  There is sufficient evidence that advertisement cost has a meaningful relationship
+  with unit sales of mobile phones.
+
+  Practical implication: advertisement cost should be RETAINED in the model.
+  The coefficient β̂₂ tells us the expected change in unit sales for each 1-unit
+  increase in advertisement cost, holding price and promo cost constant.
+
+NOTE: At the 1% level (p < 0.01) it would NOT be significant.
+      Result is significant at 5%, not at 1%.
+"""
+
+
+# ─── Q1d (Nov 2021) ──────────────────────────────────────────────────────────
+# Q: RMSE(salary model) = 12,324 and RMSE(age model) = 55.
+#    Comment on performance.
+# Marks: 4  |  TRAP QUESTION — DIFFERENT SCALES
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+FORMULA:
+  RMSE = sqrt[ (1/n) · Σ(yᵢ − ŷᵢ)² ]
+
+# LaTeX:
+#   \\text{RMSE} = \\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2}
+
+THE TRAP — YOU CANNOT COMPARE RMSE ACROSS DIFFERENT SCALES:
+  Salary model RMSE = 12,324 → units are RUPEES (same as salary target)
+  Age model    RMSE = 55     → units are YEARS  (same as age target)
+  → These are INCOMPARABLE — different units, different scales!
+
+COMMON WRONG ANSWER (avoid this):
+  "RMSE = 55 means age model is better than salary model" — WRONG.
+  You cannot compare RMSE values across models with different target variables.
+
+CORRECT ANSWER:
+  Salary model (RMSE = 12,324):
+    Off by ~₹12,324 on average.
+    If average salary = ₹5,00,000 → error is ~2.5% → EXCELLENT
+    If average salary = ₹30,000   → error is ~41%  → POOR
+
+  Age model (RMSE = 55):
+    Off by ~55 years on average.
+    Human age range ≈ 0–100 → RMSE of 55 ≈ 55% of range → VERY POOR
+
+KEY TAKEAWAY:
+  Use MAPE (Mean Absolute Percentage Error) or normalized RMSE (RMSE / mean(y))
+  for fair comparison across models with different scales.
+"""
+
+
+# ─── Q1e (Nov 2021) ──────────────────────────────────────────────────────────
+# Q: If we increase λ, what happens to Ridge coefficients?
+# Marks: 4
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+RIDGE CLOSED-FORM:
+  β̂_ridge = (XᵀX + λI)⁻¹ Xᵀy
+
+# LaTeX:
+#   \\hat{\\beta}_{ridge} = (X^\\top X + \\lambda I)^{-1} X^\\top y
+
+AS λ INCREASES:
+  (XᵀX + λI)⁻¹ becomes smaller in magnitude → β̂_ridge shrinks toward 0
+
+  λ = 0    : β̂_ridge = β̂_OLS     (no regularization)
+  λ → ∞   : β̂_ridge → 0          (all coefficients approach zero)
+  0 < λ   : All βⱼ shrink proportionally — NEVER become exactly 0
+
+EFFECTS:
+  (1) All coefficients shrink toward zero (never reach exactly zero)
+  (2) Model becomes simpler
+  (3) Bias INCREASES (model no longer fits training data perfectly)
+  (4) Variance DECREASES (more stable predictions on new data)
+  (5) Test error may decrease up to the optimal λ, then increase (underfitting)
+
+RIDGE vs LASSO KEY DISTINCTION:
+  Ridge (L2): λ↑ → coefficients shrink toward 0, NEVER become exactly 0 (smooth shrinkage)
+  Lasso (L1): λ↑ → some coefficients become EXACTLY 0 (sparse, automatic feature selection)
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAPER 4 — AUGUST 2023  |  Section A Theory (20 Marks)
+# 5 questions × 4 marks each
+# NOTE: Aug 2023 Section A ≈ near-identical to March 2024 Section A.
+#       Unique question is Q1c (Assumptions) — below.
+#       All others: see March 2024 answers.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Q1a/b/d/e (Aug 2023) ────────────────────────────────────────────────────
+# Q1a: Multicollinearity       → see March 2024 Q1a
+# Q1b: k-fold Cross Validation → see March 2024 Q1b
+# Q1d: Forward Feature Selection → see June 2024 Q1d
+# Q1e: Overfitting / Bias-Variance → see June 2024 Q1e / March 2024 Q1e
+
+# ─── Q1c (Aug 2023) ──────────────────────────────────────────────────────────
+# Q: Explain the assumptions of Linear Regression.
+# Marks: 4  |  ALSO ASKED IN JUN 2024 Q1a — SAME TOPIC
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+L-I-N-E-R MNEMONIC — FULL TABLE:
+
+  Assumption         Formal Statement                  Visual Test           Statistical Test      Violation Impact
+  ──────────────── ──────────────────────────────── ─────────────────────── ─────────────────── ─────────────────────
+  Linearity         E[y|X] = Xβ                       Residuals vs Fitted     Rainbow test          Biased predictions
+                    (linear in parameters)             → random around 0
+  Independence      Cov(εᵢ, εⱼ) = 0  for i≠j         Residual sequence plot  Durbin-Watson ≈ 2     Underestimated SE
+  Normality         ε ~ N(0, σ²)                       Q-Q Plot (diagonal)    Shapiro-Wilk p>0.05   Invalid t/F tests
+  Equal Variance    Var(εᵢ) = σ²  (homoscedasticity)  Scale-Location flat    Breusch-Pagan p>0.05  Incorrect SE; not BLUE
+  Reduced Collin.   No perfect linear dependence       Correlation heatmap    VIF < 5–10             Unstable coefficients
+                    among predictors
+
+# LaTeX (Independence):
+#   \\text{Cov}(\\varepsilon_i, \\varepsilon_j) = 0 \\quad \\forall i \\neq j
+
+# LaTeX (Normality):
+#   \\varepsilon \\sim \\mathcal{N}(0, \\sigma^2)
+"""
+
+
+# ─── Q1e (Aug 2023) ──────────────────────────────────────────────────────────
+# Q: How to reduce overfitting in Linear Regression? What is bias-variance
+#    tradeoff?
+# Marks: 4
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+BIAS-VARIANCE DECOMPOSITION:
+  Total Error = Bias² + Variance + Irreducible Noise (σ²)
+
+  Bias(ŷ)    = E[ŷ] − y         # systematic error — how wrong on average
+  Variance   = E[(ŷ − E[ŷ])²]  # how much predictions vary across datasets
+  σ²         = inherent data noise (cannot be reduced)
+
+# LaTeX:
+#   E[(y - \\hat{y})^2] = \\text{Bias}(\\hat{y})^2 + \\text{Var}(\\hat{y}) + \\sigma^2
+#   \\text{Bias}(\\hat{y}) = E[\\hat{y}] - y
+#   \\text{Var}(\\hat{y})  = E[(\\hat{y} - E[\\hat{y}])^2]
+
+  Underfitting: High Bias + Low Variance  (too simple model)
+  Overfitting:  Low Bias  + High Variance  (too complex model)
+  Optimal:      Low Bias  + Low Variance   (regularization achieves this)
+
+METHODS TO REDUCE OVERFITTING:
+  Method                   Mechanism
+  ─────────────────────── ────────────────────────────────────────────────────
+  Ridge (L2)               Add λΣβⱼ² penalty → shrinks coefficients → ↓variance
+  Lasso (L1)               Add λΣ|βⱼ| penalty → zeros features → sparse model
+  Cross-validation         Detect gap between train vs validation performance
+  Feature selection        Remove irrelevant features (VIF, p-values, RFE)
+  More training data       More examples → ↓variance (model can't memorize)
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAPER 5 — MARCH 2024  |  Section A Theory (20 Marks)
+# 5 questions × 4 marks each
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Q1a (Mar 2024) ──────────────────────────────────────────────────────────
+# Q: What is Multicollinearity? How to detect it and which variables are involved?
+# Marks: 4
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+DEFINITION:
+  Multicollinearity occurs when two or more independent variables (predictors) in
+  a regression model are highly linearly correlated with each other.
+  This makes it difficult for OLS to isolate the individual effect of each predictor.
+
+FORMAL STATEMENT:
+  If X_j ≈ c₀ + c₁X₁ + c₂X₂ + ...  (linear combination of other predictors)
+  then:
+    Var(β̂_j) = σ² / (Σxᵢⱼ² · (1 − R²_j))  → becomes very large
+    VIF_j    = 1 / (1 − R²_j)
+
+# LaTeX:
+#   \\text{VIF}_j = \\frac{1}{1-R^2_j}
+#   \\text{where } R^2_j \\text{ = } R^2 \\text{ from regressing } X_j \\text{ on all other predictors}
+
+DETECTION METHODS:
+  Method                  How                                        Threshold
+  ───────────────────── ─────────────────────────────────────────── ──────────────────
+  VIF                    Regress each X_j on all others; VIF_j=1/(1-R²_j)  VIF>5=moderate; VIF>10=severe
+  Correlation Matrix     Pairwise Pearson correlations               |r| > 0.8 = suspect
+  Condition Number       Ratio of largest to smallest eigenvalue of XᵀX  >30=moderate; >100=severe
+  Eigenvalue Analysis    Near-zero eigenvalues of XᵀX               eigenvalue < 0.01 = problematic
+
+WHICH VARIABLES ARE INVOLVED:
+  Multicollinearity is between the PREDICTOR variables (X), NOT between X and y.
+
+  Real examples:
+    Fish dataset:    V_length, D_length, C_length — all measure fish length → VIF > 50
+    Admission:       Percent_SSC, Percent_HSC, Percent_Degree — academic %s correlate
+    Insurance:       age and charges interact indirectly through smoker status
+
+REMEDIES:
+  1. Remove one of the correlated variables (iterative VIF-based removal)
+  2. Ridge Regression → β̂ = (XᵀX + λI)⁻¹Xᵀy  (λI makes matrix always invertible)
+  3. PCA             → decorrelates predictors into orthogonal components
+  4. Collect more data → increases statistical power
+"""
+
+
+# ─── Q1b (Mar 2024) ──────────────────────────────────────────────────────────
+# Q: Explain the procedure involved in k-fold Cross Validation.
+# Marks: 4  |  ALSO ASKED JUN 2024 (implicit)
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+PURPOSE:
+  Estimate how well a model generalizes to unseen data, using ONLY training data.
+  More reliable than a single train-validation split.  Combats overfitting.
+
+PROCEDURE (k steps):
+  1. Partition: shuffle data; split into k equal folds.  Common: k=5 or k=10.
+  2. Loop k times:
+       Fold i = validation set
+       Remaining k−1 folds = training set
+  3. Train & Evaluate: fit model on k−1 folds; compute metric on fold i.
+  4. Aggregate: compute mean and std of k scores.
+
+FORMULAS:
+  CV_score       = (1/k) · Σᵢ₌₁ᵏ Score(fold_i)
+  Bias_error     = 1 − mean(R²_folds)   # systematic underfitting
+  Variance_error = std(R²_folds)         # inconsistency across folds
+
+# LaTeX:
+#   CV_{score} = \\frac{1}{k}\\sum_{i=1}^{k} \\text{Score}(\\text{fold}_i)
+
+k-VALUE TRADEOFFS:
+  k value         Bias      Variance    Computation
+  ────────────── ───────── ─────────── ────────────
+  k = 2           High      Low         Fast
+  k = 5 (standard) Moderate Moderate   Moderate
+  k = 10          Low       Moderate+  Slower
+  k = n (LOOCV)   Very Low  High        Very slow
+"""
+
+
+# ─── Q1c (Mar 2024) ──────────────────────────────────────────────────────────
+# Q: Discuss the need for data transformations in linear regression + techniques
+# Marks: 4  |  UNIQUE TO MARCH 2024
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+WHY TRANSFORM DATA?
+  OLS assumes: linearity, normality of residuals, homoscedasticity.
+  Real data often violates these.  Transformations fix the violation WITHOUT
+  changing the model class.
+
+  Problem                  Transformation    Formula                    Use Case
+  ──────────────────────── ──────────────── ─────────────────────────── ─────────────────────
+  Right-skewed target      Log Transform     y* = log(y)                Salary, price, count data
+  Skewed target (general)  BoxCox            y* = (yᵅ − 1) / λ         Any positive skewed variable
+  Square-root relationship Square Root       y* = sqrt(y)               Count data, Poisson-like
+  Features on diff. scales StandardScaler    x* = (x − μ) / σ          Ridge / Lasso (scale-sensitive)
+  Features on diff. scales MinMaxScaler      x* = (x−min)/(max−min)    When bounded [0,1] range needed
+  Non-linear X–y relation  Polynomial        Add X², X³, X₁·X₂         Curved scatter plots
+  Multiplicative relation  Log-Log           log(y) = β·log(x)          Elasticity models, economics
+  Binary categorical       Dummy Encoding    n−1 binary columns         All categorical features
+
+# LaTeX (StandardScaler):
+#   x^* = \\frac{x - \\mu}{\\sigma}
+# LaTeX (MinMaxScaler):
+#   x^* = \\frac{x - x_{min}}{x_{max} - x_{min}}
+# LaTeX (BoxCox):
+#   y^* = \\frac{y^\\lambda - 1}{\\lambda}
+
+KEY INTERPRETATION CHANGE AFTER LOG TRANSFORM:
+  If y* = log(y):  β means "a 1-unit increase in X changes log(y) by β"
+  Percentage interpretation: %ΔY ≈ β × ΔX × 100  (for small ΔX)
+  Always back-transform: ŷ = exp(ŷ*)  when reporting results
+"""
+
+
+# ─── Q1d (Mar 2024) ──────────────────────────────────────────────────────────
+# Q: Explain the procedure involved in Forward Feature Selection.
+# Marks: 4  |  SAME AS JUN 2024 Q1d — see below
+# ─────────────────────────────────────────────────────────────────────────────
+
+# → See June 2024 Q1d for the full detailed answer.
+
+"""
+COMPACT VERSION:
+  0. Start:  M₀ = empty model (intercept only)
+  1. Candidate evaluation: for each feature X_j NOT yet in model,
+     compute performance of model + X_j
+  2. Best addition: add X_j* with maximum improvement
+  3. Stop when: no remaining feature provides significant improvement
+
+Backward Elimination (reverse):
+  Start with ALL features → remove least useful one at a time
+  SFS from mlxtend: SequentialFeatureSelector(lr, k_features='best', forward=False)
+"""
+
+
+# ─── Q1e (Mar 2024) ──────────────────────────────────────────────────────────
+# Q: Strategies to mitigate overfitting + forms of Linear Regression addressing it
+# Marks: 4  |  ALSO JUN 2024 Q1e — see below
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+  Strategy                     How it Reduces Overfitting
+  ─────────────────────────── ────────────────────────────────────────────────
+  Ridge (L2 regularization)    Penalizes β² → shrinks coefficients → ↓variance
+  Lasso (L1 regularization)    Zeros out irrelevant features → auto feature sel.
+  ElasticNet                   L1 + L2 combined → best of both worlds
+  Feature selection            VIF, RFE, SFS → removes redundant features
+  Cross-validation             Detects overfitting during training
+  More training data           ↓variance (model can't memorize with more examples)
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAPER 6 — JUNE 2024  |  Section A Theory (20 Marks)
+# 5 questions × 4 marks each
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Q1a (Jun 2024) ──────────────────────────────────────────────────────────
+# Q: Explain the relation between Bias and Variance in a linear regression model
+# Marks: 4
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+MATHEMATICAL DECOMPOSITION:
+  For any estimator ŷ:
+  E[(y − ŷ)²] = Bias(ŷ)² + Variance(ŷ) + Irreducible Noise (σ²)
+
+  Bias(ŷ)    = E[ŷ] − y              # systematic error
+  Variance   = E[(ŷ − E[ŷ])²]        # variability across datasets
+  σ²         = inherent data noise    (cannot be reduced)
+
+# LaTeX:
+#   E[(y-\\hat{y})^2] = \\left(E[\\hat{y}] - y\\right)^2 +
+#                       E\\left[(\\hat{y} - E[\\hat{y}])^2\\right] + \\sigma^2
+
+TRADEOFF:
+  Model Complexity    Bias    Variance    Result
+  ─────────────────── ─────── ─────────── ─────────────────────────────────
+  Too simple          HIGH    LOW         Underfitting — bad on train + test
+  Just right          LOW     LOW         Good generalization ← GOAL
+  Too complex         LOW     HIGH        Overfitting — great train, bad test
+
+IN LINEAR REGRESSION SPECIFICALLY:
+  OLS (no regularization): Low bias, but correlated features → high variance
+  Ridge (L2):              Small bias (shrinks β) + ↓variance → better generalization
+  Lasso (L1):              More bias than Ridge (zeros β) + lowest variance (sparse)
+
+MEASURING WITH CV:
+  Bias     ≈ 1 − mean(R²_folds)   (how far mean performance is from perfect)
+  Variance ≈ std(R²_folds)         (how much performance fluctuates across folds)
+"""
+
+
+# ─── Q1b (Jun 2024) ──────────────────────────────────────────────────────────
+# Q: How can regularization help in tackling overfitting?
+# Marks: 4  |  ALSO FEB 2025 Q1a, MAY 2025 Q1b — see above
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+→ Refer to Feb 2025 Q1a for the full answer.
+
+COMPACT SUMMARY:
+  Overfitting: model memorizes training noise → high variance, low bias
+
+  Ridge: L = RSS + λ·Σβⱼ²    → shrinks all coefficients toward 0
+  Lasso: L = RSS + λ·Σ|βⱼ|  → zeros out unimportant coefficients
+
+  Effect: forces simpler model → ↑bias slightly, ↓variance significantly
+  Net result: better generalization (lower test error)
+
+FOUR MARKS REQUIRE:
+  (1) Define overfitting
+  (2) Explain how penalty term works
+  (3) Effect on bias-variance tradeoff
+  (4) Role of λ — larger λ = more regularization = simpler model
+"""
+
+
+# ─── Q1c (Jun 2024) ──────────────────────────────────────────────────────────
+# Q: n=21, 5 predictors, SS(Total)=1500, SS(Residual)=375 — Calculate R²
+# Marks: 4  |  NUMERICAL
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+GIVEN:
+  n = 21     (number of observations)
+  k = 5      (number of predictors)
+  SS(Total)   = 1500
+  SS(Residual) = 375
+
+STEP 1: SS(Regression)
+  SS(Regression) = SS(Total) − SS(Residual)
+                 = 1500 − 375
+                 = 1125
+
+STEP 2: R²
+  R² = 1 − SS(Residual) / SS(Total)
+     = 1 − 375 / 1500
+     = 1 − 0.25
+     = 0.75
+
+STEP 3: Adjusted R²
+  Adj R² = 1 − (1 − R²) × (n−1) / (n−k−1)
+         = 1 − (1 − 0.75) × (21−1) / (21−5−1)
+         = 1 − 0.25 × 20 / 15
+         = 1 − 0.25 × 1.3333
+         = 1 − 0.3333
+         = 0.6667
+
+# LaTeX:
+#   R^2 = 1 - \\frac{SS_{res}}{SS_{tot}} = 1 - \\frac{375}{1500} = 0.75
+#   \\bar{R}^2 = 1 - \\frac{(1-R^2)(n-1)}{n-k-1}
+#             = 1 - \\frac{0.25 \\times 20}{15} = 0.6667
+
+CONCLUSION:
+  R² = 0.75 → model explains 75% of total variance.
+  Adj R² = 0.667 → after penalizing for 5 predictors on 21 observations.
+  Gap of 0.083 suggests some predictors may not be contributing meaningfully.
+  With n=21 and k=5, the model uses many degrees of freedom → always report Adj R².
+"""
+
+
+# ─── Q1d (Jun 2024) ──────────────────────────────────────────────────────────
+# Q: Explain the procedure involved in Forward Feature Selection.
+# Marks: 4  |  UNIQUE TO JUN 2024 (full version)
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+ALGORITHM:
+  0. Start:            M₀ = empty model (intercept only, no predictors)
+  1. Candidate Addition: for each feature Xⱼ not yet in model:
+       fit model with (current features + Xⱼ)
+       record performance (R², AIC, p-value, or CV score)
+  2. Best Addition:    add Xⱼ* giving the biggest improvement
+  3. Stopping Criterion:
+       (a) all remaining features are statistically non-significant (p > threshold), OR
+       (b) adding more features doesn't improve CV score
+  4. Final Model:      model at the stopping point
+
+EXAMPLE WITH 3 FEATURES {X1, X2, X3}:
+  Step 0: M₀ = {intercept only}
+  Step 1: try M{X1}, M{X2}, M{X3}    → best is M{X2}  (R²=0.60) → add X2
+  Step 2: try M{X2,X1}, M{X2,X3}     → best is M{X2,X1} (R²=0.72) → add X1
+  Step 3: try M{X1,X2,X3}            → R²=0.73, tiny improvement → STOP
+  Final: M = {X2, X1}
+
+FORWARD SELECTION vs BACKWARD ELIMINATION:
+  Aspect          Forward Selection        Backward Elimination
+  ─────────────── ───────────────────────  ────────────────────────────
+  Start           Empty model              Full model (all features)
+  Action          Add best feature/step    Remove worst feature/step
+  Stops when      No significant improve.  All remaining features significant
+  Preferred when  p >> n (many features)   Fewer features, moderate n
+  Limitation      Can't remove once added  Can't re-add once removed
+"""
+
+
+# ─── Q1e (Jun 2024) ──────────────────────────────────────────────────────────
+# Q: Strategies to mitigate overfitting in Linear Regression + forms that
+#    address it.
+# Marks: 4
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+5 STRATEGIES:
+  1. Regularization (Ridge/Lasso/ElasticNet):
+       Add penalty to limit coefficient size — most direct approach.
+  2. Feature Selection:
+       Remove irrelevant features via VIF, p-values, RFE, Forward/Backward selection.
+  3. Cross-Validation:
+       Use k-fold CV during training to detect overfitting early.
+       High CV variance → overfitting signal.
+  4. Get More Data:
+       More training samples → ↓variance.  Overfitting is worse with small datasets.
+  5. Dimensionality Reduction (PCA):
+       Reduces number of features while preserving variance.
+
+FORMS OF LINEAR REGRESSION ADDRESSING OVERFITTING:
+  Method          Penalty         Key Feature                         Formula
+  ─────────────── ─────────────── ─────────────────────────────────── ──────────────────────────────
+  Ridge (L2)      λΣβⱼ²           Shrinks all; never zeros out        β̂=(XᵀX+λI)⁻¹Xᵀy
+  Lasso (L1)      λΣ|βⱼ|          Zeros out irrelevant → sparse model  (no closed form; coord descent)
+  ElasticNet      λ₁Σ|βⱼ|+λ₂Σβⱼ²  Combines both; handles correlated groups
+
+# LaTeX (ElasticNet):
+#   J(\\beta) = \\sum(y_i-\\hat{y}_i)^2 + \\lambda_1\\sum|\\beta_j| + \\lambda_2\\sum\\beta_j^2
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAPER 7 — MARCH 2021  |  Theory Questions (Q1 + Q2 = 20 Marks)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Q1a (Mar 2021) ──────────────────────────────────────────────────────────
+# Q: Explain Heteroscedasticity and Multicollinearity in Linear Regression
+# Marks: 2
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+HETEROSCEDASTICITY:
+  OLS assumes homoscedasticity: Var(εᵢ) = σ² (constant for all i).
+  When variance is NOT constant → heteroscedasticity.
+
+  Homoscedastic:    Var(εᵢ) = σ²   (constant for all i)     ← GOOD
+  Heteroscedastic:  Var(εᵢ) = σᵢ²  (varies with i)          ← BAD
+
+  Aspect                    Homoscedastic (GOOD)      Heteroscedastic (BAD)
+  ───────────────────────── ─────────────────────── ─────────────────────────────
+  Residual vs Fitted plot   Random scatter            Funnel/cone/expanding shape
+  OLS estimates             BLUE                      Unbiased, but NOT efficient
+  Standard Errors           Correct                   Underestimated → t-tests invalid
+  Detection test            —                         Breusch-Pagan, White's test
+  Fix                       —                         Log transform Y, WLS, robust SE
+
+MULTICOLLINEARITY:
+  VIF_j = 1 / (1 − R²_j)
+  R²_j  = R² from regressing X_j on all other predictors
+
+  VIF = 1: no collinearity | VIF > 5: moderate | VIF > 10: severe
+
+  Aspect              Effect
+  ─────────────────── ────────────────────────────────────────────────────────
+  Coefficient estimates  Unstable — small data changes → huge swings in β
+  Standard errors        Inflated → hard to determine which variable matters
+  p-values               Unreliable
+  R² overall             Still high — model fits well globally
+
+KEY EXAM DISTINCTION:
+  Heteroscedasticity → about the ERROR TERM (ε) — its variance changes
+  Multicollinearity  → about the PREDICTORS (X) — they correlate with each other
+"""
+
+
+# ─── Q1b (Mar 2021) ──────────────────────────────────────────────────────────
+# Q: Birth Weight Prediction:
+#    pred_bwght = 119.77 − 0.514 × cigs
+#    (i) Predicted birth weight when cigs = 0
+#    (ii) Predicted birth weight when cigs = 20
+# Marks: 2  |  NUMERICAL
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+MODEL:
+  pred_bwght = 119.77 − 0.514 × cigs
+  β₀ = 119.77   (predicted weight when cigs = 0)
+  β₁ = −0.514   (each additional cigarette/day → weight drops 0.514 oz)
+
+PART 1 — cigs = 0:
+  pred_bwght = 119.77 − 0.514 × 0
+             = 119.77 − 0
+             = 119.77 ounces  (≈ 7.49 pounds)
+
+PART 2 — cigs = 20:
+  pred_bwght = 119.77 − 0.514 × 20
+             = 119.77 − 10.28
+             = 109.49 ounces  (≈ 6.84 pounds)
+
+DIFFERENCE:
+  119.77 − 109.49 = 10.28 ounces (≈ 0.643 pounds)
+
+COMMENT:
+  Babies born to mothers who smoke one pack/day are predicted to weigh about
+  10.28 oz LESS — a ~8.6% reduction.  Practically significant.
+  Caveat: simple regression — confounders (nutrition, maternal age) not controlled.
+"""
+
+
+# ─── Q1c (Mar 2021) ──────────────────────────────────────────────────────────
+# Q: College GPA:
+#    colgpa = 1.392 − 0.0135 × hsperc + 0.00148 × sat
+#    (i) Why is the coefficient on hsperc negative?
+#    (ii) SAT 140 points higher → predicted GPA difference?
+#    (iii) SAT points needed for colgpa difference of 0.50?
+# Marks: 3  |  NUMERICAL + INTERPRETATION
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+MODEL:
+  colgpa = 1.392 − 0.0135 × hsperc + 0.00148 × sat
+  β₀ = 1.392     (intercept)
+  β₁ = −0.0135   (coefficient on hsperc)
+  β₂ = +0.00148  (coefficient on sat)
+
+PART 1 — Why is β₁ NEGATIVE?
+  'hsperc' is the percentile rank in the graduating class where:
+    lower value = better rank  (e.g., hsperc = 5 → top 5% = excellent)
+  Therefore: higher hsperc → worse rank → lower college GPA → negative coefficient
+  β₁ = −0.0135 correctly captures: as rank worsens (hsperc↑), colgpa decreases.
+
+PART 2 — ΔSAT = 140, same hsperc (hsperc term cancels out):
+  Δcolgpa = β₂ × ΔSAT
+           = 0.00148 × 140
+           = 0.2072 GPA points
+
+  A 140-point SAT advantage → ~0.207 grade point increase.
+  Moderately meaningful (≈5.2% of 4-point scale); going from 2.8 → 3.0 matters.
+
+PART 3 — What ΔSAT gives Δcolgpa = 0.50?
+  0.50  = 0.00148 × ΔSAT
+  ΔSAT  = 0.50 / 0.00148
+        = 337.84 ≈ 338 SAT points
+
+  Conclusion: a 0.5 GPA improvement requires ~338 extra SAT points (~2.4 std deviations).
+  SAT's individual effect is relatively modest.
+"""
+
+
+# ─── Q1d (Mar 2021) ──────────────────────────────────────────────────────────
+# Q: How can you deal with autocorrelation of errors?
+# Marks: 2
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+WHAT IS AUTOCORRELATION?
+  Residuals εᵢ are correlated with residuals at previous time points εᵢ₋₁.
+  Violates OLS independence assumption.
+
+  Detection: Durbin-Watson statistic
+    DW ≈ 2     → no autocorrelation
+    DW < 1.5   → positive autocorrelation
+    DW > 2.5   → negative autocorrelation
+
+5 SOLUTIONS:
+  1. GLS (Generalized Least Squares):
+       Transforms model to account for correlation structure.
+       AR(1): εᵢ = ρεᵢ₋₁ + uᵢ → estimate ρ, transform variables.
+
+  2. Cochrane-Orcutt / Prais-Winsten:
+       Iteratively estimates ρ, transforms variables, re-estimates until convergence.
+
+  3. Newey-West HAC Standard Errors:
+       Doesn't fix autocorrelation but produces CORRECT (robust) standard errors.
+       Most common in practice.
+
+  4. Include Lag Variables:
+       If autocorrelation is due to omitted dynamics, add Yᵢ₋₁ as a predictor.
+
+  5. Differencing:
+       Replace Yᵢ with ΔYᵢ = Yᵢ − Yᵢ₋₁.  Common in time-series econometrics.
+"""
+
+
+# ─── Q1e (Mar 2021) ──────────────────────────────────────────────────────────
+# Q: Difference between Classification and Regression
+# Marks: 1
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+  Aspect          Regression                          Classification
+  ─────────────── ─────────────────────────────────── ──────────────────────────────────
+  Output Type     Continuous numeric value             Discrete category / label
+  Examples        Salary, house price, weight          Spam/not-spam, disease/healthy
+  Algorithms      Linear Regression, Ridge, Lasso      Logistic Regression, SVM, Decision Tree
+  Loss Function   MSE, RMSE, MAE                       Cross-Entropy, Accuracy, F1
+  Output Range    −∞ to +∞  (any real number)          Finite set of classes {0,1} or {A,B,C}
+"""
+
+
+# ─── Q2a (Mar 2021) ──────────────────────────────────────────────────────────
+# Q: CEO Salary: log(Salary) = 4.32 + 0.280·log(sales) + 0.0174·roe + 0.00024·ros
+#    SE(intercept) = 0.32 | SE(log sales) = 0.035 | SE(roe) = 0.0041 | SE(ros) = 0.00054
+#    n = 209 | R² = 0.283 | t-critical (10%, one-tail) = 1.282
+#    (i) % increase in Salary when ros increases by 50 points
+#    (ii) H₀: β_ros = 0 — test and conclude
+#    (iii) Would you include ros in the final model?
+# Marks: 6  |  NUMERICAL
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+MODEL (log-level):
+  log(Salary) = 4.32 + 0.280·log(sales) + 0.0174·roe + 0.00024·ros
+
+PART 1 — % increase in Salary when Δros = 50:
+  For a log-level model: %ΔSalary ≈ β_ros × Δros × 100
+
+  %ΔSalary = 0.00024 × 50 × 100
+           = 0.00024 × 5000
+           = 1.2%
+
+  A 50-point increase in ros → salary increases by approximately 1.2%.
+  Not a practically large effect; ros is not a dominant driver of CEO pay.
+
+PART 2 — Hypothesis test: H₀: β_ros = 0  vs  H₁: β_ros > 0
+
+  Test Statistic:
+    t = β̂_ros / SE(β̂_ros)
+      = 0.00024 / 0.00054
+      = 0.444
+
+  Decision Rule: Reject H₀ if t > t_critical (10%, one-tail) = 1.282
+  Since 0.444 < 1.282 → FAIL TO REJECT H₀
+
+  Conclusion: At the 10% level, we CANNOT reject β_ros = 0.
+              Insufficient evidence that ros has a positive effect on salary.
+
+PART 3 — Include ros in final model?
+  Likely NO.  Reasons:
+    Statistical significance: t = 0.444, not significant even at 10%
+    Practical significance:   only 1.2% salary increase per 50-point ros gain
+    R² = 0.283 — only 28.3% variance explained even with ros included
+    Including an insignificant variable inflates complexity; Adj R² may decrease
+  However, theoretically ros should matter → could retain with caveat about weakness.
+"""
+
+
+# ─── Q2b (Mar 2021) ──────────────────────────────────────────────────────────
+# Q: y = 2x₁ + 12x₂ + 3x₃ + 5 — How do coefficients of x₂ and x₃ affect y?
+# Marks: 2  |  SAME AS SAMPLE PAPER Q1d (x₁ and x₂)
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+MODEL:
+  y = 5 + 2x₁ + 12x₂ + 3x₃
+  β₀ = 5  (intercept — value of y when all predictors = 0)
+  β₁ = 2  (coefficient of x₁)
+  β₂ = 12 (coefficient of x₂)
+  β₃ = 3  (coefficient of x₃)
+
+COEFFICIENT OF x₂ (β₂ = 12):
+  Holding x₁ and x₃ constant, a 1-unit increase in x₂ → y increases by 12 units.
+  x₂ has the LARGEST coefficient → most influential predictor.
+  Example: x₂ goes from 2 to 3 → y increases by exactly 12.
+
+COEFFICIENT OF x₃ (β₃ = 3):
+  Holding x₁ and x₂ constant, a 1-unit increase in x₃ → y increases by 3 units.
+  Positive but smaller effect than x₂.
+  Example: x₃ goes from 5 to 6 → y increases by 3.
+
+COMPARISON:
+  x₂ is 4× more influential than x₃  (12 vs 3).
+  CAVEAT: only meaningful if x₂ and x₃ are on the SAME SCALE.
+  Use standardized (beta) coefficients for fair comparison when units differ.
+"""
+
+
+# ─── Q2c (Mar 2021) ──────────────────────────────────────────────────────────
+# Q: Explain Gradient Descent in brief
+# Marks: 2
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+CORE IDEA:
+  Gradient Descent is an iterative optimization algorithm to find the MINIMUM of a
+  cost/loss function.  Used when the normal equation (XᵀX)⁻¹Xᵀy is too expensive
+  for large datasets.
+
+MATHEMATICAL FOUNDATION:
+  Cost Function:  J(β) = (1/2n) · Σ(yᵢ − ŷᵢ)²
+  Gradient:       ∂J/∂βⱼ = (1/n) · Σ(ŷᵢ − yᵢ) · xᵢⱼ
+  Update Rule:    βⱼ := βⱼ − α · ∂J/∂βⱼ
+
+  α = learning rate (step size)  |  := means "update"
+
+# LaTeX:
+#   J(\\beta) = \\frac{1}{2n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2
+#   \\frac{\\partial J}{\\partial \\beta_j} = \\frac{1}{n}\\sum_{i=1}^{n}(\\hat{y}_i - y_i)x_{ij}
+#   \\beta_j := \\beta_j - \\alpha \\cdot \\frac{\\partial J}{\\partial \\beta_j}
+
+ALGORITHM STEPS:
+  1. Initialize: set all β = 0 (or small random values)
+  2. Compute Predictions: ŷ = Xβ
+  3. Compute Error: residuals = ŷ − y
+  4. Compute Gradient: ∂J/∂β = (1/n) · Xᵀ(ŷ − y)
+  5. Update β: β := β − α · gradient  (move downhill)
+  6. Repeat steps 2–5 until convergence (ΔJ very small)
+
+THREE VARIANTS:
+  Type             Uses               Speed       Stability
+  ──────────────── ────────────────── ─────────── ──────────────────
+  Batch GD         All n samples      Slow (large n)  Stable convergence
+  Stochastic GD    1 sample           Fast        Noisy, may oscillate
+  Mini-Batch GD    Batch of k samples Balanced    Most common in practice
+
+LEARNING RATE α:
+  Too large → overshoots minimum, may diverge
+  Too small → very slow convergence
+  Fix: learning rate schedules or Adam optimizer
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAPER 8 — ML-1 SAMPLE PAPER  |  Section A Theory (20 Marks)
+# 5 questions × 4 marks each
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Q1a (Sample) ────────────────────────────────────────────────────────────
+# Q: What is Machine Learning? State any two types.
+# Marks: 4  |  UNIQUE TO SAMPLE PAPER
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+DEFINITION:
+  Machine Learning (ML) is a subfield of Artificial Intelligence (AI) that enables
+  systems to LEARN PATTERNS FROM DATA and improve performance WITHOUT being explicitly
+  programmed for each task.
+
+  Formal Definition (Tom Mitchell, 1997):
+  "A computer program is said to learn from Experience E with respect to some class of  Tasks T and Performance Measure P, if its performance at T, as measured by P,
+   improves with experience E."
+
+TWO TYPES OF MACHINE LEARNING:
+  Type                  Description                               Examples
+  ───────────────────── ───────────────────────────────────────── ───────────────────────────────
+  Supervised Learning   Model learns from labeled data (X + y).   Linear Regression (price),
+                        Goal: learn mapping from X to y.          Logistic Regression (spam)
+  Unsupervised Learning Model finds patterns in unlabeled data    K-Means Clustering,
+                        (only X, no y). Goal: discover structure. PCA, Autoencoders
+
+  (Also: Reinforcement Learning — agent learns via rewards/penalties, e.g., game playing)
+"""
+
+
+# ─── Q1b (Sample) ────────────────────────────────────────────────────────────
+# Q: How can you handle overfitting and underfitting?
+# Marks: 4
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+DEFINITIONS:
+  Underfitting: model too simple → High Bias + Low Variance
+  Overfitting:  model too complex → Low Bias  + High Variance
+  Goal: Low Bias + Low Variance (the sweet spot)
+
+  Problem       Symptom                                  Solutions
+  ──────────── ──────────────────────────────────────── ─────────────────────────────────────────
+  Underfitting  High training AND test error;            1. Increase model complexity
+                model misses patterns                    2. Reduce regularization (↓λ)
+                                                         3. Train longer / more iterations
+                                                         4. Add relevant features
+  Overfitting   Low training error but HIGH test error;  1. Add regularization (Ridge, Lasso)
+                model memorizes training data            2. Feature selection (VIF, RFE)
+                                                         3. Get more training data
+                                                         4. Cross-validation to detect early
+                                                         5. Simpler model
+"""
+
+
+# ─── Q1c (Sample) ────────────────────────────────────────────────────────────
+# Q: State the assumptions of linear regression.
+# Marks: 4  |  ALSO AUG 2023, JUN 2024 — see Q1c Aug 2023 above
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+L-I-N-E-R (5 Assumptions):
+  L  Linearity:         E[y|X] = Xβ  (linear relationship between X and y)
+  I  Independence:      residuals εᵢ are independent (no autocorrelation) — DW ≈ 2
+  N  Normality:         εᵢ ~ N(0, σ²) — residuals normally distributed — Q-Q plot
+  E  Equal Variance:    Var(εᵢ) = σ² constant (homoscedasticity) — Breusch-Pagan
+  R  Reduced Collin.:   no perfect linear dependence among X — VIF < 5
+
+→ See Aug 2023 Q1c for the full detailed table with statistical tests and violation impacts.
+"""
+
+
+# ─── Q1d (Sample) ────────────────────────────────────────────────────────────
+# Q: y = 2x₁ + 12x₂ + 3x₃ + 5 — Effect of x₁ and x₂ coefficients
+# Marks: 4  |  SAME AS MAR 2021 Q2b
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+→ See March 2021 Q2b for the full answer.
+
+COEFFICIENTS:
+  y = 5 + 2x₁ + 12x₂ + 3x₃
+
+EFFECT OF x₁ (β₁ = 2):
+  Holding x₂, x₃ constant → 1-unit increase in x₁ → y increases by 2 units.
+  Positive but relatively small effect.
+
+EFFECT OF x₂ (β₂ = 12):
+  Holding x₁, x₃ constant → 1-unit increase in x₂ → y increases by 12 units.
+  x₂ is the DOMINANT predictor — 6× more influential than x₁ (12 vs 2).
+
+CAVEAT: comparison valid only if x₁ and x₂ are on the SAME SCALE.
+"""
+
+
+# ─── Q1e (Sample) ────────────────────────────────────────────────────────────
+# Q: Explain any two data preprocessing steps.
+# Marks: 4
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+PREPROCESSING STEP 1 — MISSING VALUE TREATMENT:
+  Missing values occur when data is not recorded.  Most ML algorithms cannot process NaN.
+
+  Strategy            When to Use                         Code
+  ─────────────────── ─────────────────────────────────── ────────────────────────────────────
+  Drop rows           Few missing values in target        df.dropna(subset=['y'])
+  Mean imputation     Numeric column, low skewness        df['col'].fillna(df['col'].mean())
+  Median imputation   Numeric column with outliers        df['col'].fillna(df['col'].median())
+  Mode imputation     Categorical columns                 df['col'].fillna(df['col'].mode()[0])
+  Constant fill       When absence is meaningful          df['col'].fillna('missing')
+
+PREPROCESSING STEP 2 — FEATURE SCALING:
+  Features on different scales cause regularized models (Ridge, Lasso) to unfairly
+  penalize features with larger magnitudes.
+
+  StandardScaler:  z = (x − μ) / σ
+    Result: mean = 0, std = 1 for each feature
+    Preferred when features follow approximately normal distributions
+
+  MinMaxScaler:    z = (x − min) / (max − min)
+    Result: all values in range [0, 1]
+    Use when bounded range is needed
+
+"""
 
-# 3. AB
-AB = A @ B
-
-# 4. A^2
-A_squared = A @ A
-
-# 5. D^2 - 5D - 2I
-D_result = (D @ D) - (5 * D) - (2 * I2)
-
-# Print results
-print("det(A + I) =", det_A_plus_I)
-print("\nBC =\n", BC)
-print("\nAB =\n", AB)
-print("\nA^2 =\n", A_squared)
-print("\nD^2 - 5D - 2I =\n", D_result)
-
-# Consider the following matrices:
-#
-# $$A = \begin{bmatrix} 2 & 4 \\ 1 & 3 \end{bmatrix}, \quad B = \begin{bmatrix} 5 & 6 \\ 7 & 8 \end{bmatrix}$$
-#
-# 1. Find the result of the matrix addition $(A + B)$.
-# 2. Calculate the matrix multiplication $(A \times B)$.
-# 3. Find the transpose of matrix $A$.
-# 4. Calculate the determinant of matrix $B$.
-# 5. Verify if matrix $A$ is invertible by calculating its determinant and, if it is invertible, find the inverse of $A$.
-
-import numpy as np
-
-# Define matrices A and B
-A = np.array([[2, 4], [1, 3]], dtype=float)
-
-B = np.array([[5, 6], [7, 8]], dtype=float)
-
-# 1. Find the result of the matrix addition (A + B)
-A_plus_B = A + B
-
-# 2. Calculate the matrix multiplication (A x B)
-A_times_B = A @ B
-
-# 3. Find the transpose of matrix A
-A_T = A.T
-
-# 4. Calculate the determinant of matrix B
-det_B = np.linalg.det(B)
-
-# 5. Verify if matrix A is invertible by calculating its determinant
-# If it is invertible, find the inverse of A
-det_A = np.linalg.det(A)
-is_invertible = not np.isclose(det_A, 0)
-inv_A = np.linalg.inv(A) if is_invertible else None
-
-# Print results
-print("1. A + B =\n", A_plus_B)
-print("\n2. A x B =\n", A_times_B)
-print("\n3. Transpose of A =\n", A_T)
-print("\n4. det(B) =", det_B)
-print("\n5. det(A) =", det_A)
-print("   Is A invertible? :", is_invertible)
-print("   Inverse of A =\n", inv_A)
-
-# Find the inverse of the following matrix:
-#
-# $$A = \begin{bmatrix} 1 & 5 & 7 \\ 2 & 6 & 0 \\ 3 & 5 & 1 \end{bmatrix}$$
-
-import numpy as np
-
-# Define the matrix A
-A = np.array([[1, 5, 7], [2, 6, 0], [3, 5, 1]], dtype=float)
-
-# Calculate the determinant to check for invertibility
-det_A = np.linalg.det(A)
-is_invertible = not np.isclose(det_A, 0)
-
-# Calculate the inverse if the determinant is non-zero
-inv_A = np.linalg.inv(A) if is_invertible else None
-
-print("det(A) =", det_A)
-print("Is A invertible? :", is_invertible)
-print("Inverse of A =\n", inv_A)
-
-# Find the inverse of the following matrix using the **adjoint method**:
-#
-# $$A = \begin{bmatrix} 1 & 5 & 7 \\ 2 & 6 & 0 \\ 0 & 3 & 5 \end{bmatrix}$$
-
-!pip install sympy
-import numpy as np
-import sympy as sp
-
-# Define the matrix symbols using sympy to perform analytical adjoint calculations
-A_sym = sp.Matrix([[1, 5, 7], [2, 6, 0], [0, 3, 5]])
-
-# 1. Calculate the determinant
-det_A = A_sym.det()
-
-# 2. Calculate the matrix of cofactors (Adjoint matrix is the transpose of the cofactor matrix)
-# In sympy, the adjugate() function computes the analytical Adjoint matrix directly.
-adj_A = A_sym.adjugate()
-
-# 3. Calculate the inverse using the formula: Inverse = Adjoint / Determinant
-inv_A = adj_A / det_A
-
-# Convert to float arrays for clean numerical outputs
-A_num = np.array(A_sym).astype(float)
-adj_num = np.array(adj_A).astype(float)
-inv_num = np.array(inv_A).astype(float)
-
-print("Matrix A =\n", A_num)
-print("\n1. Determinant of A =", float(det_A))
-print("\n2. Adjoint of A =\n", adj_num)
-print("\n3. Inverse of A (Adjoint Method) =\n", inv_num)
-
-# Given $A = \begin{bmatrix} 1 & 0 & -1 \\ 2 & 1 & 0 \\ 3 & 0 & 5 \end{bmatrix}$, find $AA^T$. Also verify that $AA^T$ is symmetric.
-
-import numpy as np
-
-# Define the matrix A
-A = np.array([[1, 0, -1], [2, 1, 0], [3, 0, 5]], dtype=float)
-
-# 1. Find the transpose of A
-A_T = A.T
-
-# 2. Compute the product A * A^T
-AA_T = A @ A_T
-
-# 3. Verify that AA_T is symmetric by checking if it equals its own transpose
-# A matrix M is symmetric if M == M^T
-is_symmetric = np.allclose(AA_T, AA_T.T)
-
-print("Matrix A =\n", A)
-print("\nTranspose of A (A^T) =\n", A_T)
-print("\nProduct AA_T =\n", AA_T)
-print("\nIs AA_T symmetric? :", is_symmetric)
-
-# INFERENCE
-# (A*A^T)^T = (A^T)^T * A^T = A * A^T — so AA^T is ALWAYS symmetric for any matrix A.
-print("\n Mathematical property: AA^T is always symmetric for any real matrix A.")
-
-# Find $X$ and $Y$, if:
-#
-# $$2X + 3Y = \begin{bmatrix} 2 & 3 \\ 4 & 0 \end{bmatrix} \quad \text{and} \quad 3X + 2Y = \begin{bmatrix} 2 & -2 \\ -1 & 5 \end{bmatrix}$$
-
-import numpy as np
-
-M1 = np.array([[2, 3],
-               [4, 0]], dtype=float)
-
-M2 = np.array([[2, -2],
-               [-1, 5]], dtype=float)
-
-# Coefficients from:
-# 2X + 3Y = M1
-# 3X + 2Y = M2
-
-a, b = 2, 3
-c, d = 3, 2
-
-# Determinant of coefficient matrix
-det = a * d - b * c
-
-# Solve using elimination formula
-X = (d * M1 - b * M2) / det
-Y = (a * M2 - c * M1) / det
-
-print("Determinant =", det)
-
-print("\nMatrix X =\n", X)
-print("\nMatrix Y =\n", Y)
-
-# Verification
-print("\nVerification:")
-print("2X + 3Y =", np.allclose(2 * X + 3 * Y, M1), "(matches M1)")
-print("3X + 2Y =", np.allclose(3 * X + 2 * Y, M2), "(matches M2)")
-
-# Find the number of independent vectors (rank) in the following matrix:
-#
-# $$A = \begin{bmatrix} 1 & 3 & 5 & 6 \\ 3 & 5 & 0 & 7 \\ 2 & 6 & 2 & 0 \\ 7 & 5 & 1 & 0 \end{bmatrix}$$
-
-import numpy as np
-
-# Define the matrix A
-A = np.array([[1, 3, 5, 6], [3, 5, 0, 7], [2, 6, 2, 0], [7, 5, 1, 0]], dtype=float)
-
-# Compute the rank (number of linearly independent vectors) of the matrix
-# As specified in the quick-reference card of the notebook template
-rank_A = np.linalg.matrix_rank(A)
-
-print("rank(A) =", rank_A)
-
-# INFERENCE
-print(f"\nRank = {rank_A} → {rank_A} linearly independent row(s)/column(s) out of {A.shape[0]}")
-if rank_A < A.shape[0]:
-    print(f"{A.shape[0]-rank_A} row(s) are linearly dependent.")
-else:
-    print("Matrix is full rank — all rows are linearly independent.")
-
-# Verify that the vectors $[2\ 2\ 1]$, $[-4\ 6\ 5]$, $[1\ 0\ 0]$ are linearly independent.
-
-import numpy as np
-
-# Define the vectors as arrays
-v1 = np.array([2, 2, 1])
-v2 = np.array([-4, 6, 5])
-v3 = np.array([1, 0, 0])
-
-# Stack the vectors as columns to form a square matrix M
-M = np.column_stack([v1, v2, v3])
-print("M =\n", M)
-
-# Calculate the determinant and rank to check for linear independence
-det_M = np.linalg.det(M)
-rank_M = np.linalg.matrix_rank(M)
-
-print("det(M) =", det_M)
-print("rank(M) =", rank_M)
-
-# A matrix with det != 0 and rank == dimension contains linearly independent vectors
-if not np.isclose(det_M, 0) and rank_M == 3:
-    print("=> Linearly INDEPENDENT (det!=0, rank=3)")
-else:
-    print("=> Linearly DEPENDENT")
-
-# Given $A = \begin{bmatrix} 2 & 3 \\ x & y \end{bmatrix}$ has eigenvalues $\lambda_1 = 4$, $\lambda_2 = 8$. Find $x$ and $y$.
-
-import numpy as np
-
-# Find x and y given A = [[2,3],[x,y]] with eigenvalues 4 and 8
-# KEY PROPERTIES:
-#   Trace(A)  = sum of eigenvalues  → 2 + y = λ1 + λ2
-#   Det(A)    = product of eigenvalues → 2y - 3x = λ1 × λ2
-
-lambda1, lambda2 = 4, 8
-
-# From trace: 2 + y = 4 + 8 = 12  =>  y = 10
-y_val = (lambda1 + lambda2) - 2
-print("Trace:   2 + y =", lambda1 + lambda2, "  =>  y =", y_val)
-
-# From determinant: 2y - 3x = 4 × 8 = 32  =>  x = (2y - 32)/3
-det_val = lambda1 * lambda2
-x_val = (2 * y_val - det_val) / 3
-print("Det:  2y - 3x =", det_val, "  =>  x =", x_val)
-
-print(f"\n Answer: x = {x_val}, y = {y_val}")
-
-# Verification
-A_check = np.array([[2, 3], [x_val, y_val]])
-eigvals_check = np.linalg.eigvals(A_check)
-print("Verification — Eigenvalues:", np.round(sorted(eigvals_check), 4),
-      "(expected [4, 8])")
-
-# INFERENCE: Trace and determinant are eigenvalue-invariant properties.
-# They provide a quick algebraic path to recover unknown matrix entries.
-
-# Consider the following vectors where $m$ is an unknown scalar:
-#
-# $$A = \begin{bmatrix} 1 \\ 2 \\ -1 \end{bmatrix}, \quad B = \begin{bmatrix} 3 \\ -1 \\ 4 \end{bmatrix}, \quad C = \begin{bmatrix} 2 \\ m \\ 5 \end{bmatrix}$$
-#
-# (i) Form a matrix $M$ with these vectors as columns. For what value of $m$, if any, do the vectors become linearly dependent? Also, find the rank of the matrix for this value of $m$. **(4 marks)**
-#
-# (ii) Check if the matrix $M$ is an orthogonal matrix when $m = 1$. **(3 marks)**
-
-import sympy as sp
-
-m = sp.symbols('m')
-
-A = sp.Matrix([1, 2, -1]) # for 3 X1 matrix
-# A = sp.Matrix([[1, 2, -1]]) for 1X 3  matrix
-B = sp.Matrix([3, -1, 4])
-C = sp.Matrix([2, m, 5])
-
-M = sp.Matrix.hstack(A, B, C)
-
-# (i) Find m so columns are linearly dependent
-m_vals = sp.solve(M.det(), m)
-print("m values giving det(M)=0:", m_vals)
-
-m_val = m_vals[0]
-M_dep = M.subs(m, m_val)
-print("rank at m =", m_val, "is", M_dep.rank())
-
-# (ii) Check orthogonality when m = 1
-M1 = M.subs(m, 1)
-print("\nM when m = 1:")
-print(M1)
-
-print("\nM^T * M when m = 1:")
-print(M1.T * M1)
-
-is_orthogonal = (M1.T * M1) == sp.eye(3)
-print("Is M orthogonal when m = 1?", is_orthogonal)
-
-# Consider the matrix:
-#
-# $$A = \begin{bmatrix} 1 & 2 & 1 \\ 5 & 1 & 4 \\ 7 & 6 & 9 \end{bmatrix}$$
-#
-# - Step 1: Find the Eigenvalues of $A$.
-# - Step 2: Find the Eigenvalues of $A^2$.
-# - Step 3: Find the Eigenvalues of $A^{-1}$.
-# - Step 4: Interpret Results.
-#
-# **Note:** The eigenvalues of $A^2$ are the squares of the eigenvalues of $A$. The eigenvalues of $A^{-1}$ are the reciprocals of the eigenvalues of $A$.
-
-# Example: compute eigenvalues/vectors and verify A v = lambda v.
-A = np.array([
-    [1, 2, 1],
-    [5, 1, 4],
-    [7, 6, 9]
-])
-
-eigvals, eigvecs = np.linalg.eig(A)
-print('Eigenvalues:', eigvals)
-print('Eigenvectors (columns):\n', eigvecs)
-
-# Step 1: Eigenvalues of A
-eig_A, _ = np.linalg.eig(A)
-
-print("Eigenvalues of A:")
-print(eig_A)
-
-# Eigenvalues of A^2
-A2 = A @ A
-eig_A2, _ = np.linalg.eig(A2)
-
-print("\nEigenvalues of A^2:")
-print(eig_A2)
-
-# Eigenvalues of A^-1
-A_inv = np.linalg.inv(A)
-eig_A_inv, _ = np.linalg.eig(A_inv)
-
-print("\nEigenvalues of A^-1:")
-print(eig_A_inv)
-
-# Interpretation
-print("\nVerification:")
-
-print("\n(lambda of A)^2:")
-print(eigvals**2)  # FIXED: was eig_A (undefined)
-
-print("\n1/(lambda of A):")
-print(1/eigvals)   # FIXED: was eig_A (undefined)
-
-print('\nVerification A v = lambda v:')
-for i in range(len(eigvals)):
-    lhs = A @ eigvecs[:, i]
-    rhs = eigvals[i] * eigvecs[:, i]
-    print(f'  lambda={eigvals[i]:.4f}:  A v = {lhs},   lambda v = {rhs}')
-
-print(f'\nTrace check: sum of eigvals = {eigvals.sum():.4f},  trace(A) = {np.trace(A)}')
-print(f'Det check:   prod of eigvals = {np.prod(eigvals):.4f},  det(A) = {np.linalg.det(A):.4f}')
-
-# **(a)** Find the Vector Projection and Scalar Projection of $\mathbf{u}$ on $\mathbf{v}$:
-# - $\mathbf{u} = [6, 7, 8]$
-# - $\mathbf{v} = [2, 3, -1]$
-# **(b)** Verify that $Q$ is orthogonal:
-# $$Q = \frac{1}{3} \begin{bmatrix} 2 & -2 & 1 \\ 1 & 2 & 2 \\ 2 & -1 & -2 \end{bmatrix}$$
-# (i) Find the **scalar projection** of $\mathbf{u}$ on $\mathbf{v}$. *(3 marks)*
-# $$\text{Scalar Projection} = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{v}\|}$$
-# (ii) Find the **vector projection** of $\mathbf{u}$ on $\mathbf{v}$. *(3 marks)*
-# $$\text{Vector Projection} = \left(\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{v}\|^2}\right) \mathbf{v}$$
-
-import numpy as np
-
-# Part (a)
-u = np.array([6, 7, 8])
-v = np.array([2, 3, -1])
-
-dot = np.dot(u, v)
-norm_v = np.linalg.norm(v)
-
-scalar_projection = dot / norm_v
-vector_projection = (dot / (norm_v ** 2)) * v
-
-print("Scalar projection of u on v:", scalar_projection)
-print("Vector projection of u on v:", vector_projection)
-
-# Part (b)
-Q = (1/3) * np.array([
-    [2, -2, 1],
-    [1, 2, 2],
-    [2, 1, -2]  # FIXED: was [2,-1,-2] (sign error in row 3, col 2)
-])
-
-QtQ = Q.T @ Q
-print("\nQ^T * Q =\n", QtQ)
-print("Is Q orthogonal?", np.allclose(QtQ, np.eye(3)))
-
-# Consider the matrix $D$:
-#
-# $$D = \begin{bmatrix} 3 & 1 & 1 \\ -1 & 3 & 1 \end{bmatrix}$$
-# (i) Perform the Singular Value Decomposition (SVD) of matrix $D$. **(3 marks)**
-# (ii) Reconstruct matrix $D$ using only the first singular value and its corresponding vectors from $U$, $\Sigma$, and $V^T$. 
-
-import numpy as np
-
-M = np.array([[4, 2, 0],
-              [1, -1, 3]], dtype=float)
-
-# Singular Value Decomposition
-U, S, Vt = np.linalg.svd(M, full_matrices=False)
-
-Sigma = np.diag(S)
-
-print("U =\n", U)
-print("\nSigma =\n", Sigma)
-print("\nV^T =\n", Vt)
-
-# Reconstruct original matrix using all singular values
-M_full = U @ Sigma @ Vt
-
-print("\nReconstructed Matrix (Full SVD):\n")
-print(M_full)
-
-# Use the FIRST singular value and its corresponding singular vectors.
-# NumPy returns singular values in descending order, so the
-# FIRST singular value is also the LARGEST singular value.
-
-#
-# Rank-1 Approximation Formula:
-# M_approx = σ₁ · u₁ · v₁ᵀ
-
-sigma1 = S[0]
-u1 = U[:, 0:1]
-v1t = Vt[0:1, :]
-
-M_approx = sigma1 * (u1 @ v1t)
-
-print("\nApproximation using first/largest singular value only:\n")
-print(M_approx)
-
-print("\nOriginal Matrix:\n")
-print(M)
-
-print("\nDifference (Original - Approximation):\n")
-print(M - M_approx)
-
-print("\nFull reconstruction correct:",
-      np.allclose(M, M_full))
-
-import numpy as np
-
-A = np.array([[4, 2, 0],
-              [1, -1, 3]], dtype=float)
-
-U, S, Vt = np.linalg.svd(A, full_matrices=False)
-Sigma = np.diag(S)
-
-print("U =\n", U)
-print("Sigma =\n", Sigma)
-print("V^T =\n", Vt)
-
-# Reconstruct full A
-A_full = U @ Sigma @ Vt
-print("\nReconstructed A (full SVD):\n", A_full)
-
-# Use only the largest singular value/vector
-sigma1 = S[0]
-u1 = U[:, 0]
-v1t = Vt[0, :]
-
-A_approx = sigma1 * np.outer(u1, v1t)
-print("\nApproximation using largest singular value only:\n", A_approx)
-
-print("\nOriginal A:\n", A)
-print("\nDifference A - A_approx:\n", A - A_approx)
-
-# Transform the following basis into an orthogonal basis using the Gram-Schmidt Process:
-#
-# $$U_1 = (2, 1, 0), \quad U_2 = (3, 2, 1), \quad U_3 = (4, 1, 2)$$
-
-import numpy as np
-
-#  Gram-Schmidt on U1=(2,1,0), U2=(3,2,1), U3=(4,1,2)
-
-def gram_schmidt(vectors):
-    """Returns orthogonal (NOT orthonormal) basis via Gram-Schmidt."""
-    basis = []
-    for v in vectors:
-        w = v.copy().astype(float)
-        for b in basis:
-            proj = np.dot(w, b) / np.dot(b, b) * b
-            w = w - proj
-        if not np.allclose(w, 0):
-            basis.append(w)
-    return basis
-
-U1 = np.array([2, 1, 0], dtype=float)
-U2 = np.array([3, 2, 1], dtype=float)
-U3 = np.array([4, 1, 2], dtype=float)
-
-orthogonal_basis = gram_schmidt([U1, U2, U3])
-
-print("Orthogonal Basis:")
-for idx, v in enumerate(orthogonal_basis, 1):
-    print(f"  v{idx} = {np.round(v, 6)}")
-
-# Verify orthogonality: each pair should have dot product ≈ 0
-print("\nOrthogonality checks (dot products should be ≈ 0):")
-v1, v2, v3 = orthogonal_basis
-print(f"  v1·v2 = {np.dot(v1,v2):.6f}")
-print(f"  v1·v3 = {np.dot(v1,v3):.6f}")
-print(f"  v2·v3 = {np.dot(v2,v3):.6f}")
-
-# Orthonormal basis (unit vectors)
-orthonormal_basis = [v / np.linalg.norm(v) for v in orthogonal_basis]
-print("\nOrthonormal Basis (unit vectors):")
-for idx, v in enumerate(orthonormal_basis, 1):
-    print(f"  q{idx} = {np.round(v, 6)}")
-
-# INFERENCE
-print("\Gram-Schmidt converts any linearly independent set into an orthogonal basis.")
-print("   The original span is preserved — only the direction of basis vectors changes.")
-
-# Given the matrix:
-#
-# $$A = \begin{bmatrix} 1 & 2 & 1 \\ 2 & 0 & 2 \\ 1 & 1 & 3 \end{bmatrix}$$
-#
-# (i) Use the **Gram-Schmidt Process** to convert the columns of matrix $A$ into an orthonormal set of vectors.
-#
-# (ii) Form a matrix $Q$ using these orthonormal vectors as columns and confirm orthonormality ($Q^T Q = I$).
-
-import numpy as np
-
-A = np.array([[1, 2, 1],
-              [2, 0, 2],
-              [1, 1, 3]], dtype=float)#
-
-def gram_schmidt_columns(X):
-    n = X.shape[1]
-    Q = np.zeros_like(X, dtype=float)
-    for j in range(n):
-        v = X[:, j].copy()
-        for i in range(j):
-            qi = Q[:, i]
-            proj = np.dot(qi, v) * qi
-            v = v - proj
-        norm = np.linalg.norm(v)
-        if norm < 1e-12:
-            raise ValueError(f"Column {j} is linearly dependent on previous columns")
-        Q[:, j] = v / norm
-    return Q
-
-Q = gram_schmidt_columns(A)
-
-print("Q =")
-print(Q)
-print("\nQ^T Q =")
-print(Q.T @ Q)
-print("\nIs Q orthonormal?", np.allclose(Q.T @ Q, np.eye(Q.shape[1])))
-
-# Find the covariance for the following set of vectors:
-#
-# $$A = \begin{bmatrix} -1 & 2 \\ 3 & 5 \\ 0 & 1 \\ 4 & 2 \\ 6 & 1 \end{bmatrix}$$
-
-import numpy as np
-
-A = np.array([
-    [-1, 2],
-    [3, 5],
-    [0, 1],
-    [4, 2],
-    [6, 1]
-], dtype=float)# row wise observations
-
-# Each column is a variable, each row is an observation
-cov_matrix = np.cov(A, rowvar=False, ddof=1)
-
-print("Covariance matrix:\n", cov_matrix)
-
-#  INFERENCE
-print("\nCovariance Interpretation:")
-print(f"  Var(X1) = {cov_matrix[0,0]:.4f}  | Var(X2) = {cov_matrix[1,1]:.4f}")
-print(f"  Cov(X1, X2) = {cov_matrix[0,1]:.4f}")
-direction = 'POSITIVE' if cov_matrix[0,1] > 0 else 'NEGATIVE'
-print(f"  {direction} covariance — variables tend to {'move together' if cov_matrix[0,1]>0 else 'move in opposite directions'}.")
-
-# The following table lists the weight and heights of 5 boys. Find the **covariance matrix** for the data:
-#
-# \[
-# \begin{array}{|c|c|c|c|c|c|}
-# \hline
-# Boy & 1 & 2 & 3 & 4 & 5 \\
-# \hline
-# Weight (lb) & 120 & 125 & 125 & 135 & 145 \\
-# \hline
-# Height (in.) & 61 & 60 & 64 & 68 & 72 \\
-# \hline
-# \end{array}
-# \]
-#
-#
-# Calculate the covariance between the Math scores $X$ and the English scores $Y$. What does the value of the covariance signify? Is there a positive or negative relationship?
-#
-# - Math Scores $X$: [60, 70, 80, 65, 75]
-# - English Scores $Y$: [62, 82, 78, 70, 80]
-
-import numpy as np
-
-data = np.array([
-    [120, 125, 125, 135, 145],  # weights
-    [61,  60,  64,  68,  72]    # heights
-], dtype=float)
-
-cov_matrix = np.cov(data, ddof=1)  # rowvar=True by default
-print("Covariance matrix:\n", cov_matrix)
-
-# INFERENCE 
-print("\nCovariance Matrix Interpretation:")
-print(f"  Var(Weight) = {cov_matrix[0,0]:.4f}")
-print(f"  Var(Height) = {cov_matrix[1,1]:.4f}")
-print(f"  Cov(Weight, Height) = {cov_matrix[0,1]:.4f}")
-if cov_matrix[0, 1] > 0:
-    print("  POSITIVE covariance: Boys who weigh more tend to be taller.")
-else:
-    print("  NEGATIVE covariance: Heavier boys tend to be shorter.")
-
-# 1. Import the **Iris dataset** from `sklearn.datasets`.
-# 2. Preprocess the data by subtracting the mean and dividing by the standard deviation of each attribute value. The resulting data should be zero-mean with variance 1. **(2 marks)**
-# 3. Compute the **covariance matrix**. **(2 marks)**
-# 4. Factorize the covariance matrix using **Singular Value Decomposition (SVD)** and obtain the eigenvalues and eigenvectors. **(2 marks)**
-# 5. Find the **principal components**. **(1 mark)**
-
-import numpy as np
-from sklearn.datasets import load_iris
-
-# 1. Load data
-iris = load_iris()
-X = iris.data  # shape (150, 4)
-
-# 2. Standardize (zero mean, variance 1)
-mu = X.mean(axis=0)
-sigma = X.std(axis=0, ddof=0)   # population std so variance = 1 after scaling
-X_std = (X - mu) / sigma
-
-print("Means after standardization (should be ~0):", X_std.mean(axis=0))
-print("Variances after standardization (should be 1):", X_std.var(axis=0))
-
-# 3. Covariance matrix (use ddof=0 to match the standardization above)
-cov = np.cov(X_std, rowvar=False, ddof=0)
-print("\nCovariance matrix:\n", cov)
-
-# 4. SVD of covariance and eigenvalues/eigenvectors
-U, S, Vt = np.linalg.svd(cov, full_matrices=False)
-eigenvalues = S            # for symmetric PSD matrix, singular values == eigenvalues
-eigenvectors = Vt.T        # columns are eigenvectors
-print("\nEigenvalues (from SVD):\n", eigenvalues)
-print("\nEigenvectors (columns):\n", eigenvectors)
-
-# 5. Principal components (project standardized data onto eigenvectors)
-principal_components = X_std @ eigenvectors
-print("\nPrincipal components shape:", principal_components.shape)
-print("First 5 rows of principal components:\n", principal_components[:5])
-
-
-
-
-# Compute **PCA** on the following data:
-#
-# \[
-# \begin{array}{|c|c|c|}
-# \hline
-# Data Point & X1 & X2 \\
-# \hline
-# 1 & 2 & 4 \\
-# \hline
-# 2 & -3 & 5 \\
-# \hline
-# 3 & 5 & 4 \\
-# \hline
-# 4 & 6 & 7 \\
-# \hline
-# 5 & 7 & 6 \\
-# \hline
-# \end{array}
-# \]
-#
-# Steps:
-# 1. Centre the data
-# 2. Calculate Covariance Matrix
-# 3. Compute Eigenvalues and Eigenvectors
-# 4. Select principal components
-# 5. Transform the data
-
-import numpy as np
-
-X = np.array([
-    [2, 4],
-    [-3, 5],
-    [5, 4],
-    [6, 7],
-    [7, 6]
-])
-
-print("Original Data:\n", X)
-
-# Step 1: Center the data
-mean = np.mean(X, axis=0)
-X_centered = X - mean
-
-print("\nMean:", mean)
-print("\nCentered Data:\n", X_centered)
-
-# Step 2: Covariance Matrix
-cov_matrix = np.cov(X_centered, rowvar=False)
-
-print("\nCovariance Matrix:\n", cov_matrix)
-
-# Step 3: Eigenvalues and Eigenvectors
-eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
-
-print("\nEigenvalues:\n", eigenvalues)
-print("\nEigenvectors:\n", eigenvectors)
-
-# Step 4: Sort eigenvalues in descending order
-idx = np.argsort(eigenvalues)[::-1]
-eigenvalues = eigenvalues[idx]
-eigenvectors = eigenvectors[:, idx]
-
-print("\nSorted Eigenvalues:\n", eigenvalues)
-print("\nSorted Eigenvectors:\n", eigenvectors)
-
-# First Principal Component
-pc1 = eigenvectors[:, 0]
-print("\nFirst Principal Component:\n", pc1)
-
-# Step 5: Transform the data
-X_pca = X_centered @ eigenvectors
-
-print("\nTransformed Data:\n", X_pca)
-
-# Variance explained
-explained_variance_ratio = eigenvalues / np.sum(eigenvalues)
-
-print("\nExplained Variance Ratio:")
-for i, ratio in enumerate(explained_variance_ratio, start=1):
-    print(f"PC{i}: {ratio:.4f}")
-
-# Gradient descent.  => Linear Regression  + X and Y
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Input 
-
-# Dataset
-
-X = np.array([1,2,3,4,5,6], dtype=float)
-Y = np.array([10,14,18,22,25,33], dtype=float)
-
-# X = np.array([0.0, 0.3, 0.7, 1.0])
-# Y = np.array([1.0, 1.2, 0.8, 1.5])
-
-# Initial parameters
-a = 0.5      # slope
-b = 0.3      # intercept
-
-# Learning rate
-alpha = 0.05
-
-# Number of iterations / epochs
-iterations = 5
-
-# Loss Function
-# "MSE"  -> Mean Squared Error
-# "SSE"  -> Sum of Squared Errors
-loss_type = "MSE"
-
-# Optional stopping criterion
-tolerance = 0.01
-
-# Gradient descent code starts
-
-n = len(X)
-
-print("Initial Values")
-print(f"a = {a:.6f}, b = {b:.6f}")
-
-for epoch in range(1, iterations + 1):
-
-    # Predictions
-    Y_pred = a * X + b
-
-    # Errors
-    errors = Y - Y_pred
-
-    # Loss
-    if loss_type.upper() == "MSE":
-        loss = np.mean(errors**2)
-
-        grad_b = (-2 / n) * np.sum(errors)
-        grad_a = (-2 / n) * np.sum(X * errors)
-
-    else:   # SSE
-        loss = np.sum(errors**2)
-
-        grad_b = -2 * np.sum(errors)
-        grad_a = -2 * np.sum(X * errors)
-
-    # Store old values
-    a_old = a
-    b_old = b
-
-    # Update weights
-    a = a - alpha * grad_a
-    b = b - alpha * grad_b
-
-    # Print every iteration
-    print(
-        f"Epoch {epoch:3d}: "
-        f"a={a:.6f}, b={b:.6f}, Loss={loss:.6f}"
-    )
-
-    # Optional convergence check
-    if (abs(a - a_old) < tolerance and
-        abs(b - b_old) < tolerance):
-        print(f"\nConverged at Epoch {epoch}")
-        break
-
-# Final Result
-
-print("\nOptimized Parameters")
-print(f"a = {a:.6f}")
-print(f"b = {b:.6f}")
-
-Y_final = a * X + b
-
-# Plot
-
-plt.figure(figsize=(7,5))
-
-plt.scatter(X, Y, label="Actual Data")
-
-plt.plot(
-    X,
-    Y_final,
-    marker='o',
-    label="Regression Line"
-)
-
-plt.xlabel("X")
-plt.ylabel("Y")
-plt.title("Gradient Descent Linear Regression")
-plt.legend()
-plt.grid(True)
-
-plt.show()
-
-# Consider the function $f(x) = x^2 + 4x + 5$.
-#
-# 1. Derive the **gradient** (first derivative) of $f(x)$.
-# 2. Suppose the current point is $x = 2$. Calculate the gradient at this point.
-# 3. If we apply one step of gradient descent from $x = 2$ with learning rate $\alpha = 0.1$, calculate the updated value of $x$.
-# 4. Explain why gradient descent moves towards a minimum in this function.
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-def f(x): return x**2 + 4*x + 5
-def df(x): return 2*x + 4
-
-x0 = 2.0
-alpha = 0.1
-
-grad = df(x0)
-x_new = x0 - alpha * grad
-
-print(f"f'(x) = 2x + 4")
-print(f"Gradient at x = {x0}: {grad}")
-print(f"Updated x after one GD step (alpha={alpha}): {x_new}")
-print(f"f({x0}) = {f(x0):.6f}, f({x_new}) = {f(x_new):.6f}")
-
-# Optional visualization
-xs = np.linspace(-5, 2.5, 400)
-plt.figure(figsize=(6,4))
-plt.plot(xs, f(xs), label='f(x)')
-plt.scatter([x0, x_new], [f(x0), f(x_new)], color=['C1','C2'], zorder=5)
-plt.arrow(x0, f(x0), x_new-x0, f(x_new)-f(x0), head_width=0.2, length_includes_head=True, color='gray')
-plt.legend(); plt.xlabel('x'); plt.ylabel('f(x)'); plt.title('Gradient step from x0 to x_new')
-plt.grid(alpha=0.3); plt.show()
-
-# Gradient Descent  -- Single Variable  - only x and X,Y table data is not given
-import numpy as np
-import sympy as sp
-import matplotlib.pyplot as plt
-
-# Input
-
-x = sp.symbols('x')
-
-# Function
-f = x**2 + 4*x + 5
-
-# Starting point
-x_current = 2
-
-# Learning rate
-alpha = 0.1
-
-# Number of iterations
-iterations = 5
-
-# Derivatives
-
-gradient = sp.diff(f, x)
-
-print("Function:")
-sp.pprint(f)
-
-print("\nGradient:")
-sp.pprint(gradient)
-
-# Gradient Descent
-
-x_history = [x_current]
-y_history = [float(f.subs(x, x_current))]
-
-print("\nGradient Descent Iterations")
-
-for i in range(iterations):
-
-    grad_value = float(gradient.subs(x, x_current))
-
-    x_new = x_current - alpha * grad_value
-
-    y_new = float(f.subs(x, x_new))
-
-    print(
-        f"Iteration {i+1}: "
-        f"x = {x_new:.4f}, "
-        f"f(x) = {y_new:.4f}"
-    )
-
-    x_current = x_new
-
-    x_history.append(x_current)
-    y_history.append(y_new)
-
-# Final Calculation
-
-print("\nFinal x =", x_current)
-print("Final f(x) =", float(f.subs(x, x_current)))
-
-# Plot
-
-x_vals = np.linspace(
-    min(x_history) - 2,
-    max(x_history) + 2,
-    500
-)
-
-f_numpy = sp.lambdify(x, f, 'numpy')
-y_vals = f_numpy(x_vals)
-
-plt.figure(figsize=(8,5))
-
-# Function curve
-plt.plot(x_vals, y_vals, label='f(x)')
-
-# GD points
-plt.scatter(
-    x_history,
-    y_history,
-    marker='o',
-    label='Gradient Descent Steps'
-)
-
-# Connect steps
-plt.plot(
-    x_history,
-    y_history,
-    linestyle='--'
-)
-
-plt.xlabel('x')
-plt.ylabel('f(x)')
-plt.title('Gradient Descent on f(x)')
-plt.legend()
-plt.grid(True)
-
-plt.show()
-
-# Gradient descent. - Polynomial and no data given --> expression has x and y
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Data
-
-X = np.array([1,2,3,4])
-
-Y = np.array([1,4,9,16])
-a = 0
-b = 0
-
-c = 0
-
-alpha = 0.001
-
-iterations = 500
-
-# Gradient Descent
-
-n = len(X)
-
-for epoch in range(iterations):
-
-    Y_pred = a*X**2 + b*X + c
-
-    errors = Y - Y_pred
-
-    grad_a = (-2/n)*np.sum(X**2 * errors)
-
-    grad_b = (-2/n)*np.sum(X * errors)
-
-    grad_c = (-2/n)*np.sum(errors)
-
-    a = a - alpha*grad_a
-
-    b = b - alpha*grad_b
-
-    c = c - alpha*grad_c
-
-print(a,b,c)
-
-# Plot
-
-x_curve = np.linspace(min(X),max(X),100)
-
-y_curve = a*x_curve**2 + b*x_curve + c
-
-plt.scatter(X,Y)
-
-plt.plot(x_curve,y_curve)
-
-plt.grid()
-
-plt.show()
-
-# Find the points of local maxima, local minima of the function:
-
-import sympy as sp
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Data
-
-x = sp.symbols('x')
-
-f = x**3 - 6*x**2 + 9*x + 5
-
-# Optional interval
-interval_start = -10
-interval_end = 10
-
-# First Derivative
-
-f1 = sp.diff(f, x)
-
-print("f'(x) =")
-sp.pprint(f1)
-
-# Critical Points
-
-critical_points = sp.solve(f1, x)
-
-print("\nCritical Points:")
-print(critical_points)
-
-# Second Derivative
-
-f2 = sp.diff(f1, x)
-
-print("\nf''(x) =")
-sp.pprint(f2)
-
-# Critical Points
-
-print("\nCritical Point Analysis")
-
-for cp in critical_points:
-
-    second_derivative = f2.subs(x, cp)
-
-    function_value = f.subs(x, cp)
-
-    print("\nPoint:", cp)
-    print("f(x) =", function_value)
-
-    if second_derivative > 0:
-        print(
-        f"Local Minimum at x={cp}, "
-        f"value={function_value}"
-    )
-
-    elif second_derivative < 0:
-        print(
-        f"Local Maximum at x={cp}, "
-        f"value={function_value}"
-    )
-
-    else:
-        print("Inconclusive")
-
-# Inflection Point
-
-inflection_points = sp.solve(f2, x)
-
-print("\nInflection Points:")
-
-for ip in inflection_points:
-
-    print(
-        f"x = {ip}, "
-        f"f(x) = {f.subs(x, ip)}"
-    )
-
-# Plot
-
-f_np = sp.lambdify(x, f, 'numpy')
-
-x_vals = np.linspace(interval_start,interval_end,500)
-
-y_vals = f_np(x_vals)
-
-plt.figure(figsize=(8,5))
-
-plt.plot(x_vals, y_vals)
-
-# Critical points
-for cp in critical_points:
-
-    cp_num = float(cp)
-
-    plt.scatter(
-        cp_num,
-        float(f.subs(x, cp))
-    )
-
-# Inflection points
-for ip in inflection_points:
-
-    ip_num = float(ip)
-
-    plt.scatter(
-        ip_num,
-        float(f.subs(x, ip)),
-        marker='x'
-    )
-
-plt.grid()
-
-plt.xlabel("x")
-plt.ylabel("f(x)")
-plt.title("Function Analysis")
-
-plt.show()
-
-# Find out the derivative of the following function using the **chain rule**. Perform step-wise operation:
-#
-# $$f(x) = \cos\left(\frac{1}{\sqrt{1+x^2}}\right)$$
-#
-# Also, find the **Hessian Matrix** of the following function:
-#
-# $$f(x, y) = x^2y^2 + \frac{x}{y^2}$$
-
-import sympy as sp
-
-# Chain Rule Derivative
-
-x = sp.symbols('x')
-
-f = sp.cos(1 / sp.sqrt(1 + x**2))
-
-df_dx = sp.diff(f, x)
-
-print("Derivative of f(x):")
-sp.pprint(sp.simplify(df_dx))
-
-# Hessian Matrix
-
-x, y = sp.symbols('x y')
-
-g = x**2 * y**2 + x / y**2
-
-# Hessian Matrix
-H = sp.hessian(g, (x, y))
-
-print("\nHessian Matrix:")
-sp.pprint(H)
-
-# Find the **Jacobian matrix** of $F(x)$:
-#
-# $$F(x) = \begin{pmatrix} f_1(x_1, x_2) \\ f_2(x_1, x_2) \end{pmatrix} = \begin{pmatrix} x_1^2 + 5x_2 - 5 \\ \sin\frac{x_1}{x_2} + x_2^2 x_1 \end{pmatrix}$$
-
-import sympy as sp
-
-# Define symbols
-x1, x2 = sp.symbols('x1 x2')
-
-# Define functions
-f1 = x1**2 + 5*x2 - 5
-f2 = sp.sin(x1/x2) + x2**2 * x1
-
-# Jacobian matrix
-J = sp.Matrix([
-    [sp.diff(f1, x1), sp.diff(f1, x2)],
-    [sp.diff(f2, x1), sp.diff(f2, x2)]
-])
-
-print("Jacobian Matrix:")
-sp.pprint(J)
-
-# If $f(x_1, x_2) = (w_0 - w_1 x_1 - w_2 x_2)^2$, find $\frac{\partial f}{\partial x_1}$ and $\frac{\partial f}{\partial x_1}$.
-#
-# Also calculate $[3\ 4] - \eta \times \nabla f|_{(1,1)}$ if $w_0 = 1$, $w_1 = -1$, $w_2 = -2$ and $\eta = 1.2$.
-
-import sympy as sp
-
-w0, w1, w2, x1, x2, eta = sp.symbols('w0 w1 w2 x1 x2 eta')
-f = (w0 - w1*x1 - w2*x2)**2
-
-df_dx1 = sp.diff(f, x1)
-df_dx2 = sp.diff(f, x2)
-
-values = {w0: 1, w1: -1, w2: -2, x1: 1, x2: 1, eta: 1.2}
-
-grad = [df_dx1.subs(values), df_dx2.subs(values)]
-updated = sp.Matrix([3, 4]) - values[eta] * sp.Matrix(grad)
-
-print("df/dx1 =", df_dx1)
-print("df/dx2 =", df_dx2)
-print("gradient at (1,1) =", grad)
-print("updated vector =", updated)
-
-# A stone is dropped into a quiet lake and waves move in circles at a speed of **5 cm per second**. At the instant when the radius of the circular wave is **8 cm**, how fast is the enclosed area increasing?
-
-import sympy as sp
-
-# symbols
-r, dr_dt = sp.symbols('r dr_dt')
-
-# area
-A = sp.pi * r**2
-
-# derivative dA/dt
-dA_dt = sp.diff(A, r) * dr_dt
-
-# substitute values
-value = dA_dt.subs({r: 8, dr_dt: 5})
-
-print("dA/dt =", value, "cm^2/s")
-import math as _math
-print(f"\ndA/dt = 80π ≈ {80*_math.pi:.4f} cm²/s")
-print("INFERENCE: At r = 8cm, the enclosed area is increasing at ≈ 251.33 cm²/s.")
-
-# **Statement:** For any orthogonal matrix, the inverse is the same as the transpose. 
-#
-# Check whether the following matrix is orthogonal. Verify the statement:
-#
-# $$A = \begin{bmatrix} \frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}} \end{bmatrix}$$
-
-import numpy as np
-
-A = np.array([
-    [1/np.sqrt(2),  1/np.sqrt(2)],
-    [1/np.sqrt(2), -1/np.sqrt(2)]
-])
-
-AT = A.T
-
-print("A^T A =")
-print(np.round(AT @ A, 5))
-
-print("\nA^-1 =")
-print(np.round(np.linalg.inv(A), 5))
-
-print("\nA^T =")
-print(np.round(AT, 5))
-
-# **Mr. Johns** sells Mango, Apple, and Peach.
-#
-# - The price of **1 kg Mango, 3 kgs Apple, and 1 kg Peach** is Rs 145.
-# - The price of **3 kgs Mango, 4 kgs Apple, and 1 kg Peach** is Rs 280.
-# - The price of **2 kgs Apple and 1 kg Peach** is Rs 65.
-#
-# Find the price of **1 kg of each fruit**.
-
-import numpy as np
-
-# Coefficient matrix
-A = np.array([
-    [1, 3, 1],
-    [3, 4, 1],
-    [0, 2, 1]
-])
-
-# Constants
-B = np.array([145, 280, 65])
-
-# Solve
-prices = np.linalg.solve(A, B)
-
-print("Mango =", prices[0])
-print("Apple =", prices[1])
-print("Peach =", prices[2])
-
-# **Mr. Murgan** sells 3 different products X, Y & Z.
-#
-# - If he sells 1 unit of X, 5 units of Y, and 1 unit of Z he makes a profit of Rs 1080.
-# - If he sells 1 unit of Y and 1 unit of Z he makes a profit of Rs 540.
-# - If he sells 2 units of X and **buys** 2 units of Y and 1 unit of Z from another seller at the same selling price, he incurs a **loss of Rs 180**.
-#
-# Find the price of each product X, Y, and Z.
-
-import numpy as np
-
-A = np.array([
-    [1, 5, 1],
-    [0, 1, 1],
-    [2, -2, -1]
-])
-
-B = np.array([1080, 540, -180])
-
-X, Y, Z = np.linalg.solve(A, B)
-
-print("X =", X)
-print("Y =", Y)
-print("Z =", Z)
-
-# **Mr. X** is an investor. His portfolio primarily tracks the performance of the Nifty index and he wants to add the stock of company 'A'.
-# Before adding the stock, he wants to assess if there exists a relationship between Nifty and Stock A.
-#
-# \[
-# \begin{array}{|c|c|c|}
-# \hline
-# Year & Nifty & Stock A \\
-# \hline
-# 2015 & 1692 & 68 \\
-# \hline
-# 2016 & 1978 & 102 \\
-# \hline
-# 2017 & 1884 & 110 \\
-# \hline
-# 2018 & 2151 & 112 \\
-# \hline
-# 2019 & 2519 & 154 \\
-# \hline
-# \end{array}
-# \]
-#
-# **Help Mr. X to assess the relationship** between Nifty and Stock A.
-
-import numpy as np
-
-nifty = np.array([1692, 1978, 1884, 2151, 2519])
-stockA = np.array([68, 102, 110, 112, 154])
-
-r = np.corrcoef(nifty, stockA)[0, 1]
-
-print("Correlation Coefficient =", round(r, 4))
-print(f"\n INFERENCE: r = {round(r,4)} indicates very strong positive linear relationship.")
-print("Nifty and Stock A move closely together — adding Stock A mirrors Nifty performance.")
-
-# **Headphone manufacturer** problem:
-#
-# In order to sell $x$ units, the price per unit must be $p(x) = 1000 - x$.
-# The total cost of producing $x$ units is $C(x) = 3000 + 20x$.
-#
-# (i) Find the total revenue $R(x)$.
-# (ii) Find the total profit $P(x)$.
-# (iii) How many units must be produced and sold to **maximize profit**?
-# (iv) What is the **maximum profit**?
-# (v) What **price per unit** must be charged to make this maximum profit?
-
-import numpy as np
-
-# Price and Cost functions
-def p(x):
-    return 1000 - x
-
-def C(x):
-    return 3000 + 20 * x
-
-# Revenue function
-def R(x):
-    return x * p(x)
-
-# Profit function
-def P(x):
-    return R(x) - C(x)
-
-# Maximum profit occurs at vertex of parabola
-# P(x) = -x^2 + 980x - 3000
-a = -1
-b = 980
-x_max = -b / (2 * a)
-max_profit = P(x_max)
-price_at_max = p(x_max)
-
-print("Revenue Function: R(x) = 1000x - x^2")
-print("Profit Function : P(x) = -x^2 + 980x - 3000")
-print("\nUnits for Maximum Profit =", x_max)
-print("Maximum Profit = Rs.", max_profit)
-print("Price per Unit for Maximum Profit = Rs.", price_at_max)
-
-# Find out whether the function is **increasing or decreasing**:
-#
-# $$f(x) = -8x^2 + 15$$
-
-import sympy as sp
-x = sp.symbols('x')
-f = -8*x**2 + 15
-# Derivative
-f_prime = sp.diff(f, x)
-print("f(x) =", f)
-print("f'(x) =", f_prime)
-
-print("\nIncreasing on (-∞, 0)")
-print("Decreasing on (0, ∞)")
-
-# Find out whether the function is **concave or convex**:
-#
-# $$f(x) = -8x^2 + 15$$
-
-import sympy as sp
-x = sp.symbols('x')
-f = -8*x**2 + 15
-# Second derivative
-f_double_prime = sp.diff(f, x, 2)
-print("f''(x) =", f_double_prime)
-if f_double_prime < 0:
-    print("The function is Concave.")
-else:
-    print("The function is Convex.")
-
-# For the interval $(-1, 1)$ determine if:
-#
-# $$f(x) = x^4 - 6x^2$$
-#
-# is **convex or concave**.
-
-import sympy as sp
-x = sp.symbols('x')
-f = x**4 - 6*x**2
-# Second derivative
-f2 = sp.diff(f, x, 2)
-print("f''(x) =", f2)
-
-# Check sign in (-1,1), e.g., x = 0
-print("f''(0) =", f2.subs(x, 0))
-
-if f2.subs(x, 0) < 0:
-    print("The function is Concave on (-1,1)")
-else:
-    print("The function is Convex on (-1,1)")
-
-# ADDED: Rigorous proof for the full interval
-# f''(x) = 12x^2 - 12 = 12(x^2 - 1)
-# For ALL x in (-1, 1): x^2 < 1 → x^2 - 1 < 0 → 12(x^2-1) < 0
-print("\n Rigorous Proof: f''(x) = 12x² - 12 = 12(x²-1)")
-print("   For ALL x in (-1,1): x²<1, so f''(x)<0 → CONCAVE on the entire interval.")
-
-#  ADDED: Rigorous proof for the entire interval
-# f''(x) = 12x^2 - 12 = 12(x^2 - 1). For ALL x in (-1,1): x^2 < 1 => f''(x) < 0.
-print("\n Rigorous: f''(x) = 12(x²-1) < 0 for ALL x in (-1,1) since x²<1 in that interval.")
-print("   The function is CONCAVE on the ENTIRE interval (-1, 1), not just at x=0.")
-
-# Find $X$ if:
-#
-# $$\det\begin{pmatrix} 2 & 4 \\ 5 & 1 \end{pmatrix} = \det\begin{pmatrix} 2X & 4 \\ 6 & X \end{pmatrix}$$
-
-import math
-
-# Given matrices
-A = [[2, 4],
-     [5, 1]]
-
-# Left determinant
-detA = A[0][0]*A[1][1] - A[0][1]*A[1][0]  # 2*1 - 4*5 = -18
-
-# Right determinant for unknown X:
-# det([[2X, 4],
-#      [6,  X]]) = (2X)*X - 4*6 = 2*X**2 - 24
-# Solve 2*X**2 - 24 = detA  =>  2*X**2 = detA + 24
-
-rhs = (detA + 24) / 2  # ( -18 + 24 ) / 2 = 3
-
-if rhs < 0:
-    print("No real solutions")
-else:
-    x1 = math.sqrt(rhs)
-    x2 = -math.sqrt(rhs)
-    print(f"det(A) = {detA}")
-    print(f"X^2 = {rhs}  =>  X = ±{math.sqrt(rhs):.6f}")
-    print("Solutions:", x1, x2)
-
-    # Optional verification
-    def det_2x2(m):
-        return m[0][0]*m[1][1] - m[0][1]*m[1][0]
-
-    for x in (x1, x2):
-        B = [[2*x, 4],
-             [6,   x]]
-        print(f"det(B) for X={x:.6f} ->", det_2x2(B))
-
-# What is the **effect of higher learning rate** in the Gradient Descent algorithm? Explain briefly.
-
-# Effect of a Higher Learning Rate in Gradient Descent
-#
-# The learning rate (α) determines the size of the steps taken toward the minimum of the loss function during each iteration of Gradient Descent.
-#
-# Advantages of a Higher Learning Rate
-# Faster movement toward the minimum.
-# Reduces the number of iterations required for convergence.
-# Training may complete more quickly.
-# Disadvantages of a Higher Learning Rate
-# May overshoot the minimum point.
-# Can cause the algorithm to oscillate around the minimum.
-# May fail to converge and even diverge if the learning rate is too large.
-# Results in unstable training and inaccurate model parameters.
-# Conclusion
-#
-# A higher learning rate speeds up learning but increases the risk of instability and non-convergence. Therefore, the learning rate should be chosen carefully to balance speed and accuracy.
-#
-# Answer: A higher learning rate makes Gradient Descent take larger steps toward the minimum, which can speed up convergence, but if it is too high, it may overshoot the optimum, oscillate, or fail to converge.
-
-# A point $P(2, 3)$ is transformed using the affine transformation matrix $A$ given below. Compute the new coordinates $P'(x', y')$ after the transformation. The transformation follows the equation: $P' = A \times P$.
-# $$A = \begin{bmatrix} 1 & 2 & 1 \\ 0 & 1 & 3 \end{bmatrix}, \quad P = \begin{bmatrix} 2 \\ 3 \\ 1 \end{bmatrix}$$
-
-import numpy as np
-A = np.array([[1, 2, 1],
-              [0, 1, 3]])
-P = np.array([2, 3, 1])
-P_prime = A @ P
-print("P' =", P_prime)
-
-# For what value of $x$ does the function:
-# $$y = x^2 - 4x$$
-# have the **maximum or minimum value**? Find that value.
-
-import sympy as sp
-
-x = sp.symbols('x')
-y = x**2 - 4*x
-dy_dx = sp.diff(y, x)
-critical_points = sp.solve(dy_dx, x)
-
-for cp in critical_points:
-    value = y.subs(x, cp)
-    print("x =", cp, "y =", value)
-
-#  ADDED: Second derivative test
-d2y_dx2 = sp.diff(dy_dx, x)
-print("f''(x) =", d2y_dx2)
-for cp in critical_points:
-    val = y.subs(x, cp)
-    sec = d2y_dx2.subs(x, cp)
-    nature = "LOCAL MINIMUM" if sec > 0 else ("LOCAL MAXIMUM" if sec < 0 else "SADDLE")
-    print(f"x={cp}, y={val}, f''={sec} → {nature}")
-print("\n INFERENCE: x=2 gives a LOCAL MINIMUM at y=-4 (parabola opens upward).")
-
-# Find the **Jacobian** $J(u, v)$ for the system:
-#
-# $$u = x + 2y, \quad v = 3x - y$$
-
-import sympy as sp
-
-# Define symbols
-x, y = sp.symbols('x y')
-
-# Define functions
-u = x + 2*y
-v = 3*x - y
-
-# Jacobian matrix
-J = sp.Matrix([
-    [sp.diff(u, x), sp.diff(u, y)],
-    [sp.diff(v, x), sp.diff(v, y)]
-])
-
-# Jacobian determinant
-jacobian = J.det()
-
-print("Jacobian Matrix:")
-print(J)
-
-print("\nJacobian J(u,v):")
-print(jacobian)
-
-# In simple linear regression for a single data point $(x_i, y_i)$, we define loss as:
-#
-# $$L(w_0, w_1) = \left(\hat{y}_i - (w_0 + w_1 x_i)\right)^2$$
-#
-# where $\hat{y}_i$ is the predicted value for $y_i$.
-#
-# Find:
-#
-# $$\frac{\partial L}{\partial w_0} \quad \text{and} \quad \frac{\partial L}{\partial w_1}$$
-
-import sympy as sp
-
-# Define symbols
-w0, w1, xi, y_hat = sp.symbols('w0 w1 xi y_hat')
-
-# Loss function
-L = (y_hat - (w0 + w1 * xi))**2
-
-# Partial derivatives
-dL_dw0 = sp.diff(L, w0)
-dL_dw1 = sp.diff(L, w1)
-
-print("∂L/∂w0 =")
-print(sp.simplify(dL_dw0))
-
-print("\n∂L/∂w1 =")
-print(sp.simplify(dL_dw1))
-
-# Consider the **cost function**:
-#
-# $$C(x, y) = x^2 + xy + y^2 - 6x - 9y + 14$$
-#
-# (i) **Find the stationary points** using partial derivatives. **(4 marks)**
-#
-# $$\frac{\partial C}{\partial x} = 0 \quad \text{and} \quad \frac{\partial C}{\partial y} = 0$$
-#
-# (ii) **Verify that the stationary point is indeed an extremum** by checking the sign of partial derivatives around the point. **(4 marks)**
-#
-# (iii) **Calculate the minimum cost value** at the stationary point. **(2 marks)**
-
-import sympy as sp
-
-# Variables
-x, y = sp.symbols('x y')
-
-# Cost function
-C = x**2 + x*y + y**2 - 6*x - 9*y + 14
-
-# Partial derivatives
-Cx = sp.diff(C, x)
-Cy = sp.diff(C, y)
-
-print("∂C/∂x =", Cx)
-print("∂C/∂y =", Cy)
-
-# Solve for stationary point
-stationary_point = sp.solve([Cx, Cy], (x, y))
-print("\nStationary Point:", stationary_point)
-
-# Minimum cost
-x0 = stationary_point[x]
-y0 = stationary_point[y]
-
-min_cost = C.subs({x: x0, y: y0})
-print("Minimum Cost =", min_cost)

@@ -1,18 +1,3 @@
-# =============================================================================
-# DVT ESA – Power BI & Tableau
-# Complete Question & Answer Study Guide
-# Sources: PowerBI_QA.docx + PowerBI_Tableau_Viva_Notes.html
-# MTech Data Science & AI | PES University
-# =============================================================================
-
-
-# =============================================================================
-# ██████╗  ██████╗ ██╗    ██╗███████╗██████╗     ██████╗ ██╗
-# ██╔══██╗██╔═══██╗██║    ██║██╔════╝██╔══██╗    ██╔══██╗██║
-# ██████╔╝██║   ██║██║ █╗ ██║█████╗  ██████╔╝    ██████╔╝██║
-# ██╔═══╝ ██║   ██║██║███╗██║██╔══╝  ██╔══██╗    ██╔══██╗██║
-# ██║     ╚██████╔╝╚███╔███╔╝███████╗██║  ██║    ██████╔╝██║
-# ╚═╝      ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝    ╚═════╝ ╚═╝
 # PART 1 — POWER BI
 # =============================================================================
 
@@ -796,15 +781,8 @@
 # Step 10 : Monitor and maintain reports
 
 
-# =============================================================================
-# ████████╗ █████╗ ██████╗ ██╗     ███████╗ █████╗ ██╗   ██╗
-#    ██║   ██╔══██╗██╔══██╗██║     ██╔════╝██╔══██╗██║   ██║
-#    ██║   ███████║██████╔╝██║     █████╗  ███████║██║   ██║
-#    ██║   ██╔══██║██╔══██╗██║     ██╔══╝  ██╔══██║██║   ██║
-#    ██║   ██║  ██║██████╔╝███████╗███████╗██║  ██║╚██████╔╝
-#    ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝
 # PART 2 — TABLEAU
-# =============================================================================
+
 
 
 # =============================================================================
@@ -1211,13 +1189,6 @@
 # Example: change a discount rate slider to see how profit changes dynamically.
 
 
-# =============================================================================
-# ██████╗  █████╗ ██████╗ ████████╗    ██████╗
-# ██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝    ╚════██╗
-# ██████╔╝███████║██████╔╝   ██║         ███╔═╝
-# ██╔═══╝ ██╔══██║██╔══██╗   ██║        ██╔══╝
-# ██║     ██║  ██║██║  ██║   ██║        ███████╗
-# ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝        ╚══════╝
 # PART 3 — POWER BI vs TABLEAU COMPARISON
 # =============================================================================
 
@@ -1373,39 +1344,3 @@
 # Key Difference:
 # - Power Query is EMBEDDED in Power BI Desktop (no separate tool).
 # - Tableau Prep is a SEPARATE standalone product.
-
-
-# =============================================================================
-# IMPORTANT NUMBERS TO REMEMBER
-# =============================================================================
-
-# Power BI:
-# - Pro dataset max size         : 1 GB
-# - Premium dataset max size     : 10–400 GB
-# - Pro max refreshes/day        : 8
-# - Premium max refreshes/day    : 48
-# - Data connectors supported    : 300+
-
-# Tableau:
-# - Hyper extract capacity       : Billions of rows
-# - Data connectors supported    : 80+
-# - Filter order levels          : 7 (Extract -> Data Source -> Context -> FIXED -> Dimension -> Measure -> Table Calc)
-
-# Mnemonic for Tableau Filter Order:
-# "Every Data Can Filter Dimensions Methodically Through Carefully"
-
-# Mnemonic for Power BI Workflow:
-# "Go Quietly, Many Viewers Prefer Simplicity"
-# Get Data -> Query -> Model -> Visualize -> Publish -> Share
-
-# Mnemonic for DAX Time Intelligence:
-# "DS PPTT DD"
-# Dates, Same Period, Parallel Period, Total YTD/MTD/QTD, Dates YTD, DatesinPeriod
-
-
-# =============================================================================
-# END OF FILE
-# DVT ESA – Power BI & Tableau Complete Q&A
-# 45 Questions | Power BI (Q1-Q26) | Tableau (Q27-Q39) | Comparison (Q40-Q45)
-# MTech Data Science & AI | PES University
-# =============================================================================

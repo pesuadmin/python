@@ -1,26 +1,4 @@
-# ### Aug 2023: END SEMESTER ASSESSMENT (ESA)
-# ## M TECH DATA SCIENCE AND MACHINE LEARNING_ SEMESTER I
-#
-# ### UE20CS905 - MACHINE LEARNING - I
-#
-
-# ### Dataset Description :
-# Housing price dataset of Bengaluru city is provided.  
-#
-# Below are features details
-#
-#
-# bengaluru_house_prices.csv :
-#
-#  - area_type: The type of the house area feature 'total_sqft' specifies.
-#  - availability: The availability date or availability status of the property.
-#  - location: The locality of the property in Bengaluru city.
-#  - size: The size of the housing property in BHK (or Bedrooms etc.,).
-#  - society: The name of the Apartment. This name is encrypted for confidentiality.
-#  - total_sqft: The 'area_type' area of the property.
-#  - bath: Number of bathrooms available in the house.
-#  - balcony: Number of balcony/balconies the house has.
-#  - price: Price of the housing property in Lakhs. (target feature)     
+  
 
 import pandas as pd
 import numpy as np
@@ -66,7 +44,7 @@ from sklearn.metrics import mean_absolute_error
 #      6. Find out Feature wise Missing value counts.(2 marks)
 
 # 2.1. Read/load the dataset as a pandas Dataframe
-file_path = "/Users/chethana_vinci/Desktop/ESA,GA,SN/ESA/ML-1 ESA PAPERS/ML-1 ESA AUG 2023/Bengaluru_House_Data.csv"
+file_path = "Bengaluru_House_Data.csv"
 df = pd.read_csv(file_path) # use pd.read_excel(file_path) if file_path ends with ".xls" or "xlsx" instead if ".csv"
 df.head() # Displays first 5 rows. pass n to display first n rows : df.head(n)
 

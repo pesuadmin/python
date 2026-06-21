@@ -457,6 +457,13 @@ grid = GridSearchCV(model, param_grid, cv=5, scoring='neg_mean_squared_error')
 grid.fit(X_train, y_train)
 y_pred = grid.best_estimator_.predict(X_test)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+# Best CV RMSE
+best_cv_rmse = np.sqrt(-grid.best_score_)
+
+# Test RMSE
+y_pred = grid.best_estimator_.predict(X_test)
+
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 print("Best Parameters:", grid.best_params_)
 print(f"Best CV RMSE: {best_cv_rmse:.4f}")
 print("RMSE:", rmse)

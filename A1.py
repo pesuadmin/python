@@ -6,6 +6,7 @@
 - The computer improves its performance on a task without being explicitly programmed for every step.
 - Think of it like teaching a child to recognize mangoes — you show many examples, the child learns the pattern, then identifies new mangoes on their own.
 
+---
 
 ## Q: What are the main types of Machine Learning?
 
@@ -13,6 +14,7 @@
 - Supervised Learning is further split into Regression and Classification.
 - Unsupervised Learning is further split into Clustering and Association.
 
+---
 
 ## Q: What is Supervised Learning?
 
@@ -787,7 +789,9 @@ Problem: 100 patients, 30 have diabetes. Find (a) probability, (b) odds, (c) log
 """
 
 
+# =============================================================================
 # SESSION 2 — Logistic Regression Classification
+# =============================================================================
 
 SESSION_2 = """
 # SMLC Session 2 — Logistic Regression Classification
@@ -1815,7 +1819,10 @@ Bonus — McFadden R² for Model A (given ln L_null = −69.3):
 
 """
 
+
+# =============================================================================
 # SESSION 3 — KNN & Naive Bayes Classifier
+# =============================================================================
 
 SESSION_3 = """
 # SMLC Session 3 — KNN & Naive Bayes Classifier
@@ -2584,7 +2591,10 @@ Q8 (Tricky Viva): If the independence assumption is usually violated, why does N
 
 """
 
+
+# =============================================================================
 # SESSION 4 — Decision Trees for Classification
+# =============================================================================
 
 SESSION_4 = """
 # SMLC Session 4 — Decision Trees for Classification
@@ -3271,7 +3281,10 @@ Key note: Repeated values (like 45 appearing twice) are only considered once whe
 
 """
 
+
+# =============================================================================
 # SESSION 5 — Model Evaluation, Overfitting, Ensemble & Random Forest
+# =============================================================================
 
 SESSION_5 = """
 # SMLC Session 5 — Model Evaluation, Overfitting, Ensemble Learning & Random Forest
@@ -4012,7 +4025,10 @@ Three mechanisms work together:
 
 """
 
+
+# =============================================================================
 # SESSION 6 — Boosting, XGBoost, Stacking & Voting
+# =============================================================================
 
 SESSION_6 = """
 # SMLC Session 6 — Boosting, XGBoost, Stacking & Voting
@@ -4736,7 +4752,9 @@ Stacking was the winner — combining three diverse models with a meta-learner o
 """
 
 
+# =============================================================================
 # SESSION 6 SUPPLEMENT — Stacking, Voting & Model Comparison (Practicals)
+# =============================================================================
 
 SESSION_6_SUPPLEMENT = """
 # SMLC Session 6 Supplement — Stacking, Voting & Model Comparison
@@ -5160,3 +5178,8 @@ Why cv? Without cross-validation, base models would predict on data they already
 - Adding a very weak base model can hurt the ensemble (especially voting).
 - For regression: use StackingRegressor with a meta-regressor.
 - sklearn classes: `VotingClassifier(voting='hard'/'soft')`, `StackingClassifier(estimators=level0, final_estimator=level1, cv=5)`.
+
+---
+
+
+"""

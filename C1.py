@@ -160,6 +160,16 @@ plt.show()
 
 from sklearn.preprocessing import LabelEncoder
 # from sklearn.preprocessing import OrdinalEncoder   # uncomment if needed
+df['Survive'] = df['Survive'].map({'Survived': 1,'Passed away': 0})    # Target
+
+cat_cols = ['Addiction','blood_group']
+le = LabelEncoder()          # Label
+for col in cat_cols:
+    df[col] = le.fit_transform(df[col].astype(str))
+
+
+cat_cols = ['Diabetes_type','Sex']
+df = pd.get_dummies(df, columns=cat_cols, drop_first=True)    # One Hot
 
 # Identify categorical columns (excluding ID column if present)
 cat_cols = df.select_dtypes(include=['object','category']).columns

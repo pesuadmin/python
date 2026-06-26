@@ -855,27 +855,18 @@ print(f"  Cohen's Kappa: {cohen_kappa_score(y_test, y_pred_rf):.4f}")
 # 
 # **Interpretation:**
 # - The model achieves [strong / moderate / acceptable] performance overall.
-# - High **precision** means few false alarms — when the model predicts 
-#   positive, it is usually right.
+# - High **precision** means few false alarms — when the model predicts positive, it is usually right.
 # - High **recall** means few missed cases — the model catches most actual 
 #   positives.
-# - The **F1 score** confirms the model maintains a healthy balance between 
-#   the two, which is especially important when the target classes are 
-#   imbalanced.
+# - The **F1 score** confirms the model maintains a healthy balance between the two, which is especially important when the target classes are imbalanced.
 # 
 # ---
 # 
 # ### Overall Results and Observations (2 marks)
 # 
 # **Key findings:**
-# - The classification problem was solved successfully using a structured 
-#   pipeline: data cleaning → encoding → splitting → modeling → evaluation.
-# - Among the three models tested (Logistic Regression, Decision Tree, 
-#   Random Forest), **[Random Forest]** performed best, confirming that 
-#   ensemble methods work well for this type of tabular data.
-# - A small number of features drive most of the predictive power. This 
-#   means the business can focus monitoring and decision-making on these 
-#   few high-impact variables rather than tracking every available field.
+# - The classification problem was solved successfully using a structured pipeline: data cleaning → encoding → splitting → modeling → evaluation. ; - Among the three models tested (Logistic Regression, Decision Tree, ;   Random Forest), **[Random Forest]** performed best, confirming that 
+#   ensemble methods work well for this type of tabular data. ;  - A small number of features drive most of the predictive power. This   means the business can focus monitoring and decision-making on these few high-impact variables rather than tracking every available field.
 # 
 # **Business implications:**
 # - The model can be deployed to support decision-making by flagging 
@@ -967,3 +958,42 @@ for i, col in enumerate(cat_cols):
     plt.title(f'Average target by {col}')
     plt.tight_layout()
     plt.show()
+
+
+## Frequency Encoding replaces each category with its frequency (count or ratio) in the training set. Useful for high-cardinality columns.
+# Count of each category
+freq_map = df["product_id"].value_counts(normalize=True).to_dict()
+df["product_id_freq"] = df["product_id"].map(freq_map)
+# Now drop the original column.
+df = df.drop(columns=["product_id"])
+
+# Target Encoding replaces each category with the mean of the target variable for that category. Powerful for very high-cardinality categoricals (1000+ unique values).
+# Compute on TRAIN ONLY to avoid leakage
+target_map = X_train.assign(_y=y_train).groupby("city")["_y"].mean()
+X_train["city_te"] = X_train["city"].map(target_map)
+X_test["city_te"]  = X_test["city"].map(target_map).fillna(y_train.mean())
+# Drop original 'city' column to avoid duplication.
+
+# Production-grade with smoothing (handles rare categories):
+try:
+    from category_encoders import TargetEncoder
+    te = TargetEncoder(cols=["city"], smoothing=10)
+    X_train_te = te.fit_transform(X_train, y_train)
+    X_test_te  = te.transform(X_test)
+except ImportError:
+    print("Run: pip install category_encoders")
+
+RobustScaler — for outlier-heavy data
+x_scaled = (x − median) / IQR
+from sklearn.preprocessing import RobustScaler
+
+rs = RobustScaler()
+X_train_rs = rs.fit_transform(X_train)
+X_test_rs  = rs.transform(X_test)
+# Use when: outliers are present and you want to keep them.
+# Median + IQR aren't dragged by extreme values like mean + std are.
+(d) Normalizer — row-wise (rare)
+from sklearn.preprocessing import Normalizer
+# Scales each row to unit length. Use case: text features (tf-idf) before cosine-distance KNN.
+n = Normalizer().fit(X_train)
+X_train_n = n.transform(X_train); X_test_n = n.transform(X_test)

@@ -534,16 +534,21 @@ print("Maximum F1 Score :", round(f1_scores[best_idx],4))
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, cohen_kappa_score
+from sklearn.neighbors import KNeighborsClassifier
 
 # ── Default Models ──
-models = {'Logistic Regression': LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42),'Decision Tree': DecisionTreeClassifier(random_state=42),'Random Forest':RandomForestClassifier(random_state=42, n_jobs=-1),'Gradient Boosting':   GradientBoostingClassifier(random_state=42)}
+models = {'Logistic Regression': LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42),'Decision Tree': DecisionTreeClassifier(random_state=42),'Random Forest':RandomForestClassifier(random_state=42, n_jobs=-1),'Gradient Boosting':   GradientBoostingClassifier(random_state=42), 'KNN': KNeighborsClassifier(n_neighbors=5)}
 print("=" * 75)
 print(f"{'Model':<28} {'Accuracy':>9} {'F1':>8} {'ROC-AUC':>9} {'Kappa':>8}")
 print("=" * 75)
 default_results = {}
 for name, model in models.items():
-    Xtr = X_train_sc if 'Logistic' in name else X_train
-    Xte = X_test_sc  if 'Logistic' in name else X_test
+     if name in ['Logistic Regression', 'KNN']:
+        Xtr = X_train_sc
+        Xte = X_test_sc
+    else:
+        Xtr = X_train
+        Xte = X_test
     model.fit(Xtr, y_train)
     y_pred = model.predict(Xte)
     y_prob = model.predict_proba(Xte)[:, 1]
@@ -559,63 +564,70 @@ for name, model in models.items():
     ''' Models were compared using Accuracy and F1 Score. ;  Higher Accuracy and F1 Score indicate better model performance. ;  Decision Tree may overfit the data. ; Random Forest generally performs better due to ensemble learning. ;  Logistic Regression works well for simple linear relationships. ;  Performance Reference ; Accuracy / F1	Interpretation. ;  < 0.60	Poor. ; 0.60 – 0.75	Average ; 0.75 – 0.90	Good ; > 0.90	Excellent'''
 
 # ── Tuned Models ──
+from sklearn.neighbors import KNeighborsClassifier
+
 tuned = {
-    'LR (tuned)': LogisticRegression(C=0.1, max_iter=1000, class_weight='balanced', random_state=42),
-    'DT (tuned)': DecisionTreeClassifier(max_depth=10, min_samples_split=20,
-                                          class_weight='balanced', random_state=42),
-    'RF (tuned)': RandomForestClassifier(n_estimators=200, max_depth=15,
-                                          class_weight='balanced', min_samples_split=10,
-                                          random_state=42, n_jobs=-1),
-    'GB (tuned)': GradientBoostingClassifier(n_estimators=200, max_depth=4,
-                                              learning_rate=0.05, random_state=42)
+    'LR (tuned)': LogisticRegression(C=0.1,max_iter=1000,class_weight='balanced',random_state=42),
+    'DT (tuned)': DecisionTreeClassifier(max_depth=10,min_samples_split=20,class_weight='balanced',random_state=42),
+    'RF (tuned)': RandomForestClassifier(n_estimators=200,max_depth=15,min_samples_split=10,class_weight='balanced',random_state=42,n_jobs=-1),
+    'GB (tuned)': GradientBoostingClassifier(n_estimators=200,max_depth=4,learning_rate=0.05,random_state=42),
+    'KNN (tuned)': KNeighborsClassifier(n_neighbors=7,weights='distance',metric='manhattan')
 }
 
 print("\n" + "=" * 75)
 print(f"{'Model':<28} {'Accuracy':>9} {'F1':>8} {'ROC-AUC':>9} {'Kappa':>8}")
 print("=" * 75)
-
 tuned_results = {}
 for name, model in tuned.items():
-    Xtr = X_train_sc if 'LR' in name else X_train
-    Xte = X_test_sc  if 'LR' in name else X_test
+
+    # Logistic Regression and KNN use scaled data
+    if 'LR' in name or 'KNN' in name:
+        Xtr = X_train_sc
+        Xte = X_test_sc
+    else:
+        Xtr = X_train
+        Xte = X_test
+
     model.fit(Xtr, y_train)
     y_pred = model.predict(Xte)
     y_prob = model.predict_proba(Xte)[:, 1]
-    acc  = accuracy_score(y_test, y_pred)
-    f1   = f1_score(y_test, y_pred)
-    roc  = roc_auc_score(y_test, y_prob)
-    kap  = cohen_kappa_score(y_test, y_pred)
-    tuned_results[name] = {'Accuracy': acc, 'F1': f1, 'ROC-AUC': roc, 'Kappa': kap}
-    print(f"{name:<28} {acc:>9.4f} {f1:>8.4f} {roc:>9.4f} {kap:>8.4f}")
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    roc = roc_auc_score(y_test, y_prob)
+    kap = cohen_kappa_score(y_test, y_pred)
+    tuned_results[name] = {'Accuracy': acc,'F1': f1,'ROC-AUC': roc,'Kappa': kap}
+    print(f"{name:<28} {acc:>9.4f} {f1:>8.4f} {roc:>9.4f} {kap:>8.4f}") #el
 
 ##############
 # Re-fit with optimizations
 import numpy as np
 import matplotlib.pyplot as plt
-
-fig, axes = plt.subplots(1, 2, figsize=(18, 5))
-
+fig, axes = plt.subplots(1, 2, figsize=(20, 6))
 metrics_to_plot = ['F1', 'ROC-AUC']
+default_models = ['Logistic Regression','Decision Tree','Random Forest','Gradient Boosting','KNN']
+tuned_models = ['LR (tuned)','DT (tuned)','RF (tuned)','GB (tuned)','KNN (tuned)']
+labels = ['Logistic\nRegression','Decision\nTree','Random\nForest','Gradient\nBoosting','KNN']
 
 for ax, metric in zip(axes, metrics_to_plot):
-
-    default_vals = [default_results[m][metric] for m in['Logistic Regression','Decision Tree','Random Forest','Gradient Boosting']]
-    tuned_vals = [tuned_results[m][metric] for m in['LR (tuned)','DT (tuned)','RF (tuned)','GB (tuned)']]
-    x = np.arange(4)
-    w = 0.35
-    ax.bar(x - w/2,default_vals,w,label='Default',color='steelblue')
-    ax.bar(x + w/2,tuned_vals, w,label='Tuned',color='tomato')
+    default_vals = [default_results[m][metric] for m in default_models]
+    tuned_vals = [tuned_results[m][metric] for m in tuned_models]
+    x = np.arange(len(labels))
+    width = 0.35
+    ax.bar(x - width/2, default_vals, width,label='Default', color='steelblue')
+    ax.bar(x + width/2, tuned_vals, width,label='Tuned', color='tomato')
     ax.set_xticks(x)
-    ax.set_xticklabels(['Logistic\nRegression','Decision\nTree','Random\nForest','Gradient\nBoosting'])
+    ax.set_xticklabels(labels)
     ax.set_ylabel(metric)
     ax.set_title(f'{metric}: Default vs Tuned')
-    ax.set_ylim(0,1)
+    ax.set_ylim(0, 1)
     ax.grid(axis='y', alpha=0.3)
-    ax.legend()
-
-plt.suptitle("Model Comparison: Default vs Tuned Models", fontsize=14)
+    ax.legend()   # el
+plt.suptitle("Model Comparison: Default vs Tuned Models", fontsize=16)
 plt.tight_layout()
 plt.show()
+
+
+
 
 # ## Justification for Model Optimizations
 # 
@@ -651,6 +663,10 @@ plt.show()
 # - **LR → REGULARIZE:** Use `C` and `class_weight` to control coefficient magnitude and class balance.
 # - **DT → PRUNE:** Use `max_depth` and `min_samples_split` to stop the tree before it memorizes.
 # - **RF → ENSEMBLE:** Use `n_estimators` and per-tree depth limits to balance bias and variance.
+# Why these KNN parameters?
+# n_neighbors=7: Considers the 7 nearest neighbors for prediction.
+# weights='distance': Gives greater influence to closer neighbors.
+# metric='manhattan': Often performs well on tabular datasets, though the best metric depends on the data.
 
 # ## Post-Tuning Observations
 # 
@@ -707,18 +723,33 @@ plt.show()
 
 # Feature importance using Random Forest # Evaluation Metrics PErformance #
 # ── Feature Importance from Random Forest ──
-rf_model = tuned.get('RF (tuned)', models['Random Forest'])
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-importance_df = pd.DataFrame({'Feature': X.columns,'Importance': rf_model.feature_importances_}).sort_values('Importance', ascending=False).reset_index(drop=True)
+model = tuned.get('RF (tuned)', models['Random Forest'])
+#model = tuned.get('KN (tuned)', models['RAdo'])
+# 1. Tree-based Models
+importance = model.feature_importances_
 
-print("Feature Importance Ranking:")
-print(importance_df.to_string(index=False))
+# 2. Logistic Regression
+# importance = np.abs(model.coef_[0])
 
-plt.figure(figsize=(10, 6))
-sns.barplot(x='Importance', y='Feature', data=importance_df, palette='viridis')
-plt.title("Feature Importance — Random Forest (Top Features for Loan Default Prediction)")
+# 3. KNN / SVM
+#from sklearn.inspection import permutation_importance
+#result = permutation_importance(model,X_test_sc,y_test,n_repeats=10,random_state=42,scoring='f1')
+#importance = result.importances_mean
+
+importance_df = (pd.DataFrame({'Feature': X.columns,'Importance': importance}).sort_values(by='Importance', ascending=False).reset_index(drop=True))
+print(importance_df)
+plt.figure(figsize=(10,6))
+sns.barplot(data=importance_df,x='Importance',y='Feature',hue='Feature',palette='viridis',legend=False)
+plt.title("Feature Importance")
 plt.xlabel("Importance Score")
-plt.tight_layout(); plt.show()
+plt.ylabel("Features")
+plt.tight_layout()
+plt.show()
 
 
 # Possible Inference
@@ -732,8 +763,8 @@ plt.tight_layout(); plt.show()
 # ── Evaluation Metrics — Best Model (Random Forest Tuned) ──
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, cohen_kappa_score
 
-y_pred_rf = rf_model.predict(X_test)
-y_prob_rf  = rf_model.predict_proba(X_test)[:, 1]
+y_pred_rf = model.predict(X_test)
+y_prob_rf  = model.predict_proba(X_test)[:, 1]
 
 #print("=" * 45)
 print("  Evaluation Metrics — Random Forest (Tuned)")
@@ -760,13 +791,7 @@ print(f"  Cohen's Kappa: {cohen_kappa_score(y_test, y_pred_rf):.4f}")
 # 
 # Metric Value	Interpretation
 # 
-# < 0.60	Poor
-# 
-# 0.60 – 0.75	Average
-# 
-# 0.75 – 0.90	Good
-# 
-# > 0.90	Excellent
+# < 0.60	Poor   ;  0.60 – 0.75	Average  ;  0.75 – 0.90	Good ; > 0.90	Excellent
 # 
 # Higher metric values indicate better model performance.
 # 
@@ -774,27 +799,13 @@ print(f"  Cohen's Kappa: {cohen_kappa_score(y_test, y_pred_rf):.4f}")
 # 
 
 # Possible Inference
-# The model was able to identify important patterns in the dataset successfully.
-# 
-# Feature analysis showed that a few variables contribute more strongly toward prediction.
-# 
-# Evaluation metrics indicate that the model achieved satisfactory performance.
-# 
-# The selected model can support better business decision-making and improve prediction accuracy.
+# The model was able to identify important patterns in the dataset successfully. ; Feature analysis showed that a few variables contribute more strongly toward prediction. ; Evaluation metrics indicate that the model achieved satisfactory performance. ; The selected model can support better business decision-making and improve prediction accuracy.
 # 
 # Proper preprocessing and feature engineering helped improve overall model performance.
 # 
 # The findings can help optimize business strategies and reduce operational risks.
 # 
-# Generic Business Impact Statements
-# 
-# Helps improve customer targeting and decision-making.
-# 
-# Supports better resource planning and operational efficiency.
-# 
-# Enables data-driven business insights.
-# 
-# Helps identify key factors influencing the target outcome.
+# Generic Business Impact Statements ; Helps improve customer targeting and decision-making. ; Supports better resource planning and operational efficiency. ; Enables data-driven business insights. ; Helps identify key factors influencing the target outcome.
 # 
 # 
 
@@ -802,23 +813,16 @@ print(f"  Cohen's Kappa: {cohen_kappa_score(y_test, y_pred_rf):.4f}")
 # 
 # ### Feature Importance (4 marks)
 # 
-# The Random Forest model ranks features by how much each one helps reduce 
-# prediction error across all trees in the ensemble. The top features from the 
-# importance table are the strongest drivers of the target variable.
+# The Random Forest model ranks features by how much each one helps reduce prediction error across all trees in the ensemble. The top features from the importance table are the strongest drivers of the target variable.
 # 
 # **Top 3 features and why they matter:**
 # 
-# 1. **[Feature 1]** — has the highest importance score. This means the model 
-#    uses this feature most often to split the data, indicating it has the 
-#    strongest relationship with the target. In business terms, this is the 
+# 1. **[Feature 1]** — has the highest importance score. This means the model uses this feature most often to split the data, indicating it has the strongest relationship with the target. In business terms, this is the 
 #    single most useful piece of information for predicting the outcome.
 # 
-# 2. **[Feature 2]** — second most important. It captures a different aspect 
-#    of the data that complements Feature 1, helping the model separate cases 
-#    that Feature 1 alone cannot distinguish.
+# 2. **[Feature 2]** — second most important. It captures a different aspect of the data that complements Feature 1, helping the model separate cases that Feature 1 alone cannot distinguish.
 # 
-# 3. **[Feature 3]** — third most important. Adds further refinement to 
-#    predictions, especially for edge cases.
+# 3. **[Feature 3]** — third most important. Adds further refinement to predictions, especially for edge cases.
 # 
 # **Why these features dominate:**
 # - They have a clear and measurable relationship with the target variable.
@@ -827,12 +831,7 @@ print(f"  Cohen's Kappa: {cohen_kappa_score(y_test, y_pred_rf):.4f}")
 # - They align with domain knowledge — these are the kinds of factors a 
 #   business analyst would also examine when investigating this problem.
 # 
-# **Features with low importance** (bottom of the table) contribute little to 
-# prediction and could be removed in a simpler model without major loss in 
-# performance.
-# 
-# ---
-# 
+# **Features with low importance** (bottom of the table) contribute little to prediction and could be removed in a simpler model without major loss in performance.
 # ### Evaluation Metrics Performance (2 marks)
 # 
 # The final model was evaluated using four standard classification metrics:
@@ -883,3 +882,63 @@ print(f"  Cohen's Kappa: {cohen_kappa_score(y_test, y_pred_rf):.4f}")
 # **Conclusion:** The selected model meets the business requirement of 
 # reliable classification and provides interpretable insights that connect 
 # directly to operational decisions.
+Cohen's Kappa (κ) is a metric that measures how well a classification model performs after removing the agreement that could happen by chance. ; In simple terms: Accuracy tells you how often the model is correct. Cohen's Kappa tells you how much better the model is than random guessing.
+Kappa Value	Interpretation
+< 0	Worse than random
+0.00 – 0.20	Slight agreement
+0.21 – 0.40	Fair agreement
+0.41 – 0.60	Moderate agreement
+0.61 – 0.80	Substantial agreement
+0.81 – 1.00	Almost perfect agreement
+
+#### SMOTE
+rom sklearn.model_selection import train_test_split
+
+X = df.drop(columns=[target_col])
+y = df[target_col]
+
+
+#Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.30,random_state=42,stratify=y)
+
+#Apply SMOTE
+from imblearn.over_sampling import SMOTE
+smote = SMOTE(random_state=42)
+X_train_smote, y_train_smote = smote.fit_resample(X_train,y_train)
+print("Before SMOTE")
+print(y_train.value_counts())
+print("\nAfter SMOTE")
+print(y_train_smote.value_counts())
+#Scale ONLY for Logistic Regression
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_train_lr = scaler.fit_transform(X_train_smote)
+X_test_lr = scaler.transform(X_test)
+
+#Train All Models
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+
+models = {"Logistic Regression": LogisticRegression(max_iter=1000,random_state=42),"Decision Tree": DecisionTreeClassifier(random_state=42),"Random Forest": RandomForestClassifier(random_state=42,n_jobs=-1),"Gradient Boosting": GradientBoostingClassifier(random_state=42)}
+
+#Evaluation
+from sklearn.metrics import (accuracy_score,precision_score,recall_score,f1_score,roc_auc_score,cohen_kappa_score)
+print("="*80)
+print(f"{'Model':<25} {'Accuracy':>10} {'F1':>8} {'ROC-AUC':>10} {'Kappa':>8}")
+print("="*80)
+
+for name, model in models.items():
+
+    # Logistic Regression uses scaled data
+    if name == "Logistic Regression":
+        Xtr = X_train_lr
+        Xte = X_test_lr
+    else:
+        Xtr = X_train_smote
+        Xte = X_test
+
+    model.fit(Xtr, y_train_smote)
+    y_pred = model.predict(Xte)
+    y_prob = model.predict_proba(Xte)[:,1]
+    print(f"{name:<25}"f"{accuracy_score(y_test,y_pred):>10.4f}" f"{f1_score(y_test,y_pred):>8.4f}",f"{roc_auc_score(y_test,y_prob):>10.4f}" f"{cohen_kappa_score(y_test,y_pred):>8.4f}")

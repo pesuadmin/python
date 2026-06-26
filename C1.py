@@ -26,7 +26,7 @@ for col in cat_cols:                     # Summary of categorical variables
 
 ##############
 # df.replace(['?', 'N/A', '-', 'unknown', ' '], np.nan, inplace=True)                 # Requied to Replace invalid values
-# df['thalachh'] = df['thalachh'].astype('object')   # placeholder line                    # Convert datatype to category/object
+# df['thalachh'] = df['thalachh'].astype('float64')   # placeholder line                    # Convert datatype to category/object
 #df['thalachh'] = pd.to_numeric(df['thalachh'])
 # df['City'] = df['City'].str.strip()
 # df['City'] = df['City'].str.lower()

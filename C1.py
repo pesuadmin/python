@@ -193,6 +193,20 @@ for col in cat_cols:
 # Display encoded dataset
 df.head()
 
+import category_encoders as ce
+
+# Separate features and target
+X = df.drop('Target', axis=1)
+y = df['Target']
+
+# Initialize encoder
+encoder = ce.TargetEncoder(cols=['Category'])
+
+# Fit and transform
+X['Category_TE'] = encoder.fit_transform(X['Category'], y)
+
+# Drop original column (optional)
+X.drop('Category', axis=1, inplace=True)
 # df['Target_log'] = np.log(df['Target']). # log1p.   - Required for log transformation - highly right -skewed data
 
 # Inference

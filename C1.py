@@ -35,12 +35,6 @@ for col in cat_cols:                     # Summary of categorical variables
 # df.rename(columns={'old_name':'new_name'},inplace=True)
 df.describe()
 
-for col in df.select_dtypes(include=['object']).columns:
-    try:
-        df[col] = pd.to_numeric(df[col])
-    except (ValueError, TypeError):
-        pass   #el
-
 # Inference :
 '''Some categorical variables may contain highly dominant categories. ; Few categories may have very low frequency indicating class imbalance. ; Certain columns may contain rare or inconsistent categories. ; These variables may require encoding before model building.'''
 
@@ -120,17 +114,13 @@ for col in num_cols:
     plt.title(f"Boxplot of {col}")
     plt.show() #el
 
-# Target variable balance
-print(df[target_col].value_counts())
-# Countplot for target variable
-sns.countplot(x=df[target_col])
-plt.title("Target Variable Distribution")
-plt.show()
 
-# df['Target'].value_counts(normalize=True)*100.   - Check class imbalance
 # Inference 
 ''' Missing values are present in some columns. ; Boxplots indicate presence/absence of outliers in numerical features. ; Extreme values may affect model performance. ; Target variable distribution shows whether the classes are balanced or imbalanced. ; Imbalanced target classes may require resampling techniques like SMOTE or undersampling. '''
 
+##################
+# Target variable balance
+# df['Target'].value_counts(normalize=True)*100.   - Check class imbalance
 df[target_col].value_counts(normalize=True)*100.   # - Check class imbalance.    - 60/40 - moderate imbalance.  - 80/20 and above severely imbalanced
 # ── Target Variable Balance ──
 counts = df[target_col].value_counts()
@@ -139,9 +129,9 @@ pct = df[target_col].value_counts(normalize=True) * 100
 print("Target Variable Distribution:")
 print(pd.DataFrame({'Count': counts, 'Percentage (%)': pct.round(2)}))
 
+##### Plot
 fig, axes = plt.subplots(1, 2, figsize=(15, 8))
-
-sns.countplot(x=df[target_col], ax=axes[0], palette=['steelblue', 'orange'])
+sns.countplot(x=df[target_col], ax=axes[0], palette=['steelblue', 'orange'],hue = df[target_col] , legend = False)
 axes[0].set_title("Target Variable Count (Loan)")
 axes[0].set_xlabel("Loan (0=No Default, 1=Default)")
 for p in axes[0].patches:

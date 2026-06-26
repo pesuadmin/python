@@ -193,6 +193,7 @@ for col in cat_cols:
 # Display encoded dataset
 df.head()
 
+!pip install category_encoders
 import category_encoders as ce
 
 # Separate features and target

@@ -942,3 +942,18 @@ for name, model in models.items():
     y_pred = model.predict(Xte)
     y_prob = model.predict_proba(Xte)[:,1]
     print(f"{name:<25}"f"{accuracy_score(y_test,y_pred):>10.4f}" f"{f1_score(y_test,y_pred):>8.4f}",f"{roc_auc_score(y_test,y_prob):>10.4f}" f"{cohen_kappa_score(y_test,y_pred):>8.4f}")
+
+
+    # List of categorical columns to check
+cat_df = df.select_dtypes(include=['object', 'category'])
+cat_cols = cat_cols = cat_df.columns.tolist()
+
+plt.figure(figsize=(15, 20))
+for i, col in enumerate(cat_cols):
+    plt.subplot(4, 2, i+1)
+    # Using barplot to see the mean target for each category
+    sns.barplot(x=df[col], y=df[target_col])
+    plt.xticks(rotation='vertical')
+    plt.title(f'Average target by {col}')
+    plt.tight_layout()
+    plt.show()
